@@ -22,7 +22,7 @@ public class Aggregator<TSource, TAccumulate, TResult> : ChainablePipe<TResult>,
 
     public Aggregator(IChainablePipe<TSource> upstream, Func<TAccumulate?, TSource?, TAccumulate?> accumulator, Func<TAccumulate?,TResult?> selector, TAccumulate? seed = default)
     {
-        upstream.RegisterDownstream(this);
+        upstream.RegisterDownstream(Emit);
         (Accumulator, Selector, State) = (accumulator, selector, seed);
     }
 

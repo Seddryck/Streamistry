@@ -19,7 +19,7 @@ public class Mapper<TInput, TOutput> : ChainablePipe<TOutput>, IProcessablePipe<
 
     public Mapper(IChainablePipe<TInput> upstream, Func<TInput?, TOutput?> function)
     {
-        upstream.RegisterDownstream(this);
+        upstream.RegisterDownstream(Emit);
         Function = function;
     }
 

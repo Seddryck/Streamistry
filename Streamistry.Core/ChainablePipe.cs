@@ -9,8 +9,8 @@ public abstract class ChainablePipe<T> : IChainablePipe<T>
 {
     private Action<T?>? Downstream { get; set; }
 
-    public void RegisterDownstream(IProcessablePipe<T> element)
-        => Downstream += element.Emit;
+    public void RegisterDownstream(Action<T?> action)
+        => Downstream += action;
 
     public void PushDownstream(T? obj)
         => Downstream?.Invoke(obj);

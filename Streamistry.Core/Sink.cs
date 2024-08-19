@@ -11,7 +11,7 @@ public class Sink<T> : IProcessablePipe<T>
 
     public Sink(IChainablePipe<T> upstream, Action<T?> function)
     {
-        upstream.RegisterDownstream(this);
+        upstream.RegisterDownstream(Emit);
         Function = function;
     }
 

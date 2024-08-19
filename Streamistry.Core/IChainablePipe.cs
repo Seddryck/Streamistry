@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 namespace Streamistry;
 public interface IChainablePipe<T>
 {
-    void RegisterDownstream(IProcessablePipe<T> element);
+    void RegisterDownstream(Action<T?> action);
 }
