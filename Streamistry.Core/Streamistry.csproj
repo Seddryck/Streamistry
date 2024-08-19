@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Streamistry</PackageId>
+    <RepositoryUrl>https://github.com/Seddryck/Streamistry</RepositoryUrl>
+    <PackageTags>stream;analytics</PackageTags>
+    <Description>Streamistry is a lightweight library offering streaming support with features like accumulators, windows and sinks. This allows you to process and manage continuous data streams efficiently, breaking them into time-based or count-based windows for real-time analysis.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.2.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>
