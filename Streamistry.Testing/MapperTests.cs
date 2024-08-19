@@ -85,4 +85,23 @@ public class MapperTests
         Assert.That(sink.State, Has.Count.EqualTo(1));
         Assert.That(sink.State.Last(), Is.EqualTo("************"));
     }
+
+    [Test]
+    public void Mapper_MultipleInlineMappers_Successful()
+    {
+        var pipeline = new Pipeline<string>();
+        var length = new Mapper<string, int>(pipeline, x => x?.Length ?? 0);
+        var asterisk = new Mapper<string, string>(pipeline, x => $"***{x}***");
+        var lengthSink = new MemorySink<int>(length);
+        var asteriskSink = new MemorySink<string>(asterisk);
+
+        pipeline.Emit("Hello world!");
+        Assert.Multiple(() =>
+        {
+            Assert.That(lengthSink.State, Has.Count.EqualTo(1));
+            Assert.That(lengthSink.State.Last(), Is.EqualTo(12));
+            Assert.That(asteriskSink.State, Has.Count.EqualTo(1));
+            Assert.That(asteriskSink.State.Last(), Is.EqualTo("***Hello world!***"));
+        });
+    }
 }
