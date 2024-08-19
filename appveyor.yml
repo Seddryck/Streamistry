@@ -13,6 +13,10 @@ skip_commits:
     - CODE_OF_CONDUCT.md
     - CONTRIBUTING.md
     - SECURITY.md
+
+environment:
+  github_access_token:
+    secure: gtEHCUmmDjYfrp/NEe2qULAkD/4uzohQRg46gqognNrcSQfv+7YrWbh/M+1VDlSZUk+fPvkUSDq89uYkgCHuJZ3IIMCsMBZH7vQfKVcU+w6PipuNDku9ab64u0owA+u8
   
 init:
 - cmd: git config --global core.autocrlf true
