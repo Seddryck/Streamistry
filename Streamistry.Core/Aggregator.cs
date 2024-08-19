@@ -15,7 +15,6 @@ namespace Streamistry;
 /// <typeparam name="TResult">The type of the elements in the output stream, determined by applying a selection function to the accumulated state.</typeparam>
 public class Aggregator<TSource, TAccumulate, TResult> : ChainablePipe<TResult>, IProcessablePipe<TSource>
 {
-    private ICollection<IProcessablePipe<TResult>> Downstreams { get; } = [];
     public Func<TAccumulate?, TSource?, TAccumulate?> Accumulator { get; }
     public Func<TAccumulate?, TResult?> Selector { get; }
     private TAccumulate? State { get; set; }
