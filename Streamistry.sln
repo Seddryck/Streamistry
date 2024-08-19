@@ -1,0 +1,63 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Streamistry", "Streamistry.Core\Streamistry.csproj", "{28B2B470-F5B5-4FDE-8250-1A18C3FDC578}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Streamistry.Testing", "Streamistry.Testing\Streamistry.Testing.csproj", "{A0CDC412-D16C-4508-96FC-6F0BB383E962}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C923A152-4091-48BE-A984-686FF5E4ACCC}"
+	ProjectSection(SolutionItems) = preProject
+		conventional_commits_labels.yml = conventional_commits_labels.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{95E83BA6-B535-4D56-B06A-D00249A4EF00}"
+	ProjectSection(SolutionItems) = preProject
+		appveyor.yml = appveyor.yml
+		.github\conventional_commits_labels.json = .github\conventional_commits_labels.json
+		.github\dependabot.yml = .github\dependabot.yml
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+		github.ps1 = github.ps1
+		GitVersion.yml = GitVersion.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project", "Project", "{09BDFA96-353F-419D-890A-D9B9045E66DD}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Edit", "Edit", "{210C887C-6FF3-4D1B-9A7B-894E2F286FF4}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{28B2B470-F5B5-4FDE-8250-1A18C3FDC578}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28B2B470-F5B5-4FDE-8250-1A18C3FDC578}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28B2B470-F5B5-4FDE-8250-1A18C3FDC578}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28B2B470-F5B5-4FDE-8250-1A18C3FDC578}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0CDC412-D16C-4508-96FC-6F0BB383E962}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0CDC412-D16C-4508-96FC-6F0BB383E962}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0CDC412-D16C-4508-96FC-6F0BB383E962}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0CDC412-D16C-4508-96FC-6F0BB383E962}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{95E83BA6-B535-4D56-B06A-D00249A4EF00} = {C923A152-4091-48BE-A984-686FF5E4ACCC}
+		{09BDFA96-353F-419D-890A-D9B9045E66DD} = {C923A152-4091-48BE-A984-686FF5E4ACCC}
+		{210C887C-6FF3-4D1B-9A7B-894E2F286FF4} = {C923A152-4091-48BE-A984-686FF5E4ACCC}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8EABD9FE-559A-40AF-BB4B-8026F9240FEF}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,97 @@
+version: build.{build}
+image: Visual Studio 2022
+
+branches:
+  except:
+    - /v\d+\.\d+\.\d+/
+skip_commits:
+  files:
+    - docs/
+    - misc/
+    - README.md
+    - LICENSE
+    - CODE_OF_CONDUCT.md
+    - CONTRIBUTING.md
+    - SECURITY.md
+  
+init:
+- cmd: git config --global core.autocrlf true
+- cmd: setx IGNORE_NORMALISATION_GIT_HEAD_MOVE "1"
+- cmd: RefreshEnv.cmd
+- pwsh: Write-Host "Target branch is '$($env:APPVEYOR_REPO_BRANCH)'"
+
+before_build:
+- cmd: gitversion /output buildserver /verbosity Minimal
+- pwsh: Write-Host "Building Streamistry version $($env:GitVersion_SemVer)"
+- pwsh: |
+    . "$env:APPVEYOR_BUILD_FOLDER\github.ps1"
+    if (($env:APPVEYOR_REPO_BRANCH -eq "main") -and ($null -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)) {
+      $context = [PSCustomObject] @{
+        Id = $env:APPVEYOR_REPO_COMMIT
+        Owner = ($env:APPVEYOR_REPO_NAME -Split '/')[0]
+        Repository = ($env:APPVEYOR_REPO_NAME -Split '/')[1]
+        SecretToken = $env:github_access_token
+      }
+      foreach($id in ($context | Get-Commit-Associated-Pull-Requests)) {
+        $context.Id = $id
+        $context | Set-Pull-Request-Expected-Labels -Config '.github\conventional_commits_labels.json'
+      }
+    } else {
+        Write-Host 'Not a merge on main built on appveyor. Skipping mapping conventional commits and labels.'
+    }
+
+build_script:
+  #- dotnet --info
+  - dotnet build Streamistry.sln -p:version="%GitVersion_SemVer%" -c Release /p:ContinuousIntegrationBuild=true --nologo 
+
+test_script:
+- pwsh: |
+    $ErrorActionPreference = "Stop"
+    dotnet test Streamistry.Testing -c Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Threshold=10 /p:ThresholdType=line /p:CoverletOutput=../.coverage/coverage.Streamistry.xml --test-adapter-path:. --logger:Appveyor --no-build --nologo
+    $globalTestResult = $LastExitCode
+    if($globalTestResult -ne 0) { $host.SetShouldExit($globalTestResult) }
+
+- pwsh: |
+    $ProgressPreference = 'SilentlyContinue'
+    Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe -Outfile codecov.exe
+    .\codecov.exe --dir "./.coverage/"
+
+after_test:
+- dotnet pack Streamistry.Core -p:version="%GitVersion_SemVer%" -c Release --include-symbols --no-build --nologo 
+
+artifacts:
+- path: '**\*.nupkg'
+- path: '**\*.snupkg'
+
+deploy:
+- provider: NuGet
+  api_key:
+    secure: WulUiguCSzi1ZCQHZxmpdhP/FMMifFhjqvSZRK7QiT0vLrJeaN1P3mZLB5lyPHvz
+  skip_symbols: false
+  artifact: /.*(\.|\.s)nupkg/
+  on:
+    branch: main
+
+on_success:
+- pwsh: |
+    . "$env:APPVEYOR_BUILD_FOLDER\github.ps1"
+    if (($env:APPVEYOR_REPO_BRANCH -eq "main") -and ($null -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)) {
+        if ($env:GitVersion_Patch -eq '0' -or $env:GitVersion_Patch -eq 0) {
+            $context = [PSCustomObject] @{
+                Owner = ($env:APPVEYOR_REPO_NAME -Split '/')[0]
+                Repository = ($env:APPVEYOR_REPO_NAME -Split '/')[1]
+                SecretToken = $env:github_access_token
+            }
+            if (-not ($context | Check-Release-Published -Tag "v$($env:GitVersion_SemVer)")) {
+                $context | Publish-Release `
+                    -Tag "v$($env:GitVersion_SemVer)" `
+                    -Name "$(($env:APPVEYOR_REPO_NAME -Split '/')[1]) $($env:GitVersion_SemVer)" `
+                    -ReleaseNotes `
+                    -DiscussionCategory 'Announcements'
+            }
+        } else {
+            Write-Host "No release published on GitHub when patch is not set to zero."
+        }
+    } else {
+        Write-Host "No release published on GitHub when not on branch main."
+    }
