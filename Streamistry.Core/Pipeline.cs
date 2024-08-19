@@ -6,16 +6,8 @@ using System.Threading.Tasks;
 
 namespace Streamistry;
 
-public class Pipeline<T> : IChainablePipe<T>, IProcessablePipe<T>
+public class Pipeline<T> : ChainablePipe<T>, IProcessablePipe<T>
 {
-    private ICollection<IProcessablePipe<T>> Downstreams { get; } = [];
-
-    public void RegisterDownstream(IProcessablePipe<T> element)
-        => Downstreams.Add(element);
-
     public void Emit(T? obj)
-    {
-        foreach (var downstream in Downstreams)
-            downstream.Emit(obj);
-    }
+        => PushDownstream(obj);
 }

@@ -13,9 +13,8 @@ namespace Streamistry;
 /// </summary>
 /// <typeparam name="TInput">The type of the elements in the input stream.</typeparam>
 /// <typeparam name="TOutput">The type of the elements in the output stream after the function is applied.</typeparam>
-public class Mapper<TInput, TOutput> : IProcessablePipe<TInput>, IChainablePipe<TOutput>
+public class Mapper<TInput, TOutput> : ChainablePipe<TOutput>, IProcessablePipe<TInput>
 {
-    private ICollection<IProcessablePipe<TOutput>> Downstreams { get; } = [];
     public Func<TInput?, TOutput?> Function { get; init; }
 
     public Mapper(IChainablePipe<TInput> upstream, Func<TInput?, TOutput?> function)
@@ -24,13 +23,9 @@ public class Mapper<TInput, TOutput> : IProcessablePipe<TInput>, IChainablePipe<
         Function = function;
     }
 
-    public void RegisterDownstream(IProcessablePipe<TOutput> element)
-        => Downstreams.Add(element);
-
     public void Emit(TInput? obj)
     {
         var result = Function.Invoke(obj);
-        foreach (var downstream in Downstreams)
-            downstream.Emit(result);
+        PushDownstream(result);
     }
 }
