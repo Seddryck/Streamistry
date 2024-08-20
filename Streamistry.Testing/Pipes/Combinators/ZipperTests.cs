@@ -26,6 +26,22 @@ public class ZipperTests
     }
 
     [Test]
+    public void Emit_ZipWhenBothEmittedReversed_Successful()
+    {
+        var first = new Pipeline<char>();
+        var second = new Pipeline<int>();
+        var combinator = new Zipper<char, int, string>(first, second, (x, y) => new string(x, y));
+        var sink = new MemorySink<string>(combinator);
+
+        second.Emit(5);
+        Assert.That(sink.State, Has.Count.EqualTo(0));
+
+        first.Emit('*');
+        Assert.That(sink.State, Has.Count.EqualTo(1));
+        Assert.That(sink.State.Last(), Is.EqualTo("*****"));
+    }
+
+    [Test]
     public void Emit_ZipWhenBothEmittedNotInSync_Successful()
     {
         var first = new Pipeline<char>();
