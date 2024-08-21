@@ -23,4 +23,15 @@ public class PluckerTests
         pipeline.Emit(new Human("Albert Einstein", new DateOnly(1879, 3, 14)));
         Assert.That(sink.State.Last(), Is.EqualTo(new DateOnly(1879, 3, 14)));
     }
+
+    [Test]
+    public void Emit_HumanPluckerOnBirthMonth_Integer()
+    {
+        var pipeline = new Pipeline<Human>();
+        var plucker = new Plucker<Human, int>(pipeline, h => h.BirthDay.Month);
+        var sink = new MemorySink<int>(plucker);
+
+        pipeline.Emit(new Human("Albert Einstein", new DateOnly(1879, 3, 14)));
+        Assert.That(sink.State.Last(), Is.EqualTo(3));
+    }
 }
