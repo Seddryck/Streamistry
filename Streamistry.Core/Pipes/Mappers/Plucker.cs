@@ -15,22 +15,40 @@ public class Plucker<TInput, TOutput> : Mapper<TInput, TOutput>
 
     private static TOutput? RetrieveProperty(TInput? input, Expression<Func<TInput, TOutput?>> lambda)
     {
-        var propInfo = GetPropertyInfo(lambda);
-        return (TOutput?)propInfo.GetValue(input, null);
+        if (input is null)
+            return default;
+
+        return (TOutput?)GetNestedPropertyValue(input, lambda);
     }
 
-    private static PropertyInfo GetPropertyInfo(Expression<Func<TInput, TOutput?>> lambda)
+    public static object? GetNestedPropertyValue(object target, LambdaExpression lambda)
     {
-        if (lambda.Body is not MemberExpression member)
+        MemberExpression? expr;
+        if (lambda.Body is not MemberExpression)
             throw new ArgumentException($"Expression '{lambda}' refers to a method, not a property.");
 
-        if (member.Member is not PropertyInfo propInfo)
-            throw new ArgumentException($"Expression '{lambda}' refers to a field, not a property.");
+        if (lambda.Body is UnaryExpression unaryExpression)
+            expr = unaryExpression.Operand as MemberExpression ?? throw new InvalidOperationException();
+        else
+            expr = lambda.Body as MemberExpression;
 
-        var type = typeof(TInput);
-        if (propInfo.ReflectedType != null && type != propInfo.ReflectedType && !type.IsSubclassOf(propInfo.ReflectedType))
-            throw new ArgumentException($"Expression '{lambda}' refers to a property that is not a property from type {type}.");
+        var members = new Stack<MemberExpression>();
 
-        return propInfo;
+        while (expr != null)
+        {
+            members.Push(expr);
+            expr = expr.Expression as MemberExpression;
+        }
+
+        // Now we evaluate them from root to leaf
+        object? item = target;
+        while (members.Count > 0)
+        {
+            var memberExpression = members.Pop();
+            var propertyInfo = (memberExpression.Member as PropertyInfo)
+                ?? throw new ArgumentException("Member is not a property");
+            item = propertyInfo.GetValue(item);
+        }
+        return item;
     }
 }
