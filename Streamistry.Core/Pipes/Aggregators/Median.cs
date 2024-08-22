@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -37,7 +37,7 @@ public struct MedianState<T>(int count, IEnumerable<T> list) where T : INumber<T
         var right = list.ElementAt((count) / 2);
         if (left == right)
             return left;
-        return (left / T.CreateChecked(2) + right / T.CreateChecked(2));
+        return ((left / T.CreateChecked(2)) + (right / T.CreateChecked(2)));
     }
 
     public static readonly MedianState<T> @Default = new();
