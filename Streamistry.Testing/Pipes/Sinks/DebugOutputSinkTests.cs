@@ -38,7 +38,7 @@ public class DebugOutputSinkTests
         var sink = new DebugOutputSink<int>(pipeline);
         sink.Emit(0);
 
-        Assert.That(output.GetOuput(), Is.EqualTo("0\r\n"));
+        Assert.That(output.GetOuput(), Is.EqualTo(">>> 0\r\n"));
     }
 
     [Test]
@@ -52,6 +52,6 @@ public class DebugOutputSinkTests
         sink.Emit("World");
         sink.Emit("!");
 
-        Assert.That(output.GetOuput(), Is.EqualTo("Hello\r\nWorld\r\n!\r\n"));
+        Assert.That(output.GetOuput(), Is.EqualTo(">>> Hello\r\n>>> World\r\n>>> !\r\n"));
     }
 }

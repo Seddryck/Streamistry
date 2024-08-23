@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Streamistry.Telemetry;
 
 namespace Streamistry;
 
@@ -24,11 +25,15 @@ internal class Splitter<TInput, TOutput> : ChainablePipe<TOutput>, IProcessableP
 
     public void Emit(TInput? obj)
     {
-        var results = Function.Invoke(obj);
+        var results = Invoke(obj);
         if (results is null)
             PushDownstream(default);
         else
             foreach (var result in results)
                 PushDownstream(result);
     }
+
+    [Telemetry]
+    protected TOutput[]? Invoke(TInput? obj)
+        => Function.Invoke(obj);
 }
