@@ -13,5 +13,4 @@ public sealed class TelemetryProvider
         => Tracer = tracer;
 
     public static ITracer GetTracer() => Tracer;
-
 }

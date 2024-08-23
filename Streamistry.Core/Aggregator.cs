@@ -35,6 +35,5 @@ public class Aggregator<TSource, TAccumulate, TResult> : ChainablePipe<TResult>,
     {
         State = Accumulator.Invoke(State, obj);
         return Selector.Invoke(State);
-
     }
 }
