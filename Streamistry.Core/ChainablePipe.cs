@@ -12,6 +12,6 @@ public abstract class ChainablePipe<T> : IChainablePipe<T>
     public void RegisterDownstream(Action<T?> action)
         => Downstream += action;
 
-    public void PushDownstream(T? obj)
+    protected virtual void PushDownstream(T? obj)
         => Downstream?.Invoke(obj);
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Streamistry.Telemetry;
 
 namespace Streamistry;
 
@@ -24,8 +25,9 @@ public class Mapper<TInput, TOutput> : ChainablePipe<TOutput>, IProcessablePipe<
     }
 
     public void Emit(TInput? obj)
-    {
-        var result = Function.Invoke(obj);
-        PushDownstream(result);
-    }
+        => PushDownstream(Invoke(obj));
+
+    [Telemetry]
+    protected TOutput? Invoke(TInput? obj)
+        => Function.Invoke(obj);
 }

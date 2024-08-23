@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Streamistry.Telemetry;
 
 namespace Streamistry;
 
@@ -28,7 +29,7 @@ public abstract class Combinator<TFirst, TSecond, TResult> : ChainablePipe<TResu
     public void EmitFirst(TFirst? first)
     {
         if (TryGetElement<TSecond>(out var second))
-            PushDownstream(Function.Invoke(first, second));
+            PushDownstream(Invoke(first, second));
         else
             Queue(first);
     }
@@ -36,10 +37,14 @@ public abstract class Combinator<TFirst, TSecond, TResult> : ChainablePipe<TResu
     public void EmitSecond(TSecond? second)
     {
         if (TryGetElement<TFirst>(out var first))
-            PushDownstream(Function.Invoke(first, second));
+            PushDownstream(Invoke(first, second));
         else
             Queue(second);
     }
+
+    [Telemetry]
+    protected TResult? Invoke(TFirst? first, TSecond? second)
+        => Function.Invoke(first, second);
 
     protected abstract bool TryGetElement<T>(out T? value);
     protected abstract void Queue<T>(T value);

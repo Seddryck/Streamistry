@@ -14,5 +14,8 @@ public class DebugOutputSink<T> : Sink<T>
     { }
 
     public static void Process(T? obj)
-        => Console.WriteLine(obj);
+    {
+        Console.Write(">>> ");
+        Console.WriteLine(obj);
+    }
 }
