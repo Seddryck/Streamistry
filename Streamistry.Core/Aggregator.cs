@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Streamistry.Telemetry;
+using Streamistry.Observability;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Streamistry;
@@ -21,7 +21,8 @@ public class Aggregator<TSource, TAccumulate, TResult> : ChainablePipe<TResult>,
     public Func<TAccumulate?, TResult?> Selector { get; }
     private TAccumulate? State { get; set; }
 
-    public Aggregator(IChainablePipe<TSource> upstream, Func<TAccumulate?, TSource?, TAccumulate?> accumulator, Func<TAccumulate?,TResult?> selector, TAccumulate? seed = default)
+    public Aggregator(IChainablePipe<TSource> upstream, Func<TAccumulate?, TSource?, TAccumulate?> accumulator, Func<TAccumulate?, TResult?> selector, TAccumulate? seed = default)
+        : base(upstream.GetObservabilityProvider())
     {
         upstream.RegisterDownstream(Emit);
         (Accumulator, Selector, State) = (accumulator, selector, seed);
@@ -30,7 +31,7 @@ public class Aggregator<TSource, TAccumulate, TResult> : ChainablePipe<TResult>,
     public void Emit(TSource? obj)
         => PushDownstream(Invoke(obj));
 
-    [Telemetry]
+    [Trace]
     protected TResult? Invoke(TSource? obj)
     {
         State = Accumulator.Invoke(State, obj);

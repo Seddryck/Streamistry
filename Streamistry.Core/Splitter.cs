@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Streamistry.Telemetry;
+using Streamistry.Observability;
 
 namespace Streamistry;
 
@@ -18,6 +18,7 @@ internal class Splitter<TInput, TOutput> : ChainablePipe<TOutput>, IProcessableP
     public Func<TInput?, TOutput[]?> Function { get; init; }
 
     public Splitter(IChainablePipe<TInput> upstream, Func<TInput?, TOutput[]?> function)
+        : base(upstream.GetObservabilityProvider())
     {
         upstream.RegisterDownstream(Emit);
         Function = function;
@@ -33,7 +34,7 @@ internal class Splitter<TInput, TOutput> : ChainablePipe<TOutput>, IProcessableP
                 PushDownstream(result);
     }
 
-    [Telemetry]
+    [Trace]
     protected TOutput[]? Invoke(TInput? obj)
         => Function.Invoke(obj);
 }

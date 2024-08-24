@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
+using Streamistry.Observability;
 using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Streamistry.Pipes.Sources;
@@ -22,7 +23,8 @@ public class GlobbingSource<TOutput> : Source<TOutput>
     public GlobbingSource(string directory, string[] globs)
         : this(directory, globs, []) { }
 
-    public GlobbingSource(string directory, string[] includeGlobs, string[] excludeGlobs)
+    public GlobbingSource(string directory, string[] includeGlobs, string[] excludeGlobs, ObservabilityProvider? provider = null)
+        : base(provider)
     {
         Directory = new DirectoryInfoWrapper(new DirectoryInfo(directory));
         Matcher.AddIncludePatterns(includeGlobs);

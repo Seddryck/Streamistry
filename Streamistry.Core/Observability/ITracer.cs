@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Streamistry.Telemetry;
+namespace Streamistry.Observability;
 public interface ITracer
 {
     IDisposable? StartActiveSpan(string spanName);

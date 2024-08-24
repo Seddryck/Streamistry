@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
 using NUnit.Framework;
 using Streamistry.Pipes.Sinks;
-using Streamistry.Telemetry;
+using Streamistry.Observability;
 
-namespace Streamistry.Testing.Telemetry;
+namespace Streamistry.Testing.Observability;
 public class ConsoleTracerTests
 {
     private class ConsoleOutput : IDisposable
@@ -32,10 +32,10 @@ public class ConsoleTracerTests
     [Test]
     public void Set_ConsoleTracer_Used()
     {
-        _ = new TelemetryProvider(new ConsoleTracer());
+        var provider = new ObservabilityProvider(new ConsoleTracer());
 
         using var output = new ConsoleOutput();
-        var pipeline = new Pipeline<int>();
+        var pipeline = new Pipeline<int>(provider);
         var mapper = new Mapper<int, int>(pipeline, x => ++x);
         var sink = new MemorySink<int>(mapper);
         mapper.Emit(0);
@@ -43,7 +43,6 @@ public class ConsoleTracerTests
         Assert.That(sink.State.First(), Is.EqualTo(1)); Assert.Multiple(() =>
         {
             Assert.That(output.GetOuput(), Does.StartWith("Starting span 'Mapper "));
-
             Assert.That(output.GetOuput(), Does.Contain("Ending span 'Mapper "));
             Assert.That(output.GetOuput(), Does.EndWith("ticks\r\n"));
         });

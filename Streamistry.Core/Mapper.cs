@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Streamistry.Telemetry;
+using Streamistry.Observability;
 
 namespace Streamistry;
 
@@ -19,6 +19,7 @@ public class Mapper<TInput, TOutput> : ChainablePipe<TOutput>, IProcessablePipe<
     public Func<TInput?, TOutput?> Function { get; init; }
 
     public Mapper(IChainablePipe<TInput> upstream, Func<TInput?, TOutput?> function)
+    : base(upstream.GetObservabilityProvider())
     {
         upstream.RegisterDownstream(Emit);
         Function = function;
@@ -27,7 +28,7 @@ public class Mapper<TInput, TOutput> : ChainablePipe<TOutput>, IProcessablePipe<
     public void Emit(TInput? obj)
         => PushDownstream(Invoke(obj));
 
-    [Telemetry]
+    [Trace]
     protected TOutput? Invoke(TInput? obj)
         => Function.Invoke(obj);
 }

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Streamistry.Telemetry;
+using Streamistry.Observability;
 
 namespace Streamistry;
 
@@ -19,6 +20,7 @@ public abstract class Combinator<TFirst, TSecond, TResult> : ChainablePipe<TResu
     public Func<TFirst?, TSecond?, TResult?> Function { get; init; }
 
     public Combinator(IChainablePipe<TFirst> firstUpstream, IChainablePipe<TSecond> secondUpstream, Func<TFirst?, TSecond?, TResult?> function)
+    : base(firstUpstream.GetObservabilityProvider())
     {
         firstUpstream.RegisterDownstream(EmitFirst);
         secondUpstream.RegisterDownstream(EmitSecond);
@@ -42,7 +44,7 @@ public abstract class Combinator<TFirst, TSecond, TResult> : ChainablePipe<TResu
             Queue(second);
     }
 
-    [Telemetry]
+    [Trace]
     protected TResult? Invoke(TFirst? first, TSecond? second)
         => Function.Invoke(first, second);
 
