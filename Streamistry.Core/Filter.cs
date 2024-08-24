@@ -18,6 +18,7 @@ public class Filter<TInput> : ChainablePipe<TInput>, IProcessablePipe<TInput>
     public Func<TInput?, bool> Predicate { get; init; }
 
     public Filter(IChainablePipe<TInput> upstream, Func<TInput?, bool> predicate)
+    : base(upstream.GetObservabilityProvider())
     {
         upstream.RegisterDownstream(Emit);
         Predicate = predicate;

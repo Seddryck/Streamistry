@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace Streamistry.Observability;
 public sealed class ObservabilityProvider
 {
-    private static ITracer Tracer { get; set; } = new NullTracer();
+    private ITracer Tracer { get; set; } = new NullTracer();
 
     public ObservabilityProvider(ITracer tracer)
         => Tracer = tracer;
 
-    public static ITracer GetTracer() => Tracer;
+    public ITracer GetTracer() => Tracer;
 }

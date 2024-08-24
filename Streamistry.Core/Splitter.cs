@@ -18,6 +18,7 @@ internal class Splitter<TInput, TOutput> : ChainablePipe<TOutput>, IProcessableP
     public Func<TInput?, TOutput[]?> Function { get; init; }
 
     public Splitter(IChainablePipe<TInput> upstream, Func<TInput?, TOutput[]?> function)
+        : base(upstream.GetObservabilityProvider())
     {
         upstream.RegisterDownstream(Emit);
         Function = function;

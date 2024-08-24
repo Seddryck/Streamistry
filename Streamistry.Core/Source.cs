@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Streamistry.Observability;
 
 namespace Streamistry;
 
@@ -13,6 +15,10 @@ namespace Streamistry;
 /// <typeparam name="TOutput">The type of the elements in both the input and output streams.</typeparam>
 public abstract class Source<TOutput> : ChainablePipe<TOutput>
 {
+    protected Source(ObservabilityProvider? provider)
+        : base(provider)
+    { }
+
     private bool IsStarted { get; set; }
 
     public void Start()
