@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
 using NUnit.Framework;
 using Streamistry.Pipes.Sinks;
-using Streamistry.Telemetry;
+using Streamistry.Observability;
 
-namespace Streamistry.Testing.Telemetry;
+namespace Streamistry.Testing.Observability;
 public class ConsoleTracerTests
 {
     private class ConsoleOutput : IDisposable
@@ -32,7 +32,7 @@ public class ConsoleTracerTests
     [Test]
     public void Set_ConsoleTracer_Used()
     {
-        _ = new TelemetryProvider(new ConsoleTracer());
+        _ = new ObservabilityProvider(new ConsoleTracer());
 
         using var output = new ConsoleOutput();
         var pipeline = new Pipeline<int>();

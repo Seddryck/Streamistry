@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Streamistry.Telemetry;
+using Streamistry.Observability;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Streamistry;
@@ -29,7 +29,7 @@ public class Filter<TInput> : ChainablePipe<TInput>, IProcessablePipe<TInput>
             PushDownstream(obj);
     }
 
-    [Telemetry]
+    [Trace]
     protected bool Invoke(TInput? input)
         => Predicate.Invoke(input);
 }

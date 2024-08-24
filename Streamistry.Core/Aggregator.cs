@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Streamistry.Telemetry;
+using Streamistry.Observability;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Streamistry;
@@ -30,7 +30,7 @@ public class Aggregator<TSource, TAccumulate, TResult> : ChainablePipe<TResult>,
     public void Emit(TSource? obj)
         => PushDownstream(Invoke(obj));
 
-    [Telemetry]
+    [Trace]
     protected TResult? Invoke(TSource? obj)
     {
         State = Accumulator.Invoke(State, obj);

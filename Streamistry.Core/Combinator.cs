@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Streamistry.Telemetry;
+using Streamistry.Observability;
 
 namespace Streamistry;
 
@@ -42,7 +42,7 @@ public abstract class Combinator<TFirst, TSecond, TResult> : ChainablePipe<TResu
             Queue(second);
     }
 
-    [Telemetry]
+    [Trace]
     protected TResult? Invoke(TFirst? first, TSecond? second)
         => Function.Invoke(first, second);
 

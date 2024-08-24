@@ -2,13 +2,13 @@
 using System.Transactions;
 using MethodBoundaryAspect.Fody.Attributes;
 
-namespace Streamistry.Telemetry;
+namespace Streamistry.Observability;
 
-public sealed class TelemetryAttribute : OnMethodBoundaryAspect
+public sealed class TraceAttribute : OnMethodBoundaryAspect
 {
     public override void OnEntry(MethodExecutionArgs args)
     {
-        args.MethodExecutionTag = TelemetryProvider.GetTracer().StartActiveSpan(args.Instance.GetType().Name.Split('`')[0]);
+        args.MethodExecutionTag = ObservabilityProvider.GetTracer().StartActiveSpan(args.Instance.GetType().Name.Split('`')[0]);
     }
 
     public override void OnExit(MethodExecutionArgs args)
