@@ -11,24 +11,6 @@ namespace Streamistry.Testing.Pipes.Sinks;
 
 public class DebugOutputSinkTests
 {
-    private class ConsoleOutput : IDisposable
-    {
-        private readonly StringWriter stringWriter = new();
-        private readonly TextWriter originalOutput = Console.Out;
-
-        public ConsoleOutput()
-            => Console.SetOut(stringWriter);
-
-        public string GetOuput()
-            => stringWriter.ToString();
-
-        public void Dispose()
-        {
-            Console.SetOut(originalOutput);
-            stringWriter.Dispose();
-        }
-    }
-
     [Test]
     public void Emit_DisplayOneElement_Successful()
     {

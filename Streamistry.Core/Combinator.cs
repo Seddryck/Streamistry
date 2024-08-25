@@ -18,12 +18,13 @@ namespace Streamistry;
 public abstract class Combinator<TFirst, TSecond, TResult> : ChainablePipe<TResult>
 {
     public Func<TFirst?, TSecond?, TResult?> Function { get; init; }
+    protected int BranchesCompleted { get; set; }
 
     public Combinator(IChainablePipe<TFirst> firstUpstream, IChainablePipe<TSecond> secondUpstream, Func<TFirst?, TSecond?, TResult?> function)
     : base(firstUpstream.GetObservabilityProvider())
     {
-        firstUpstream.RegisterDownstream(EmitFirst);
-        secondUpstream.RegisterDownstream(EmitSecond);
+        firstUpstream.RegisterDownstream(EmitFirst, Complete);
+        secondUpstream.RegisterDownstream(EmitSecond, Complete);
 
         Function = function;
     }
@@ -42,6 +43,16 @@ public abstract class Combinator<TFirst, TSecond, TResult> : ChainablePipe<TResu
             PushDownstream(Invoke(first, second));
         else
             Queue(second);
+    }
+
+    public override void Complete()
+    {
+        BranchesCompleted += 1;
+        if (BranchesCompleted > 1)
+        {
+            BranchesCompleted = 0;
+            PushComplete();
+        }
     }
 
     [Trace]
