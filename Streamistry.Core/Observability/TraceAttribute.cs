@@ -8,7 +8,10 @@ public sealed class TraceAttribute : OnMethodBoundaryAspect
 {
     public override void OnEntry(MethodExecutionArgs args)
     {
-        args.MethodExecutionTag = (args.Instance as IObservablePipe)?.GetObservabilityProvider()?.GetTracer().StartActiveSpan(args.Instance.GetType().Name.Split('`')[0]);
+        args.MethodExecutionTag = (args.Instance as IObservablePipe)
+            ?.GetObservabilityProvider()
+            ?.GetTracer()
+            .StartActiveSpan(args.Instance.GetType().Name.Split('`')[0]);
     }
 
     public override void OnExit(MethodExecutionArgs args)

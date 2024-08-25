@@ -25,6 +25,7 @@ public class Mapper<TInput, TOutput> : ChainablePipe<TOutput>, IProcessablePipe<
         Function = function;
     }
 
+    [Meter]
     public void Emit(TInput? obj)
         => PushDownstream(Invoke(obj));
 
