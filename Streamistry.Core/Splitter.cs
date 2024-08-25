@@ -20,10 +20,11 @@ internal class Splitter<TInput, TOutput> : ChainablePipe<TOutput>, IProcessableP
     public Splitter(IChainablePipe<TInput> upstream, Func<TInput?, TOutput[]?> function)
         : base(upstream.GetObservabilityProvider())
     {
-        upstream.RegisterDownstream(Emit);
+        upstream.RegisterDownstream(Emit, Complete);
         Function = function;
     }
 
+    [Meter]
     public void Emit(TInput? obj)
     {
         var results = Invoke(obj);

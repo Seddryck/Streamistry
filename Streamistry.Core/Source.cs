@@ -36,6 +36,7 @@ public abstract class Source<TOutput> : ChainablePipe<TOutput>
     {
         while (IsStarted && TryReadNext(out var item))
             PushDownstream(item);
+        PushComplete();
     }
 
     protected abstract bool TryReadNext(out TOutput? item);

@@ -13,11 +13,12 @@ public class Sink<T> : IProcessablePipe<T>, IObservablePipe
 
     public Sink(IChainablePipe<T> upstream, Action<T?> function)
     {
-        upstream.RegisterDownstream(Emit);
+        upstream.RegisterDownstream(Emit, null);
         RegisterObservability(upstream.GetObservabilityProvider());
         Function = function;
     }
 
+    [Meter]
     public void Emit(T? obj)
         => Invoke(obj);
 

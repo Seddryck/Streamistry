@@ -21,7 +21,7 @@ public class Mapper<TInput, TOutput> : ChainablePipe<TOutput>, IProcessablePipe<
     public Mapper(IChainablePipe<TInput> upstream, Func<TInput?, TOutput?> function)
     : base(upstream.GetObservabilityProvider())
     {
-        upstream.RegisterDownstream(Emit);
+        upstream.RegisterDownstream(Emit, Complete);
         Function = function;
     }
 
