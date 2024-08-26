@@ -30,6 +30,6 @@ public class Mapper<TInput, TOutput> : ChainablePipe<TOutput>, IProcessablePipe<
         => PushDownstream(Invoke(obj));
 
     [Trace]
-    protected TOutput? Invoke(TInput? obj)
+    protected virtual TOutput? Invoke(TInput? obj)
         => Function.Invoke(obj);
 }
