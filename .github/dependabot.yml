@@ -6,14 +6,11 @@
 version: 2
 updates:
   - package-ecosystem: "nuget" 
-    directory: "/Streamistry.Core/" 
+    directories:
+      - "/Streamistry.*/" 
     schedule:
-      interval: "weekly"
+      interval: "daily"
     labels:
       - "dependency-update"
-  - package-ecosystem: "nuget" 
-    directory: "/Streamistry.Testing/"
-    schedule:
-      interval: "weekly"
-    labels:
-      - "dependency-update"
+    commit-message:
+      prefix: "chore"
