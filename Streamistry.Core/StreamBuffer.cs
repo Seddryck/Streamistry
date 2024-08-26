@@ -31,10 +31,7 @@ public class StreamBuffer<T> : ChainablePipe<T>, IProcessablePipe<T>
     {
         Invoke(obj);
         if (MaxCapacity.HasValue && Store.Count >= MaxCapacity.Value)
-        {
             Complete();
-            Store.Clear();
-        }
     }
             
     [Trace]
@@ -45,6 +42,7 @@ public class StreamBuffer<T> : ChainablePipe<T>, IProcessablePipe<T>
     {
         foreach (var item in Store)
             PushDownstream(item);
+        Store.Clear();
         PushComplete();
     }
 }

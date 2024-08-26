@@ -7,28 +7,21 @@ using Mono.Cecil;
 using Streamistry.Observability;
 
 namespace Streamistry;
-public abstract class ChainablePipe<T> : IChainablePipe<T>, IObservablePipe
+public abstract class ChainablePipe<T> : ObservablePipe, IChainablePipe<T>
 {
     private Action<T?>? Downstream { get; set; }
     private Action? Completion { get; set; }
 
-    protected ObservabilityProvider? Observability { get; private set; }
+    protected ChainablePipe(ObservabilityProvider? observability)
+        : base(observability)
+    { }
 
     public void RegisterDownstream(Action<T?> downstream, Action? completion)
     {
         Downstream += downstream;
         Completion += completion;
     }
-
-    protected ChainablePipe(ObservabilityProvider? observability)
-        => RegisterObservability(observability);
-
-    public void RegisterObservability(ObservabilityProvider? observability)
-        => Observability = observability;
-
-    public ObservabilityProvider? GetObservabilityProvider()
-        => Observability;
-
+    
     protected void PushDownstream(T? obj)
         => Downstream?.Invoke(obj);
 

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Streamistry.Pipes.Pipelines;
 using Streamistry.Pipes.Sinks;
 using Streamistry.Pipes.Sources;
 
@@ -15,7 +14,7 @@ public class EnumerableSourceTests
     public void Read_ThreeElements_Successful()
     {
         var source = new EnumerableSource<int>([1,11,4]);
-        var pipeline = new SourcePipeline<int>(source);
+        var pipeline = new Pipeline(source);
         var sink = new MemorySink<int>(source);
 
         pipeline.Start();

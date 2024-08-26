@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Streamistry.Pipes.Pipelines;
 using Streamistry.Pipes.Sinks;
 using Streamistry.Pipes.Sources;
 
@@ -38,7 +37,7 @@ public class GlobbingSourceTests
     public void Read_ThreeElements_Successful()
     {
         var source = new GlobbingSource<int>(".", $"*{Extension}");
-        var pipeline = new SourcePipeline<int>(source);
+        var pipeline = new Pipeline(source);
         var sink = new MemorySink<int>(source);
 
         pipeline.Start();

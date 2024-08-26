@@ -13,7 +13,7 @@ namespace Streamistry;
 /// The output stream is composed of elements that satisfy the predicate; elements that do not satisfy the predicate are excluded from the downstream stream.
 /// </summary>
 /// <typeparam name="TOutput">The type of the elements in both the input and output streams.</typeparam>
-public abstract class Source<TOutput> : ChainablePipe<TOutput>
+public abstract class Source<TOutput> : ChainablePipe<TOutput>, ISource
 {
     protected Source(ObservabilityProvider? provider)
         : base(provider)
@@ -40,4 +40,7 @@ public abstract class Source<TOutput> : ChainablePipe<TOutput>
     }
 
     protected abstract bool TryReadNext(out TOutput? item);
+
+    public void WaitOnPrepared(IPreparablePipe pipe)
+        => pipe.RegisterOnPrepared(Start);
 }
