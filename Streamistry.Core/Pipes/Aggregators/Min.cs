@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Numerics;
+using System.Linq.Expressions;
 
 namespace Streamistry.Pipes.Aggregators;
 
@@ -28,10 +29,11 @@ public struct MinState<T>() where T : INumber<T>
 
 public class Min<TInput> : Aggregator<TInput, MinState<TInput>, TInput> where TInput : INumber<TInput>
 {
-    public Min(IChainablePipe<TInput> upstream)
+    public Min(IChainablePipe<TInput> upstream, Expression<Action<Aggregator<TInput, MinState<TInput>, TInput>>>? completion = null)
         : base(upstream
             , (x, y) => x.Append(y)
             , (x) => x.Select()
-            , MinState<TInput>.Default)
+            , MinState<TInput>.Default
+            , completion)
     { }
 }

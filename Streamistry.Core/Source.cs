@@ -23,6 +23,8 @@ public abstract class Source<TOutput> : ChainablePipe<TOutput>, ISource
 
     public void Start()
     {
+        if (IsStarted)
+            return;
         IsStarted = true;
         Read();
     }
@@ -43,4 +45,7 @@ public abstract class Source<TOutput> : ChainablePipe<TOutput>, ISource
 
     public void WaitOnPrepared(IPreparablePipe pipe)
         => pipe.RegisterOnPrepared(Start);
+
+    public void WaitOnCompleted(IChainablePipe pipe)
+        => pipe.RegisterOnCompleted(Start);
 }
