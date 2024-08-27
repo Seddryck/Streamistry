@@ -10,7 +10,7 @@ namespace Streamistry;
 public abstract class ChainablePipe<T> : ObservablePipe, IChainablePipe<T>
 {
     private Action<T?>? Downstream { get; set; }
-    private Action? Completion { get; set; }
+    protected Action? Completion { get; set; }
 
     protected ChainablePipe(ObservabilityProvider? observability)
         : base(observability)
@@ -21,7 +21,12 @@ public abstract class ChainablePipe<T> : ObservablePipe, IChainablePipe<T>
         Downstream += downstream;
         Completion += completion;
     }
-    
+
+    public void RegisterOnCompleted(Action? completion)
+    {
+        Completion += completion;
+    }
+
     protected void PushDownstream(T? obj)
         => Downstream?.Invoke(obj);
 

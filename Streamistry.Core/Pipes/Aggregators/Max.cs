@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Numerics;
+using System.Linq.Expressions;
 
 namespace Streamistry.Pipes.Aggregators;
 
@@ -28,10 +29,11 @@ public struct MaxState<T>() where T : INumber<T>
 
 public class Max<TInput> : Aggregator<TInput, MaxState<TInput>, TInput> where TInput : INumber<TInput>
 {
-    public Max(IChainablePipe<TInput> upstream)
+    public Max(IChainablePipe<TInput> upstream, Expression<Action<Aggregator<TInput, MaxState<TInput>, TInput>>>? completion = null)
         : base(upstream
             , (x, y) => x.Append(y)
             , (x) => x.Select()
-            , MaxState<TInput>.Default)
+            , MaxState<TInput>.Default
+            , completion)
     { }
 }
