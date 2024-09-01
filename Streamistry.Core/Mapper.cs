@@ -18,15 +18,16 @@ public class Mapper<TInput, TOutput> : ChainablePipe<TOutput>, IProcessablePipe<
 {
     public Func<TInput?, TOutput?> Function { get; init; }
 
-    public Mapper(IChainablePipe<TInput> upstream, Func<TInput?, TOutput?> function)
-    : base(upstream.GetObservabilityProvider())
+    public Mapper(IChainablePort<TInput> upstream, Func<TInput?, TOutput?> function)
+    : base(upstream.Pipe.GetObservabilityProvider())
     {
-        upstream.RegisterDownstream(Emit, Complete);
+        upstream.RegisterDownstream(Emit);
+        upstream.Pipe.RegisterOnCompleted(Complete);
         Function = function;
     }
 
     [Meter]
-    public void Emit(TInput? obj)
+    public virtual void Emit(TInput? obj)
         => PushDownstream(Invoke(obj));
 
     [Trace]

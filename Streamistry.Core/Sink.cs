@@ -11,10 +11,10 @@ public class Sink<T> : IProcessablePipe<T>, IObservablePipe
     public Action<T?> Function { get; }
     protected ObservabilityProvider? Observability { get; private set; }
 
-    public Sink(IChainablePipe<T> upstream, Action<T?> function)
+    public Sink(IChainablePort<T> upstream, Action<T?> function)
     {
-        upstream.RegisterDownstream(Emit, null);
-        RegisterObservability(upstream.GetObservabilityProvider());
+        upstream.RegisterDownstream(Emit);
+        RegisterObservability(upstream.Pipe.GetObservabilityProvider());
         Function = function;
     }
 

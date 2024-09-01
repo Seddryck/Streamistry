@@ -23,10 +23,12 @@ public class Aggregator<TSource, TAccumulate, TResult> : ChainablePipe<TResult>,
     public TAccumulate? State { get; set; }
     private TAccumulate? Seed { get; }
 
+
     public Aggregator(IChainablePipe<TSource> upstream, Func<TAccumulate?, TSource?, TAccumulate?> accumulator, Func<TAccumulate?, TResult?> selector, TAccumulate? seed = default, Expression<Action<Aggregator<TSource, TAccumulate, TResult>>>? completion = null)
         : base(upstream.GetObservabilityProvider())
     {
-        upstream.RegisterDownstream(Emit, PushComplete);
+        upstream.RegisterDownstream(Emit);
+        upstream.Pipe.RegisterOnCompleted(PushComplete);
         (Accumulator, Selector, State, Seed) = (accumulator, selector, seed, seed);
         if (completion is not null)
             Completion += () => (completion!.Compile())(this);

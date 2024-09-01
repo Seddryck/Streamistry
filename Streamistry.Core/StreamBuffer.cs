@@ -19,10 +19,11 @@ public class StreamBuffer<T> : ChainablePipe<T>, IProcessablePipe<T>
     protected List<T?> Store { get; } = [];
     protected int? MaxCapacity { get; }
 
-    public StreamBuffer(IChainablePipe<T> upstream, int? maxCapacity = null)
-    : base(upstream.GetObservabilityProvider())
+    public StreamBuffer(IChainablePort<T> upstream, int? maxCapacity = null)
+    : base(upstream.Pipe.GetObservabilityProvider())
     {
-        upstream.RegisterDownstream(Emit, Complete);
+        upstream.RegisterDownstream(Emit);
+        upstream.Pipe.RegisterOnCompleted(Complete);
         MaxCapacity = maxCapacity;
     }
 
