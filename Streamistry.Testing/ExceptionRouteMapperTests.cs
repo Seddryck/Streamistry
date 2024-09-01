@@ -10,7 +10,6 @@ using Streamistry.Pipes.Sinks;
 namespace Streamistry.Testing;
 public class ExceptionRouterMapperTests
 {
-
     [Test]
     public void Emit_ValidData_MainOnly()
     {

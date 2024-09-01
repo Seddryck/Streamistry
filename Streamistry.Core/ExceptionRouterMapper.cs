@@ -42,6 +42,4 @@ public class ExceptionRouterMapper<TInput, TOutput> : Mapper<TInput, TOutput>, I
             return false;
         }
     }
-
-    
 }
