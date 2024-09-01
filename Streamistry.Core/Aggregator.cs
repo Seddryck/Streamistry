@@ -21,10 +21,11 @@ public class Aggregator<TSource, TAccumulate, TResult> : ChainablePipe<TResult>,
     public Func<TAccumulate?, TResult?> Selector { get; }
     private TAccumulate? State { get; set; }
 
-    public Aggregator(IChainablePipe<TSource> upstream, Func<TAccumulate?, TSource?, TAccumulate?> accumulator, Func<TAccumulate?, TResult?> selector, TAccumulate? seed = default)
-        : base(upstream.GetObservabilityProvider())
+    public Aggregator(IChainablePort<TSource> upstream, Func<TAccumulate?, TSource?, TAccumulate?> accumulator, Func<TAccumulate?, TResult?> selector, TAccumulate? seed = default)
+        : base(upstream.Pipe.GetObservabilityProvider())
     {
-        upstream.RegisterDownstream(Emit, PushComplete);
+        upstream.RegisterDownstream(Emit);
+        upstream.Pipe.RegisterCompletion(PushComplete);
         (Accumulator, Selector, State) = (accumulator, selector, seed);
     }
 

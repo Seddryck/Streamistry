@@ -17,10 +17,11 @@ public class Filter<TInput> : ChainablePipe<TInput>, IProcessablePipe<TInput>
 {
     public Func<TInput?, bool> Predicate { get; init; }
 
-    public Filter(IChainablePipe<TInput> upstream, Func<TInput?, bool> predicate)
-    : base(upstream.GetObservabilityProvider())
+    public Filter(IChainablePort<TInput> upstream, Func<TInput?, bool> predicate)
+    : base(upstream.Pipe.GetObservabilityProvider())
     {
-        upstream.RegisterDownstream(Emit, Complete);
+        upstream.RegisterDownstream(Emit);
+        upstream.Pipe.RegisterCompletion(Complete);
         Predicate = predicate;
     }
 

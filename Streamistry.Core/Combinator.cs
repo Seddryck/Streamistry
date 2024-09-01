@@ -20,11 +20,13 @@ public abstract class Combinator<TFirst, TSecond, TResult> : ChainablePipe<TResu
     public Func<TFirst?, TSecond?, TResult?> Function { get; init; }
     protected int BranchesCompleted { get; set; }
 
-    public Combinator(IChainablePipe<TFirst> firstUpstream, IChainablePipe<TSecond> secondUpstream, Func<TFirst?, TSecond?, TResult?> function)
-    : base(firstUpstream.GetObservabilityProvider())
+    public Combinator(IChainablePort<TFirst> firstUpstream, IChainablePipe<TSecond> secondUpstream, Func<TFirst?, TSecond?, TResult?> function)
+    : base(firstUpstream.Pipe.GetObservabilityProvider())
     {
-        firstUpstream.RegisterDownstream(EmitFirst, Complete);
-        secondUpstream.RegisterDownstream(EmitSecond, Complete);
+        firstUpstream.RegisterDownstream(EmitFirst);
+        firstUpstream.Pipe.RegisterCompletion(Complete);
+        secondUpstream.RegisterDownstream(EmitSecond);
+        secondUpstream.Pipe.RegisterCompletion(Complete);
 
         Function = function;
     }

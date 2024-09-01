@@ -5,7 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Streamistry;
-public interface IChainablePipe<T> : IObservablePipe
+public interface IChainablePipe<T> : IChainablePort<T>, IChainablePipe, IObservablePipe
 {
-    void RegisterDownstream(Action<T?> action, Action? complete);
+    void RegisterDownstream(Action<T?> downstream, Action? complete);
+}
+
+public interface IChainablePipe : IObservablePipe
+{
+    void RegisterCompletion(Action? complete);
+}
+
+public interface IChainablePort<T>
+{
+    void RegisterDownstream(Action<T?> action);
+    IChainablePipe Pipe { get; }
 }
