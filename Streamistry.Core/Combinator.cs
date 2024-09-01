@@ -24,9 +24,9 @@ public abstract class Combinator<TFirst, TSecond, TResult> : ChainablePipe<TResu
     : base(firstUpstream.Pipe.GetObservabilityProvider())
     {
         firstUpstream.RegisterDownstream(EmitFirst);
-        firstUpstream.Pipe.RegisterCompletion(Complete);
+        firstUpstream.Pipe.RegisterOnCompleted(Complete);
         secondUpstream.RegisterDownstream(EmitSecond);
-        secondUpstream.Pipe.RegisterCompletion(Complete);
+        secondUpstream.Pipe.RegisterOnCompleted(Complete);
 
         Function = function;
     }

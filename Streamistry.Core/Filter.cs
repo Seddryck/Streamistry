@@ -21,7 +21,7 @@ public class Filter<TInput> : ChainablePipe<TInput>, IProcessablePipe<TInput>
     : base(upstream.Pipe.GetObservabilityProvider())
     {
         upstream.RegisterDownstream(Emit);
-        upstream.Pipe.RegisterCompletion(Complete);
+        upstream.Pipe.RegisterOnCompleted(Complete);
         Predicate = predicate;
     }
 

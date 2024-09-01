@@ -23,7 +23,7 @@ public class StreamBuffer<T> : ChainablePipe<T>, IProcessablePipe<T>
     : base(upstream.Pipe.GetObservabilityProvider())
     {
         upstream.RegisterDownstream(Emit);
-        upstream.Pipe.RegisterCompletion(Complete);
+        upstream.Pipe.RegisterOnCompleted(Complete);
         MaxCapacity = maxCapacity;
     }
 

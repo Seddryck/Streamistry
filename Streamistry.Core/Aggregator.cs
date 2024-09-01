@@ -28,7 +28,7 @@ public class Aggregator<TSource, TAccumulate, TResult> : ChainablePipe<TResult>,
         : base(upstream.GetObservabilityProvider())
     {
         upstream.RegisterDownstream(Emit);
-        upstream.Pipe.RegisterCompletion(PushComplete);
+        upstream.Pipe.RegisterOnCompleted(PushComplete);
         (Accumulator, Selector, State, Seed) = (accumulator, selector, seed, seed);
         if (completion is not null)
             Completion += () => (completion!.Compile())(this);

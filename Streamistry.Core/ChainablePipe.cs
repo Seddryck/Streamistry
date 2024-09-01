@@ -23,10 +23,10 @@ public abstract class ChainablePipe<T> : ObservablePipe, IChainablePipe<T>, IObs
     public void RegisterDownstream(Action<T?> downstream, Action? completion)
     {
         RegisterDownstream(downstream);
-        RegisterCompletion(completion);
+        RegisterOnCompleted(completion);
     }
 
-    public void RegisterCompletion(Action? action)
+    public void RegisterOnCompleted(Action? action)
         => Completion += action;
     public void RegisterDownstream(Action<T?> action)
         => Main.RegisterDownstream(action);

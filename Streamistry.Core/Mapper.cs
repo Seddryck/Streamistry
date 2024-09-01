@@ -22,7 +22,7 @@ public class Mapper<TInput, TOutput> : ChainablePipe<TOutput>, IProcessablePipe<
     : base(upstream.Pipe.GetObservabilityProvider())
     {
         upstream.RegisterDownstream(Emit);
-        upstream.Pipe.RegisterCompletion(Complete);
+        upstream.Pipe.RegisterOnCompleted(Complete);
         Function = function;
     }
 

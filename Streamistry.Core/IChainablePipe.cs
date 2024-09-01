@@ -12,7 +12,7 @@ public interface IChainablePipe<T> : IChainablePort<T>, IChainablePipe
 
 public interface IChainablePipe : IObservablePipe
 {
-    void RegisterCompletion(Action? complete);
+    void RegisterOnCompleted(Action? complete);
 }
 
 public interface IChainablePort<T>
