@@ -13,6 +13,7 @@ public abstract class ChainablePipe<T> : ObservablePipe, IChainablePipe<T>, IObs
     protected Action? Completion { get; set; }
     public IChainablePipe Pipe { get => this; }
 
+
     protected ChainablePipe(ObservabilityProvider? observability)
         : base(observability)
     {
@@ -38,5 +39,4 @@ public abstract class ChainablePipe<T> : ObservablePipe, IChainablePipe<T>, IObs
 
     protected void PushComplete()
         => Completion?.Invoke();
-    
 }

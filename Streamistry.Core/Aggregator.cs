@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Streamistry.Observability;
@@ -19,14 +20,18 @@ public class Aggregator<TSource, TAccumulate, TResult> : ChainablePipe<TResult>,
 {
     public Func<TAccumulate?, TSource?, TAccumulate?> Accumulator { get; }
     public Func<TAccumulate?, TResult?> Selector { get; }
-    private TAccumulate? State { get; set; }
+    public TAccumulate? State { get; set; }
+    private TAccumulate? Seed { get; }
 
-    public Aggregator(IChainablePort<TSource> upstream, Func<TAccumulate?, TSource?, TAccumulate?> accumulator, Func<TAccumulate?, TResult?> selector, TAccumulate? seed = default)
-        : base(upstream.Pipe.GetObservabilityProvider())
+
+    public Aggregator(IChainablePipe<TSource> upstream, Func<TAccumulate?, TSource?, TAccumulate?> accumulator, Func<TAccumulate?, TResult?> selector, TAccumulate? seed = default, Expression<Action<Aggregator<TSource, TAccumulate, TResult>>>? completion = null)
+        : base(upstream.GetObservabilityProvider())
     {
         upstream.RegisterDownstream(Emit);
         upstream.Pipe.RegisterCompletion(PushComplete);
-        (Accumulator, Selector, State) = (accumulator, selector, seed);
+        (Accumulator, Selector, State, Seed) = (accumulator, selector, seed, seed);
+        if (completion is not null)
+            Completion += () => (completion!.Compile())(this);
     }
 
     [Meter]
@@ -39,4 +44,7 @@ public class Aggregator<TSource, TAccumulate, TResult> : ChainablePipe<TResult>,
         State = Accumulator.Invoke(State, obj);
         return Selector.Invoke(State);
     }
+
+    public virtual void Reset()
+        => State = Seed;
 }

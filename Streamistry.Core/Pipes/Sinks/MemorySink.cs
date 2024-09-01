@@ -17,4 +17,7 @@ public class MemorySink<T> : Sink<T>
     private MemorySink(IChainablePort<T> upstream, IList<T?> state)
         : base(upstream, state.Add)
         => State = state;
+
+    public void Clear()
+        => State.Clear();
 }
