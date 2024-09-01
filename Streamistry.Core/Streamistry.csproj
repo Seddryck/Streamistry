@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="JsonPath.Net" Version="1.1.4" />
     <PackageReference Include="MethodBoundaryAspect.Fody" Version="2.0.149" />
     <PackageReference Include="Mono.Cecil" Version="0.11.5" />
   </ItemGroup>
