@@ -41,7 +41,7 @@ public abstract class Combinator<TFirst, TSecond, TResult> : ChainablePipe<TResu
         if (TryGetElement(SecondUpstream, out var second))
             PushDownstream(Invoke(first, second));
         else
-            Queue(FirstUpstream, first);
+            Queue(FirstUpstream, first!);
     }
 
     public void EmitSecond(TSecond? second)
@@ -49,7 +49,7 @@ public abstract class Combinator<TFirst, TSecond, TResult> : ChainablePipe<TResu
         if (TryGetElement(FirstUpstream, out var first))
             PushDownstream(Invoke(first, second));
         else
-            Queue(SecondUpstream, second);
+            Queue(SecondUpstream, second!);
     }
 
     public override void Complete()
