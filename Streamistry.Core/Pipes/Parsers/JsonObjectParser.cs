@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -13,11 +14,12 @@ public class JsonObjectParser : StringParser<JsonObject>
         : base(upstream, new ParserDelegate<string, JsonObject>(TryParse))
     { }
 
-    private static bool TryParse(string? text, out JsonObject? value)
+
+    private static bool TryParse(string? text, [NotNullWhen(true)] out JsonObject? value)
     {
         value = null;
         if (text == null)
-            return true;
+            return false;
         try
         {
             value = (JsonObject)JsonNode.Parse(text)!;
