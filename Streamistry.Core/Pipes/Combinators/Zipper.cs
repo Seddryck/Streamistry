@@ -10,11 +10,11 @@ public class Zipper<TFirst, TSecond, TResult> : Combinator<TFirst, TSecond, TRes
     private Queue<TFirst?> FirstQueue { get; } = new();
     private Queue<TSecond?> SecondQueue { get; } = new();
 
-    public Zipper(IChainablePipe<TFirst> firstUpstream, IChainablePipe<TSecond> secondUpstream, Func<TFirst?, TSecond?, TResult?> function)
+    public Zipper(IChainablePort<TFirst> firstUpstream, IChainablePort<TSecond> secondUpstream, Func<TFirst?, TSecond?, TResult?> function)
         : base(firstUpstream, secondUpstream, function)
     { }
 
-    protected override bool TryGetElement<T>(out T? value) where T : default
+    protected override bool TryGetElement<T>(IChainablePort<T> upstream, out T? value) where T : default
     {
         if (typeof(T) == typeof(TFirst) && FirstQueue.TryDequeue(out var first))
         {
@@ -30,7 +30,7 @@ public class Zipper<TFirst, TSecond, TResult> : Combinator<TFirst, TSecond, TRes
         return false;
     }
 
-    protected override void Queue<T>(T value)
+    protected override void Queue<T>(IChainablePort<T> upstream, T value)
     {
         if (value is TFirst first)
             FirstQueue.Enqueue(first);

@@ -9,7 +9,7 @@ using Streamistry.Pipes.Sinks;
 using Streamistry.Pipes.Sources;
 
 namespace Streamistry.Testing;
-public class StreamBufferTests
+public class PipeBufferTests
 {
     [Test]
     public void WithoutBuffer_TwoSinks_Overlaps()
@@ -33,7 +33,7 @@ public class StreamBufferTests
         var pipeline = new Pipeline<int>();
         var mapper = new Mapper<int, int>(pipeline, x => x + 1);
         var firstSink = new DebugOutputSink<int>(mapper);
-        var buffer = new StreamBuffer<int>(mapper);
+        var buffer = new PipeBuffer<int>(mapper);
         var secondSink = new DebugOutputSink<int>(buffer);
 
         using var output = new ConsoleOutput();
@@ -53,7 +53,7 @@ public class StreamBufferTests
         var pipeline = new Pipeline<int>();
         var mapper = new Mapper<int, int>(pipeline, x => x + 1);
         var firstSink = new DebugOutputSink<int>(mapper);
-        var buffer = new StreamBuffer<int>(mapper, 3);
+        var buffer = new PipeBuffer<int>(mapper, 3);
         var secondSink = new DebugOutputSink<int>(buffer);
 
         using var output = new ConsoleOutput();
@@ -75,7 +75,7 @@ public class StreamBufferTests
         var source = new EnumerableSource<int>(Enumerable.Range(0, 4));
         var mapper = new Mapper<int, int>(source, x => x + 1);
         var firstSink = new DebugOutputSink<int>(mapper);
-        var buffer = new StreamBuffer<int>(mapper, 3);
+        var buffer = new PipeBuffer<int>(mapper, 3);
         var secondSink = new DebugOutputSink<int>(buffer);
 
         using var output = new ConsoleOutput();

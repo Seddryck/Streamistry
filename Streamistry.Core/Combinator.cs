@@ -19,8 +19,10 @@ public abstract class Combinator<TFirst, TSecond, TResult> : ChainablePipe<TResu
 {
     public Func<TFirst?, TSecond?, TResult?> Function { get; init; }
     protected int BranchesCompleted { get; set; }
+    protected IChainablePort<TFirst> FirstUpstream { get; }
+    protected IChainablePort<TSecond> SecondUpstream { get; }
 
-    public Combinator(IChainablePort<TFirst> firstUpstream, IChainablePipe<TSecond> secondUpstream, Func<TFirst?, TSecond?, TResult?> function)
+    public Combinator(IChainablePort<TFirst> firstUpstream, IChainablePort<TSecond> secondUpstream, Func<TFirst?, TSecond?, TResult?> function)
     : base(firstUpstream.Pipe.GetObservabilityProvider())
     {
         firstUpstream.RegisterDownstream(EmitFirst);
@@ -28,23 +30,26 @@ public abstract class Combinator<TFirst, TSecond, TResult> : ChainablePipe<TResu
         secondUpstream.RegisterDownstream(EmitSecond);
         secondUpstream.Pipe.RegisterOnCompleted(Complete);
 
+        FirstUpstream = firstUpstream;
+        SecondUpstream = secondUpstream;
+
         Function = function;
     }
 
     public void EmitFirst(TFirst? first)
     {
-        if (TryGetElement<TSecond>(out var second))
+        if (TryGetElement(SecondUpstream, out var second))
             PushDownstream(Invoke(first, second));
         else
-            Queue(first);
+            Queue(FirstUpstream, first);
     }
 
     public void EmitSecond(TSecond? second)
     {
-        if (TryGetElement<TFirst>(out var first))
+        if (TryGetElement(FirstUpstream, out var first))
             PushDownstream(Invoke(first, second));
         else
-            Queue(second);
+            Queue(SecondUpstream, second);
     }
 
     public override void Complete()
@@ -61,6 +66,6 @@ public abstract class Combinator<TFirst, TSecond, TResult> : ChainablePipe<TResu
     protected TResult? Invoke(TFirst? first, TSecond? second)
         => Function.Invoke(first, second);
 
-    protected abstract bool TryGetElement<T>(out T? value);
-    protected abstract void Queue<T>(T value);
+    protected abstract bool TryGetElement<T>(IChainablePort<T> upstream, out T? value);
+    protected abstract void Queue<T>(IChainablePort<T> upstream, T value);
 }

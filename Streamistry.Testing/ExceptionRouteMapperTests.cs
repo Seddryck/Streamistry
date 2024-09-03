@@ -14,7 +14,7 @@ public class ExceptionRouterMapperTests
     public void Emit_ValidData_MainOnly()
     {
         var pipeline = new Pipeline<int>();
-        var mapper = new ExceptionRouterMapper<int, int>(pipeline, x => 60 / x);
+        var mapper = new ExceptionMapper<int, int>(pipeline, x => 60 / x);
         var mainSink = new MemorySink<int>(mapper);
         var exceptionSink = new MemorySink<int>(mapper.Alternate);
         pipeline.Emit(10);
@@ -31,7 +31,7 @@ public class ExceptionRouterMapperTests
     public void Emit_InvalidData_ExceptionOnly()
     {
         var pipeline = new Pipeline<int>();
-        var mapper = new ExceptionRouterMapper<int, int>(pipeline, x => 60 / x);
+        var mapper = new ExceptionMapper<int, int>(pipeline, x => 60 / x);
         var mainSink = new MemorySink<int>(mapper);
         var exceptionSink = new MemorySink<int>(mapper.Alternate);
         pipeline.Emit(0);
@@ -45,7 +45,7 @@ public class ExceptionRouterMapperTests
     public void Emit_MixedDataNoExceptionPath_DontFail()
     {
         var pipeline = new Pipeline<int>();
-        var mapper = new ExceptionRouterMapper<int, int>(pipeline, x => 60 / x);
+        var mapper = new ExceptionMapper<int, int>(pipeline, x => 60 / x);
         var mainSink = new MemorySink<int>(mapper);
         pipeline.Emit(10);
         pipeline.Emit(0);
@@ -60,7 +60,7 @@ public class ExceptionRouterMapperTests
     public void Emit_MixedDataWithExceptionPath_DontFail()
     {
         var pipeline = new Pipeline<int>();
-        var mapper = new ExceptionRouterMapper<int, int>(pipeline, x => 60 / x);
+        var mapper = new ExceptionMapper<int, int>(pipeline, x => 60 / x);
         var mainSink = new MemorySink<int>(mapper);
         var exceptionSink = new MemorySink<int>(mapper.Alternate);
         pipeline.Emit(10);
@@ -78,7 +78,7 @@ public class ExceptionRouterMapperTests
     public void Emit_MixedDataWithExceptionPathAndExplicitMainPath_DontFail()
     {
         var pipeline = new Pipeline<int>();
-        var mapper = new ExceptionRouterMapper<int, int>(pipeline, x => 60 / x);
+        var mapper = new ExceptionMapper<int, int>(pipeline, x => 60 / x);
         var mainSink = new MemorySink<int>(mapper.Main);
         var exceptionSink = new MemorySink<int>(mapper.Alternate);
         pipeline.Emit(10);
