@@ -7,7 +7,7 @@ using Mono.Cecil;
 using Streamistry.Observability;
 
 namespace Streamistry;
-public abstract class ChainablePipe<T> : ObservablePipe, IChainablePipe<T>, IObservablePipe
+public abstract class ChainablePipe<T> : ObservablePipe, IChainablePipe<T>
 {
     public MainOutputPort<T> Main { get; }
     protected Action? Completion { get; set; }

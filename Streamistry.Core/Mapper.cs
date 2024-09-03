@@ -14,23 +14,17 @@ namespace Streamistry;
 /// </summary>
 /// <typeparam name="TInput">The type of the elements in the input stream.</typeparam>
 /// <typeparam name="TOutput">The type of the elements in the output stream after the function is applied.</typeparam>
-public class Mapper<TInput, TOutput> : ChainablePipe<TOutput>, IProcessablePipe<TInput>
+public class Mapper<TInput, TOutput> : SingleRouterPipe<TInput, TOutput>
 {
     public Func<TInput?, TOutput?> Function { get; init; }
 
     public Mapper(IChainablePort<TInput> upstream, Func<TInput?, TOutput?> function)
-    : base(upstream.Pipe.GetObservabilityProvider())
+    : base(upstream)
     {
-        upstream.RegisterDownstream(Emit);
-        upstream.Pipe.RegisterOnCompleted(Complete);
         Function = function;
     }
 
-    [Meter]
-    public virtual void Emit(TInput? obj)
-        => PushDownstream(Invoke(obj));
-
     [Trace]
-    protected virtual TOutput? Invoke(TInput? obj)
+    protected override TOutput? Invoke(TInput? obj)
         => Function.Invoke(obj);
 }

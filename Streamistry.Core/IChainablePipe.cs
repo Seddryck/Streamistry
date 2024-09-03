@@ -15,8 +15,12 @@ public interface IChainablePipe : IObservablePipe
     void RegisterOnCompleted(Action? complete);
 }
 
-public interface IChainablePort<T>
+public interface IChainablePort<T> : IChainablePort
 {
     void RegisterDownstream(Action<T?> action);
+}
+
+public interface IChainablePort
+{
     IChainablePipe Pipe { get; }
 }
