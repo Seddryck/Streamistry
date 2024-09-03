@@ -28,6 +28,7 @@ public abstract class ChainablePipe<T> : ObservablePipe, IChainablePipe<T>
 
     public void RegisterOnCompleted(Action? action)
         => Completion += action;
+
     public void RegisterDownstream(Action<T?> action)
         => Main.RegisterDownstream(action);
 

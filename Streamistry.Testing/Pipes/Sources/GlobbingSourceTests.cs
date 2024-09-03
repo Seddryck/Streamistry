@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Streamistry.Pipes.Sinks;
 using Streamistry.Pipes.Sources;
+using Streamistry.Testability;
 
 namespace Streamistry.Testing.Pipes.Sources;
 public class GlobbingSourceTests
@@ -38,10 +38,12 @@ public class GlobbingSourceTests
     {
         var source = new GlobbingSource<int>(".", $"*{Extension}");
         var pipeline = new Pipeline(source);
-        var sink = new MemorySink<int>(source);
-
-        pipeline.Start();
-        Assert.That(sink.State, Has.Count.EqualTo(3));
-        Assert.That(sink.State.Last(), Is.EqualTo(33));
+        Assert.Multiple(() =>
+        {
+            var results = source.GetOutputs(pipeline.Start);
+            Assert.That(results, Does.Contain(1));
+            Assert.That(results, Does.Contain(25));
+            Assert.That(results, Does.Contain(33));
+        });
     }
 }
