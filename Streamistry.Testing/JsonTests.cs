@@ -15,7 +15,7 @@ using Streamistry.Pipes.Splitters;
 namespace Streamistry.Testing;
 public class JsonTests
 {
-    private const string JsonFirst = @"
+    public const string JsonFirst = @"
     {
         ""user"": {
             ""name"": ""Albert Einstein"",
@@ -27,7 +27,7 @@ public class JsonTests
         }
     }";
 
-    private const string JsonSecond = @"
+    public const string JsonSecond = @"
     {
         ""user"": {
             ""name"": ""Nikola Tesla"",
@@ -39,7 +39,7 @@ public class JsonTests
         }
     }";
 
-    private const string JsonThird = @"
+    public const string JsonThird = @"
     {
         ""user"": {
             ""name"": ""John von Neumann"",
