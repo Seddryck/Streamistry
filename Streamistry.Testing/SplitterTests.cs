@@ -4,24 +4,32 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Streamistry.Pipes.Sinks;
+using Streamistry.Testability;
 
 namespace Streamistry.Testing;
 public class SplitterTests
 {
     [Test]
-    public void Mapper_InlineIncrement_Successful()
+    public void Emit_Splitter_Successful()
     {
-        var pipeline = new Pipeline<string>();
-        var mapper = new Splitter<string, string>(pipeline, x => x?.Split(';') ?? null);
-        var sink = new MemorySink<string>(mapper);
-        mapper.Emit("foo;bar;quark");
-
-        Assert.That(sink.State, Has.Count.EqualTo(3));
+        var pipeline = new Pipeline<string?>();
+        var splitter = new Splitter<string?, string?>(pipeline, x => x?.Split(';') ?? null);
         Assert.Multiple(() =>
         {
-            Assert.That(sink.State.First(), Is.EqualTo("foo"));
-            Assert.That(sink.State.Last(), Is.EqualTo("quark"));
+            Assert.That(splitter.EmitAndGetOutput("foo;bar;quark"), Is.EqualTo("quark"));
+            Assert.That(splitter.EmitAndGetManyOutputs("foo;bar;quark"), Is.EqualTo(new string[] { "foo", "bar", "quark" }));
+        });
+    }
+
+    [Test]
+    public void Emit_NullSplitter_Successful()
+    {
+        var pipeline = new Pipeline<string?>();
+        var splitter = new Splitter<string?, string?>(pipeline, x => x?.Split(';') ?? null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(splitter.EmitAndGetOutput(string.Empty), Is.EqualTo(string.Empty));
+            Assert.That(splitter.EmitAndGetOutput(null), Is.EqualTo(null));
         });
     }
 }

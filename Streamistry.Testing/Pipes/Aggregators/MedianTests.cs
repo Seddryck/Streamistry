@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Streamistry.Pipes.Aggregators;
-using Streamistry.Pipes.Sinks;
+using Streamistry.Testability;
 
 namespace Streamistry.Testing.Pipes.Aggregators;
 public class MedianTests
@@ -15,10 +15,7 @@ public class MedianTests
     {
         var pipeline = new Pipeline<int>();
         var aggregator = new Median<int>(pipeline);
-        var sink = new MemorySink<int>(aggregator);
-
-        aggregator.Emit(5);
-        Assert.That(sink.State.Last(), Is.EqualTo(5));
+        Assert.That(aggregator.EmitAndGetOutput(10), Is.EqualTo(10));
     }
 
     [Test]
@@ -26,13 +23,19 @@ public class MedianTests
     {
         var pipeline = new Pipeline<int>();
         var aggregator = new Median<int>(pipeline);
-        var sink = new MemorySink<int>(aggregator);
+        Assert.That(aggregator.EmitAndAnyOutput(15), Is.True);
+        Assert.That(aggregator.EmitAndAnyOutput(22), Is.True);
+        Assert.That(aggregator.EmitAndAnyOutput(10), Is.True);
+    }
 
-        aggregator.Emit(1);
-        aggregator.Emit(3);
-        aggregator.Emit(45);
-        Assert.That(sink.State, Has.Count.EqualTo(3));
-        Assert.That(sink.State.Last(), Is.EqualTo(3));
+    [Test]
+    public void Emit_ManyElements_CorrectResults()
+    {
+        var pipeline = new Pipeline<int>();
+        var aggregator = new Median<int>(pipeline);
+        Assert.That(aggregator.EmitAndGetOutput(15), Is.EqualTo(15));
+        Assert.That(aggregator.EmitAndGetOutput(21), Is.EqualTo(18));
+        Assert.That(aggregator.EmitAndGetOutput(10), Is.EqualTo(15));
     }
 
     [Test]
@@ -40,11 +43,8 @@ public class MedianTests
     {
         var pipeline = new Pipeline<int>();
         var aggregator = new Median<int>(pipeline);
-        var sink = new MemorySink<int>(aggregator);
-
         aggregator.Emit(2);
-        aggregator.Emit(3);
-        Assert.That(sink.State.Last(), Is.EqualTo(2));
+        Assert.That(aggregator.EmitAndGetOutput(3), Is.EqualTo(2));
     }
 
     [Test]
@@ -52,10 +52,7 @@ public class MedianTests
     {
         var pipeline = new Pipeline<int>();
         var aggregator = new Median<int, decimal>(pipeline);
-        var sink = new MemorySink<decimal>(aggregator);
-
         aggregator.Emit(2);
-        aggregator.Emit(3);
-        Assert.That(sink.State.Last(), Is.EqualTo(2.5m));
+        Assert.That(aggregator.EmitAndGetOutput(3), Is.EqualTo(2.5m));
     }
 }

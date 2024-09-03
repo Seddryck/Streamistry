@@ -7,6 +7,7 @@ using NUnit.Framework;
 using Streamistry.Pipes.Mappers;
 using Streamistry.Pipes.Sinks;
 using Streamistry.Pipes.Sources;
+using Streamistry.Testability;
 
 namespace Streamistry.Testing;
 public class SourceTests
@@ -19,16 +20,8 @@ public class SourceTests
 
         var pipeline = new Pipeline([firstSource, secondSource]);
         var zipper = new Zipper<int, int, int>(firstSource, secondSource, (x, y) => x + y);
-        var sink = new MemorySink<int>(zipper);
-        pipeline.Start();
 
-        Assert.That(sink.State, Has.Count.EqualTo(4));
-        Assert.Multiple(() =>
-        {
-            Assert.That(sink.State.Count(x => x == 0), Is.EqualTo(1));
-            Assert.That(sink.State.Count(x => x == 1), Is.EqualTo(2));
-            Assert.That(sink.State.Count(x => x == 2), Is.EqualTo(1));
-        });
+        Assert.That(zipper.GetOutputs(pipeline.Start), Is.EqualTo(new int[] { 0, 1, 1, 2 }));
     }
 
 
@@ -44,11 +37,9 @@ public class SourceTests
 
         var pipeline = new Pipeline(dictSource);
         var translator = new Translator<int, string>(valueSource, dictSource, x => "quark");
-        var sink = new MemorySink<string>(translator);
-        pipeline.Start();
 
-        Assert.That(sink.State.Count(x => x == "foo"), Is.EqualTo(4));
-        Assert.That(sink.State.Count(x => x == "bar"), Is.EqualTo(2));
+        var expected = new string[] { "foo", "bar", "foo", "foo", "bar", "foo" };
+        Assert.That(translator.GetOutputs(pipeline.Start), Is.EqualTo(expected));
     }
 
     [Test]
@@ -59,18 +50,15 @@ public class SourceTests
                             [new KeyValuePair<int, string>(0, "foo")
                             , new KeyValuePair<int, string>(1, "bar")]
                         );
-        var valueSource = new EnumerableSource<int>([0, 1, 0, 0, 1, 0]);
+        var valueSource = new EnumerableSource<int>([0, 1, -1, 0, 1, 0]);
 
         var pipeline = new Pipeline(dictSource);
         var increment = new Mapper<int, int>(valueSource, x => x += 1);
         var translator = new Translator<int, string>(increment, dictSource, x => "quark");
         valueSource.WaitOnPrepared(translator);
-        var sink = new MemorySink<string>(translator);
-        pipeline.Start();
 
-        Assert.That(sink.State, Has.Count.EqualTo(6));
-        Assert.That(sink.State.Count(x => x == "bar"), Is.EqualTo(4));
-        Assert.That(sink.State.Count(x => x == "quark"), Is.EqualTo(2));
+        var expected = new string[] { "bar", "quark", "foo", "bar", "quark", "bar" };
+        Assert.That(translator.GetOutputs(pipeline.Start), Is.EqualTo(expected));
     }
 
     [Test]
@@ -89,15 +77,8 @@ public class SourceTests
         var translator = new Translator<int, string>(sum, dictSource, x => "quark");
         firstSource.WaitOnPrepared(translator);
         secondSource.WaitOnPrepared(translator);
-        var sink = new MemorySink<string>(translator);
-        pipeline.Start();
 
-        Assert.That(sink.State, Has.Count.EqualTo(4));
-        Assert.Multiple(() =>
-        {
-            Assert.That(sink.State.Count(x => x == "foo"), Is.EqualTo(1));
-            Assert.That(sink.State.Count(x => x == "bar"), Is.EqualTo(2));
-            Assert.That(sink.State.Count(x => x == "quark"), Is.EqualTo(1));
-        });
+        var expected = new string[] { "foo", "bar", "bar", "quark" };
+        Assert.That(translator.GetOutputs(pipeline.Start), Is.EqualTo(expected));
     }
 }

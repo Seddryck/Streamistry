@@ -13,19 +13,19 @@ namespace Streamistry;
 /// The output stream is composed of elements that satisfy the predicate; elements that do not satisfy the predicate are excluded from the downstream stream.
 /// </summary>
 /// <typeparam name="TInput">The type of the elements in both the input and output streams.</typeparam>
-public class Filter<TInput> : ChainablePipe<TInput>, IProcessablePipe<TInput>
+public class Filter<TInput> : BaseSingleRouterPipe<TInput, TInput>
 {
     public Func<TInput?, bool> Predicate { get; init; }
 
     public Filter(IChainablePort<TInput> upstream, Func<TInput?, bool> predicate)
-    : base(upstream.Pipe.GetObservabilityProvider())
+    : base(upstream)
     {
         upstream.RegisterDownstream(Emit);
         upstream.Pipe.RegisterOnCompleted(Complete);
         Predicate = predicate;
     }
 
-    public void Emit(TInput? obj)
+    public override void Emit(TInput? obj)
     {
         if (Invoke(obj))
             PushDownstream(obj);

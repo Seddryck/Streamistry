@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Streamistry.Pipes.Aggregators;
-using Streamistry.Pipes.Sinks;
+using Streamistry.Testability;
 
 namespace Streamistry.Testing.Pipes.Aggregators;
 public class CountTests
@@ -15,10 +15,7 @@ public class CountTests
     {
         var pipeline = new Pipeline<int>();
         var aggregator = new Count<int>(pipeline);
-        var sink = new MemorySink<int>(aggregator);
-
-        aggregator.Emit(10);
-        Assert.That(sink.State.Last(), Is.EqualTo(1));
+        Assert.That(aggregator.EmitAndGetOutput(10), Is.EqualTo(1));
     }
 
     [Test]
@@ -26,27 +23,28 @@ public class CountTests
     {
         var pipeline = new Pipeline<int>();
         var aggregator = new Count<int>(pipeline);
-        var sink = new MemorySink<int>(aggregator);
-
-        aggregator.Emit(10);
-        aggregator.Emit(15);
-        aggregator.Emit(22);
-        Assert.That(sink.State, Has.Count.EqualTo(3));
-        Assert.That(sink.State.Last(), Is.EqualTo(3));
+        Assert.That(aggregator.EmitAndAnyOutput(2), Is.True);
+        Assert.That(aggregator.EmitAndAnyOutput(3), Is.True);
+        Assert.That(aggregator.EmitAndAnyOutput(4), Is.True);
     }
 
+    [Test]
+    public void Emit_ManyElements_CorrectResults()
+    {
+        var pipeline = new Pipeline<int>();
+        var aggregator = new Count<int>(pipeline);
+        Assert.That(aggregator.EmitAndGetOutput(2), Is.EqualTo(1));
+        Assert.That(aggregator.EmitAndGetOutput(3), Is.EqualTo(2));
+        Assert.That(aggregator.EmitAndGetOutput(4), Is.EqualTo(3));
+    }
 
     [Test]
     public void Emit_ManyElementsAsShort_Successful()
     {
         var pipeline = new Pipeline<int>();
         var aggregator = new Count<int, short>(pipeline);
-        var sink = new MemorySink<short>(aggregator);
-
         aggregator.Emit(10);
         aggregator.Emit(15);
-        aggregator.Emit(22);
-        Assert.That(sink.State, Has.Count.EqualTo(3));
-        Assert.That(sink.State.Last(), Is.EqualTo((short)3));
+        Assert.That(aggregator.EmitAndGetOutput(4), Is.EqualTo((short)3));
     }
 }

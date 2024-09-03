@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Streamistry.Pipes.Aggregators;
-using Streamistry.Pipes.Sinks;
+using Streamistry.Testability;
 
 namespace Streamistry.Testing.Pipes.Aggregators;
 public class AverageTests
@@ -15,10 +15,7 @@ public class AverageTests
     {
         var pipeline = new Pipeline<int>();
         var aggregator = new Average<int>(pipeline);
-        var sink = new MemorySink<int>(aggregator);
-
-        aggregator.Emit(5);
-        Assert.That(sink.State.Last(), Is.EqualTo(5));
+        Assert.That(aggregator.EmitAndGetOutput(5), Is.EqualTo(5));
     }
 
     [Test]
@@ -26,13 +23,19 @@ public class AverageTests
     {
         var pipeline = new Pipeline<int>();
         var aggregator = new Average<int>(pipeline);
-        var sink = new MemorySink<int>(aggregator);
+        Assert.That(aggregator.EmitAndAnyOutput(2), Is.True);
+        Assert.That(aggregator.EmitAndAnyOutput(3), Is.True);
+        Assert.That(aggregator.EmitAndAnyOutput(4), Is.True);
+    }
 
+    [Test]
+    public void Emit_ManyElements_CorrectAggregation()
+    {
+        var pipeline = new Pipeline<int>();
+        var aggregator = new Average<int>(pipeline);
         aggregator.Emit(2);
         aggregator.Emit(3);
-        aggregator.Emit(4);
-        Assert.That(sink.State, Has.Count.EqualTo(3));
-        Assert.That(sink.State.Last(), Is.EqualTo(3));
+        Assert.That(aggregator.EmitAndGetOutput(4), Is.EqualTo(3));
     }
 
     [Test]
@@ -40,11 +43,8 @@ public class AverageTests
     {
         var pipeline = new Pipeline<int>();
         var aggregator = new Average<int>(pipeline);
-        var sink = new MemorySink<int>(aggregator);
-
         aggregator.Emit(2);
-        aggregator.Emit(3);
-        Assert.That(sink.State.Last(), Is.EqualTo(2));
+        Assert.That(aggregator.EmitAndGetOutput(3), Is.EqualTo(2));
     }
 
     [Test]
@@ -52,10 +52,7 @@ public class AverageTests
     {
         var pipeline = new Pipeline<int>();
         var aggregator = new Average<int, decimal>(pipeline);
-        var sink = new MemorySink<decimal>(aggregator);
-
         aggregator.Emit(2);
-        aggregator.Emit(3);
-        Assert.That(sink.State.Last(), Is.EqualTo(2.5m));
+        Assert.That(aggregator.EmitAndGetOutput(3), Is.EqualTo(2.5m));
     }
 }

@@ -13,20 +13,18 @@ namespace Streamistry;
 /// </summary>
 /// <typeparam name="TInput">The type of the elements in the input stream.</typeparam>
 /// <typeparam name="TOutput">The type of the elements in the output stream after the function is applied.</typeparam>
-public class Splitter<TInput, TOutput> : ChainablePipe<TOutput>, IProcessablePipe<TInput>
+public class Splitter<TInput, TOutput> : BaseSingleRouterPipe<TInput, TOutput>
 {
     public Func<TInput?, TOutput[]?> Function { get; init; }
 
     public Splitter(IChainablePort<TInput> upstream, Func<TInput?, TOutput[]?> function)
-        : base(upstream.Pipe.GetObservabilityProvider())
+        : base(upstream)
     {
-        upstream.RegisterDownstream(Emit);
-        upstream.Pipe.RegisterOnCompleted(Complete);
         Function = function;
     }
 
     [Meter]
-    public void Emit(TInput? obj)
+    public override void Emit(TInput? obj)
     {
         var results = Invoke(obj);
         if (results is null)

@@ -38,7 +38,7 @@ public struct MedianState<T>(int count, IEnumerable<T> list) where T : INumber<T
         var right = list.ElementAt((count) / 2);
         if (left == right)
             return left;
-        return ((left / T.CreateChecked(2)) + (right / T.CreateChecked(2)));
+        return ((left / T.CreateChecked(2)) + (right / T.CreateChecked(2)) + (T.IsOddInteger(left) && T.IsOddInteger(right) ? T.One : T.Zero));
     }
 
     public static readonly MedianState<T> @Default = new();
