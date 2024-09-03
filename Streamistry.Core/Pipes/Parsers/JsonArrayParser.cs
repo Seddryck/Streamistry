@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -12,11 +13,11 @@ public class JsonArrayParser : StringParser<JsonArray>
         : base(upstream, TryParse)
     { }
 
-    private static bool TryParse(string? text, out JsonArray? value)
+    private static bool TryParse(string? text, [NotNullWhen(true)] out JsonArray? value)
     {
         value = null;
         if (text == null)
-            return true;
+            return false;
 
         try
         {
