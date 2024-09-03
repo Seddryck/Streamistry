@@ -16,12 +16,12 @@ public class Zipper<TFirst, TSecond, TResult> : Combinator<TFirst, TSecond, TRes
 
     protected override bool TryGetElement<T>(IChainablePort<T> upstream, out T? value) where T : default
     {
-        if (typeof(T) == typeof(TFirst) && FirstQueue.TryDequeue(out var first))
+        if (upstream==FirstUpstream && FirstQueue.TryDequeue(out var first))
         {
             value = first is T t ? t : throw new InvalidProgramException();
             return true;
         }
-        else if (typeof(T) == typeof(TSecond) && SecondQueue.TryDequeue(out var second))
+        else if (upstream == SecondUpstream && SecondQueue.TryDequeue(out var second))
         {
             value = second is T t ? t : throw new InvalidProgramException();
             return true;
@@ -32,9 +32,9 @@ public class Zipper<TFirst, TSecond, TResult> : Combinator<TFirst, TSecond, TRes
 
     protected override void Queue<T>(IChainablePort<T> upstream, T value)
     {
-        if (value is TFirst first)
+        if (upstream == FirstUpstream && value is TFirst first)
             FirstQueue.Enqueue(first);
-        else if (value is TSecond second)
+        else if (upstream == SecondUpstream && value is TSecond second)
             SecondQueue.Enqueue(second);
         else throw new ArgumentOutOfRangeException(nameof(value));
     }
