@@ -3,8 +3,8 @@
   <PropertyGroup>
     <PackageId>Streamistry</PackageId>
     <RepositoryUrl>https://github.com/Seddryck/Streamistry</RepositoryUrl>
-    <PackageTags>stream;analytics</PackageTags>
-    <Description>Streamistry is a lightweight library offering streaming support with features like accumulators, windows and sinks. This allows you to process and manage continuous data streams efficiently, breaking them into time-based or count-based windows for real-time analysis.</Description>
+    <PackageTags>etl;data-engineering;data-integration;data-pipeline;streaming-data</PackageTags>
+    <Description>Streamistry is a lightweight library designed to support pipeline, streaming, and ETL development for data engineering and integration. Its versatility makes it an excellent tool for building robust, scalable data workflows and optimizing data processing tasks. With features such as accumulators, windows, and sinks, Streamistry efficiently handles continuous data streams, enabling real-time analysis by breaking streams into time-based or count-based windows.</Description>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Streamistry.Json</PackageId>
+    <RepositoryUrl>https://github.com/Seddryck/Streamistry</RepositoryUrl>
+    <PackageTags>etl;data-engineering;data-integration;data-pipeline;streaming-data;json</PackageTags>
+    <Description>The JSON package of Streamistry is specifically designed to handle JSON data within pipeline, streaming, and ETL processes. Its powerful and flexible features make it an essential tool for managing complex JSON structures, facilitating seamless data parsing, transformation, and integration.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MethodBoundaryAspect.Fody" Version="2.0.149" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JsonPath.Net" Version="1.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Streamistry.Core\Streamistry.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.2.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

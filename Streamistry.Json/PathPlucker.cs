@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Json.Path;
 
-namespace Streamistry.Pipes.Mappers;
+namespace Streamistry.Json;
 public abstract class BaseJsonPathPlucker<TJson, T> : Mapper<TJson, T> where TJson : JsonNode
 {
     public BaseJsonPathPlucker(IChainablePipe<TJson> upstream, string path)
@@ -24,9 +24,9 @@ public abstract class BaseJsonPathPlucker<TJson, T> : Mapper<TJson, T> where TJs
     }
 }
 
-public class JsonPathPlucker<T> : BaseJsonPathPlucker<JsonObject, T> 
+public class PathPlucker<T> : BaseJsonPathPlucker<JsonObject, T> 
 {
-    public JsonPathPlucker(IChainablePipe<JsonObject> upstream, string path)
+    public PathPlucker(IChainablePipe<JsonObject> upstream, string path)
         : base(upstream, path)
     { }
 }

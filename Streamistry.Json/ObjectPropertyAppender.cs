@@ -9,13 +9,13 @@ using Json.More;
 using Json.Path;
 
 
-namespace Streamistry;
-public class JsonObjectPropertyAppender<TInputMain, TInputSecondary> : Zipper<TInputMain, TInputSecondary, TInputMain>
+namespace Streamistry.Json;
+public class ObjectPropertyAppender<TInputMain, TInputSecondary> : Zipper<TInputMain, TInputSecondary, TInputMain>
     where TInputMain : JsonNode
     where TInputSecondary : JsonNode
 {
 
-    public JsonObjectPropertyAppender(IChainablePort<TInputMain> mainUpstream, IChainablePort<TInputSecondary> secondUpstream, string path)
+    public ObjectPropertyAppender(IChainablePort<TInputMain> mainUpstream, IChainablePort<TInputSecondary> secondUpstream, string path)
         : base(mainUpstream, secondUpstream, (x, y) => AppendProperty(x, y, path))
     { }
 

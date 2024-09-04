@@ -1,4 +1,5 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -34,6 +35,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Edit", "Edit", "{210C887C-6
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Json", "Json", "{3AD64C0C-6DA9-4947-A225-6F68CF9A6A4D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Streamistry.Json", "Streamistry.Json\Streamistry.Json.csproj", "{AFC0A591-FD48-481F-AB90-00E7B0926FE1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Streamistry.Json.Testing", "Streamistry.Json.Testing\Streamistry.Json.Testing.csproj", "{84FA815D-FE05-4B57-9BB1-156E7B217576}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +55,14 @@ Global
 		{A0CDC412-D16C-4508-96FC-6F0BB383E962}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0CDC412-D16C-4508-96FC-6F0BB383E962}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0CDC412-D16C-4508-96FC-6F0BB383E962}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFC0A591-FD48-481F-AB90-00E7B0926FE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFC0A591-FD48-481F-AB90-00E7B0926FE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFC0A591-FD48-481F-AB90-00E7B0926FE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFC0A591-FD48-481F-AB90-00E7B0926FE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84FA815D-FE05-4B57-9BB1-156E7B217576}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84FA815D-FE05-4B57-9BB1-156E7B217576}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84FA815D-FE05-4B57-9BB1-156E7B217576}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84FA815D-FE05-4B57-9BB1-156E7B217576}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -56,6 +71,8 @@ Global
 		{95E83BA6-B535-4D56-B06A-D00249A4EF00} = {C923A152-4091-48BE-A984-686FF5E4ACCC}
 		{09BDFA96-353F-419D-890A-D9B9045E66DD} = {C923A152-4091-48BE-A984-686FF5E4ACCC}
 		{210C887C-6FF3-4D1B-9A7B-894E2F286FF4} = {C923A152-4091-48BE-A984-686FF5E4ACCC}
+		{AFC0A591-FD48-481F-AB90-00E7B0926FE1} = {3AD64C0C-6DA9-4947-A225-6F68CF9A6A4D}
+		{84FA815D-FE05-4B57-9BB1-156E7B217576} = {3AD64C0C-6DA9-4947-A225-6F68CF9A6A4D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8EABD9FE-559A-40AF-BB4B-8026F9240FEF}

@@ -6,10 +6,10 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
-namespace Streamistry.Pipes.Splitters;
-internal class JsonArraySplitter : Splitter<JsonArray, JsonObject>
+namespace Streamistry.Json;
+internal class ArraySplitter : Splitter<JsonArray, JsonObject>
 {
-    public JsonArraySplitter(IChainablePipe<JsonArray> upstream)
+    public ArraySplitter(IChainablePipe<JsonArray> upstream)
         : base(upstream, x => [..Split(x)])
     { }
 
