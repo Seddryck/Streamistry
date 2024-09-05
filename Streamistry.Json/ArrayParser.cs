@@ -6,10 +6,10 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
-namespace Streamistry.Pipes.Parsers;
-public class JsonArrayParser : StringParser<JsonArray>
+namespace Streamistry.Json;
+public class ArrayParser : StringParser<JsonArray>
 {
-    public JsonArrayParser(IChainablePipe<string> upstream)
+    public ArrayParser(IChainablePipe<string> upstream)
         : base(upstream, TryParse)
     { }
 

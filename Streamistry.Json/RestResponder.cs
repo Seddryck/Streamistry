@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Streamistry.Observability;
 using Streamistry.Pipes.Parsers;
 
-namespace Streamistry.Pipes;
+namespace Streamistry.Json;
 public class RestResponder<TInput, TOutput> : EscapeRouterPipe<TInput, TOutput>, IProcessablePipe<TInput?> where TOutput : JsonNode
 {
     protected HttpClient Client { get; }

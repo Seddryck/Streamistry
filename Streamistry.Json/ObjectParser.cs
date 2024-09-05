@@ -7,10 +7,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
-namespace Streamistry.Pipes.Parsers;
-public class JsonObjectParser : StringParser<JsonObject>
+namespace Streamistry.Json;
+public class ObjectParser : StringParser<JsonObject>
 {
-    public JsonObjectParser(IChainablePipe<string> upstream)
+    public ObjectParser(IChainablePipe<string> upstream)
         : base(upstream, new ParserDelegate<string, JsonObject>(TryParse))
     { }
 

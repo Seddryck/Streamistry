@@ -7,12 +7,9 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Streamistry.Pipes.Sinks;
 using Streamistry.Pipes.Sources;
-using Streamistry.Pipes.Mappers;
 using System.Text.Json.Nodes;
-using Streamistry.Pipes.Parsers;
-using Streamistry.Pipes.Splitters;
 
-namespace Streamistry.Testing;
+namespace Streamistry.Json.Testing;
 public class JsonTests
 {
     public const string JsonFirst = @"
@@ -56,7 +53,7 @@ public class JsonTests
     public void JsonPathPlucker_ValidPath_ExistingValue(string jsonString, string? email)
     {
         var pipeline = new Pipeline<JsonObject>();
-        var plucker = new JsonPathPlucker<string>(pipeline, "$.user.contact.email");
+        var plucker = new PathPlucker<string>(pipeline, "$.user.contact.email");
         var sink = new MemorySink<string>(plucker);
         plucker.Emit((JsonObject)JsonNode.Parse(jsonString)!);
 
@@ -69,8 +66,8 @@ public class JsonTests
     {
         var source = new EnumerableSource<string>([JsonFirst, JsonSecond, JsonThird]);
         var pipeline = new Pipeline(source);
-        var parser = new JsonObjectParser(source);
-        var plucker = new JsonPathPlucker<string>(parser, "$.user.contact.email");
+        var parser = new ObjectParser(source);
+        var plucker = new PathPlucker<string>(parser, "$.user.contact.email");
         var sink = new MemorySink<string>(plucker);
         pipeline.Start();
 
@@ -85,9 +82,9 @@ public class JsonTests
         var array = $"[{JsonFirst}, {JsonSecond}, {JsonThird}]";
         var source = new EnumerableSource<string>([array]);
         var pipeline = new Pipeline(source);
-        var parser = new JsonArrayParser(source);
-        var splitter = new JsonArraySplitter(parser);
-        var plucker = new JsonPathPlucker<string>(splitter, "$.user.contact.email");
+        var parser = new ArrayParser(source);
+        var splitter = new ArraySplitter(parser);
+        var plucker = new PathPlucker<string>(splitter, "$.user.contact.email");
         var sink = new MemorySink<string>(plucker);
         pipeline.Start();
 

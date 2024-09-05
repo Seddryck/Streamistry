@@ -6,6 +6,7 @@ branches:
     - /v\d+\.\d+\.\d+/
 skip_commits:
   files:
+    - .github/
     - docs/
     - misc/
     - README.md
@@ -53,6 +54,8 @@ test_script:
     $ErrorActionPreference = "Stop"
     dotnet test Streamistry.Testing -c Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Threshold=10 /p:ThresholdType=line /p:CoverletOutput=../.coverage/coverage.Streamistry.xml --test-adapter-path:. --logger:Appveyor --no-build --nologo
     $globalTestResult = $LastExitCode
+    dotnet test Streamistry.Json.Testing -c Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Threshold=10 /p:ThresholdType=line /p:CoverletOutput=../.coverage/coverage.Streamistry.Json.xml --test-adapter-path:. --logger:Appveyor --no-build --nologo
+    $globalTestResult = $LastExitCode
     if($globalTestResult -ne 0) { $host.SetShouldExit($globalTestResult) }
 
 - pwsh: |
@@ -61,7 +64,8 @@ test_script:
     .\codecov.exe --dir "./.coverage/"
 
 after_test:
-- dotnet pack Streamistry.Core -p:version="%GitVersion_SemVer%" -c Release --include-symbols --no-build --nologo 
+- dotnet pack Streamistry.Core -p:version="%GitVersion_SemVer%" -c Release --include-symbols --no-build --nologo
+- dotnet pack Streamistry.Json -p:version="%GitVersion_SemVer%" -c Release --include-symbols --no-build --nologo 
 
 artifacts:
 - path: '**\*.nupkg'

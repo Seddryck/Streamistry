@@ -10,7 +10,7 @@ using Streamistry.Pipes;
 using Streamistry.Pipes.Mappers;
 using Streamistry.Pipes.Sinks;
 
-namespace Streamistry.Testing;
+namespace Streamistry.Json.Testing;
 public class RestResponderTests
 {
     [Test]
@@ -25,7 +25,7 @@ public class RestResponderTests
 
         var pipeline = new Pipeline<int>();
         var mapper = new RestResponder<int, JsonObject>(pipeline, client, x => $"/customer/{x}");
-        var plunker = new JsonPathPlucker<string>(mapper, "$.user.name");
+        var plunker = new PathPlucker<string>(mapper, "$.user.name");
         var sink = new MemorySink<string>(plunker);
 
         pipeline.Emit(1);
