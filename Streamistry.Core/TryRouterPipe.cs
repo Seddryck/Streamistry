@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using Streamistry.Observability;
 
 namespace Streamistry;
-public abstract class EscapeRouterPipe<TInput, TOutput> : DualRouterPipe<TInput, TOutput>
+public abstract class TryRouterPipe<TInput, TOutput> : DualRouterPipe<TInput, TOutput>
 {
-    public EscapeRouterPipe(IChainablePort<TInput> upstream)
+    public TryRouterPipe(IChainablePort<TInput> upstream)
     : base(upstream)
     { }
 

@@ -20,7 +20,7 @@ public delegate bool ParserDelegate<TInput, TOutput>(TInput? input, out TOutput?
 /// </summary>
 /// <typeparam name="TInput">The type of the elements in the input stream before parsing.</typeparam>
 /// <typeparam name="TOutput">The type of the elements in the output stream after parsing, typically a structured representation of the input.</typeparam>
-public abstract class Parser<TInput, TOutput> : EscapeRouterPipe<TInput, TOutput>, IParser<TInput, TOutput>
+public abstract class Parser<TInput, TOutput> : TryRouterPipe<TInput, TOutput>, IParser<TInput, TOutput>
 {
     public ParserDelegate<TInput, TOutput> ParseFunction { get; init; }
 

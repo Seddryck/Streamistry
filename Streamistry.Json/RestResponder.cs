@@ -10,7 +10,7 @@ using Streamistry.Observability;
 using Streamistry.Pipes.Parsers;
 
 namespace Streamistry.Json;
-public class RestResponder<TInput, TOutput> : EscapeRouterPipe<TInput, TOutput>, IProcessablePipe<TInput?> where TOutput : JsonNode
+public class RestResponder<TInput, TOutput> : TryRouterPipe<TInput, TOutput>, IProcessablePipe<TInput?> where TOutput : JsonNode
 {
     protected HttpClient Client { get; }
     protected Func<TInput?, string> UrlBuiler { get; }

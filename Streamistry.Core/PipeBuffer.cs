@@ -14,21 +14,19 @@ namespace Streamistry;
 /// Once the buffer reaches a certain threshold, such as a maximum size or time limit, its contents are released downstream for further processing.
 /// </summary>
 /// <typeparam name="T">The type of the elements stored in the buffer.</typeparam>
-public class PipeBuffer<T> : ChainablePipe<T>, IProcessablePipe<T>
+public class PipeBuffer<T> : BaseSingleRouterPipe<T, T>
 {
     protected List<T?> Store { get; } = [];
     protected int? MaxCapacity { get; }
 
     public PipeBuffer(IChainablePort<T> upstream, int? maxCapacity = null)
-    : base(upstream.Pipe.GetObservabilityProvider())
+    : base(upstream)
     {
-        upstream.RegisterDownstream(Emit);
-        upstream.Pipe.RegisterOnCompleted(Complete);
         MaxCapacity = maxCapacity;
     }
 
     [Meter]
-    public void Emit(T? obj)
+    public override void Emit(T? obj)
     {
         Invoke(obj);
         if (MaxCapacity.HasValue && Store.Count >= MaxCapacity.Value)
