@@ -23,7 +23,7 @@ public class Aggregator<TSource, TAccumulate, TResult> : SingleRouterPipe<TSourc
     public TAccumulate? State { get; set; }
     private TAccumulate? Seed { get; }
 
-    public Aggregator(IChainablePipe<TSource> upstream, Func<TAccumulate?, TSource?, TAccumulate?> accumulator, Func<TAccumulate?, TResult?> selector, TAccumulate? seed = default, Expression<Action<Aggregator<TSource, TAccumulate, TResult>>>? completion = null)
+    public Aggregator(IChainablePort<TSource>? upstream, Func<TAccumulate?, TSource?, TAccumulate?> accumulator, Func<TAccumulate?, TResult?> selector, TAccumulate? seed = default, Expression<Action<Aggregator<TSource, TAccumulate, TResult>>>? completion = null)
         : base(upstream)
     {
         (Accumulator, Selector, State, Seed) = (accumulator, selector, seed, seed);

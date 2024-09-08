@@ -29,7 +29,15 @@ public struct MinState<T>() where T : INumber<T>
 
 public class Min<TInput> : Aggregator<TInput, MinState<TInput>, TInput> where TInput : INumber<TInput>
 {
-    public Min(IChainablePipe<TInput> upstream, Expression<Action<Aggregator<TInput, MinState<TInput>, TInput>>>? completion = null)
+    public Min(Expression<Action<Aggregator<TInput, MinState<TInput>, TInput>>>? completion = null)
+        : this(completion, null)
+    { }
+
+    public Min(IChainablePipe<TInput>? upstream, Expression<Action<Aggregator<TInput, MinState<TInput>, TInput>>>? completion = null)
+        : this(completion, upstream)
+    { }
+
+    protected Min(Expression<Action<Aggregator<TInput, MinState<TInput>, TInput>>>? completion = null, IChainablePipe<TInput>? upstream = null)
         : base(upstream
             , (x, y) => x.Append(y)
             , (x) => x.Select()

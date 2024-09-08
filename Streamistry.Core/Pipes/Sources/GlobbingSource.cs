@@ -31,6 +31,14 @@ public class GlobbingSource<TOutput> : Source<TOutput>
         Matcher.AddExcludePatterns(excludeGlobs);
     }
 
+    public GlobbingSource(Pipeline upstream, string directory, string[] includeGlobs, string[] excludeGlobs)
+       : base(upstream)
+    {
+        Directory = new DirectoryInfoWrapper(new DirectoryInfo(directory));
+        Matcher.AddIncludePatterns(includeGlobs);
+        Matcher.AddExcludePatterns(excludeGlobs);
+    }
+
     protected override bool TryReadNext(out TOutput? item)
     {
         Files ??= QueueFiles(Matcher);

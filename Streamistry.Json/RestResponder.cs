@@ -15,7 +15,15 @@ public class RestResponder<TInput, TOutput> : TryRouterPipe<TInput, TOutput>, IP
     protected HttpClient Client { get; }
     protected Func<TInput?, string> UrlBuiler { get; }
 
+    public RestResponder(HttpClient client, Func<TInput?, string> urlBuilder)
+        : this(client, urlBuilder, null)
+    { }
+
     public RestResponder(IChainablePort<TInput> upstream, HttpClient client, Func<TInput?, string> urlBuilder)
+        : this(client, urlBuilder, upstream)
+    { }
+
+    protected RestResponder(HttpClient client, Func<TInput?, string> urlBuilder, IChainablePort<TInput>? upstream = null)
         : base(upstream)
     {
         Client = client;

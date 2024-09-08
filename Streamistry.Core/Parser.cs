@@ -20,11 +20,19 @@ public delegate bool ParserDelegate<TInput, TOutput>(TInput? input, out TOutput?
 /// </summary>
 /// <typeparam name="TInput">The type of the elements in the input stream before parsing.</typeparam>
 /// <typeparam name="TOutput">The type of the elements in the output stream after parsing, typically a structured representation of the input.</typeparam>
-public abstract class Parser<TInput, TOutput> : TryRouterPipe<TInput, TOutput>, IParser<TInput, TOutput>
+public class Parser<TInput, TOutput> : TryRouterPipe<TInput, TOutput>, IParser<TInput, TOutput>
 {
     public ParserDelegate<TInput, TOutput> ParseFunction { get; init; }
 
     public Parser(IChainablePort<TInput> upstream, ParserDelegate<TInput, TOutput> parseFunction)
+    : this(parseFunction, upstream)
+    { }
+
+    public Parser(ParserDelegate<TInput, TOutput> parseFunction)
+    : this(parseFunction, null)
+    { }
+
+    protected Parser(ParserDelegate<TInput, TOutput> parseFunction, IChainablePort<TInput>? upstream = null)
     : base(upstream)
     {
         ParseFunction = parseFunction;
@@ -41,6 +49,10 @@ public interface IStringParser<TOutput> : IParser<string, TOutput>
 public abstract class StringParser<TOutput> : Parser<string, TOutput>, IStringParser<TOutput>
 {
     public StringParser(IChainablePipe<string> upstream, ParserDelegate<string, TOutput> parseFunction)
-    : base(upstream, parseFunction)
+    : this(parseFunction, upstream)
+    { }
+
+    protected StringParser(ParserDelegate<string, TOutput> parseFunction, IChainablePipe<string>? upstream = null)
+    : base(parseFunction, upstream)
     { }
 }

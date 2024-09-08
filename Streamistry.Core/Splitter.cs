@@ -18,6 +18,14 @@ public class Splitter<TInput, TOutput> : BaseSingleRouterPipe<TInput, TOutput>
     public Func<TInput?, TOutput[]?> Function { get; init; }
 
     public Splitter(IChainablePort<TInput> upstream, Func<TInput?, TOutput[]?> function)
+        : this(function, upstream)
+    { }
+
+    public Splitter(Func<TInput?, TOutput[]?> function)
+        : this(function, null)
+    { }
+
+    protected Splitter(Func<TInput?, TOutput[]?> function, IChainablePort<TInput>? upstream = null)
         : base(upstream)
     {
         Function = function;

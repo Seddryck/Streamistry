@@ -23,6 +23,15 @@ public static class PipeTestingExtensions
         return anyResult;
     }
 
+    public static bool EmitAndSingleOutput<TInput, TOutput>(this BaseSingleRouterPipe<TInput, TOutput> pipe, TInput value)
+    {
+        var anyResult = false;
+        var singleResult = true;
+        pipe.RegisterDownstream(x => { singleResult = !anyResult && singleResult; anyResult = true;  }) ;
+        pipe.Emit(value);
+        return singleResult && anyResult;
+    }
+
     public static TOutput?[] EmitAndGetManyOutputs<TInput, TOutput>(this BaseSingleRouterPipe<TInput, TOutput> pipe, TInput value)
     {
         var results = new List<TOutput?>();

@@ -14,6 +14,10 @@ public class EnumerableSource<TOutput> : Source<TOutput>
         : base(provider)
         => Enumerator = values.GetEnumerator();
 
+    public EnumerableSource(Pipeline upstream, IEnumerable<TOutput> values)
+        : base(upstream)
+        => Enumerator = values.GetEnumerator();
+
     protected override bool TryReadNext(out TOutput? item)
     {
         if (Enumerator.MoveNext())

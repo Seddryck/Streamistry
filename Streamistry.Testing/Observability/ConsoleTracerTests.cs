@@ -35,10 +35,12 @@ public class ConsoleTracerTests
         var provider = new ObservabilityProvider(new ConsoleTracer());
 
         using var output = new ConsoleOutput();
-        var pipeline = new Pipeline<int>(provider);
-        var mapper = new Mapper<int, int>(pipeline, x => ++x);
+        
+        var source = new EmptySource<int>();
+        var pipeline = new Pipeline(source, provider);
+        var mapper = new Mapper<int, int>(source, x => ++x);
         var sink = new MemorySink<int>(mapper);
-        mapper.Emit(0);
+        source.Emit(0);
 
         Assert.That(sink.State.First(), Is.EqualTo(1)); Assert.Multiple(() =>
         {

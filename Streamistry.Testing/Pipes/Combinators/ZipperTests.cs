@@ -12,8 +12,8 @@ public class ZipperTests
     [Test]
     public void Emit_ZipWhenBothEmitted_Successful()
     {
-        var first = new Pipeline<char>();
-        var second = new Pipeline<int>();
+        var first = new EmptySource<char>();
+        var second = new EmptySource<int>();
         var combinator = new Zipper<char, int, string>(first, second, (x, y) => new string(x, y));
 
         Assert.Multiple(() =>
@@ -26,8 +26,8 @@ public class ZipperTests
     [Test]
     public void Emit_ZipWhenBothEmitted_ZippedResult()
     {
-        var first = new Pipeline<char>();
-        var second = new Pipeline<int>();
+        var first = new EmptySource<char>();
+        var second = new EmptySource<int>();
         var combinator = new Zipper<char, int, string>(first, second, (x, y) => new string(x, y));
 
         first.Emit('*');
@@ -37,8 +37,8 @@ public class ZipperTests
     [Test]
     public void Emit_ZipSameType_Successful()
     {
-        var first = new Pipeline<int>();
-        var second = new Pipeline<int>();
+        var first = new EmptySource<int>();
+        var second = new EmptySource<int>();
         var combinator = new Zipper<int, int, int>(first, second, (x, y) => x*y);
 
         Assert.Multiple(() =>
@@ -52,8 +52,8 @@ public class ZipperTests
     [Test]
     public void Emit_ZipSameType_ExpectedResult()
     {
-        var first = new Pipeline<int>();
-        var second = new Pipeline<int>();
+        var first = new EmptySource<int>();
+        var second = new EmptySource<int>();
         var combinator = new Zipper<int, int, int>(first, second, (x, y) => x * y);
 
         second.Emit(5);
@@ -64,8 +64,8 @@ public class ZipperTests
     [Test]
     public void Emit_ZipWhenBothEmittedReversed_Successful()
     {
-        var first = new Pipeline<char>();
-        var second = new Pipeline<int>();
+        var first = new EmptySource<char>();
+        var second = new EmptySource<int>();
         var combinator = new Zipper<char, int, string>(first, second, (x, y) => new string(x, y));
 
         Assert.Multiple(() =>
@@ -78,8 +78,8 @@ public class ZipperTests
     [Test]
     public void Emit_ZipWhenBothEmittedNotInSync_Successful()
     {
-        var first = new Pipeline<char>();
-        var second = new Pipeline<int>();
+        var first = new EmptySource<char>();
+        var second = new EmptySource<int>();
         var combinator = new Zipper<char, int, string>(first, second, (x, y) => new string(x, y));
 
         Assert.Multiple(() =>

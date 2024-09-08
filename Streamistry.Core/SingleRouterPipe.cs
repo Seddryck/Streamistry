@@ -9,11 +9,11 @@ using Streamistry.Observability;
 namespace Streamistry;
 public abstract class BaseSingleRouterPipe<TInput, TOutput> : ChainablePipe<TOutput>, IProcessablePipe<TInput>
 {
-    protected BaseSingleRouterPipe(IChainablePort<TInput> upstream)
-        : base(upstream.Pipe.GetObservabilityProvider())
+    protected BaseSingleRouterPipe(IChainablePort<TInput>? upstream)
+        : base(upstream?.Pipe)
     {
-        upstream.RegisterDownstream(Emit);
-        upstream.Pipe.RegisterOnCompleted(Complete);
+        upstream?.RegisterDownstream(Emit);
+        upstream?.Pipe.RegisterOnCompleted(Complete);
     }
 
     [Meter]
@@ -22,7 +22,7 @@ public abstract class BaseSingleRouterPipe<TInput, TOutput> : ChainablePipe<TOut
 
 public abstract class SingleRouterPipe<TInput, TOutput> : BaseSingleRouterPipe<TInput, TOutput>
 {
-    protected SingleRouterPipe(IChainablePort<TInput> upstream)
+    protected SingleRouterPipe(IChainablePort<TInput>? upstream)
         : base(upstream)
     { }
 

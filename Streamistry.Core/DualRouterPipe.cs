@@ -12,12 +12,12 @@ public abstract class DualRouterPipe<TInput, TOutput> : ChainablePipe<TOutput>, 
     public OutputPort<TInput> Alternate { get; }
     public new OutputPort<TOutput> Main { get => base.Main; }
 
-    public DualRouterPipe(IChainablePort<TInput> upstream)
-    : base(upstream.Pipe.GetObservabilityProvider())
+    public DualRouterPipe(IChainablePort<TInput>? upstream)
+    : base(upstream?.Pipe)
     {
         Alternate = new(this, "Alternate");
-        upstream.RegisterDownstream(Emit);
-        upstream.Pipe.RegisterOnCompleted(Complete);
+        upstream?.RegisterDownstream(Emit);
+        upstream?.Pipe.RegisterOnCompleted(Complete);
     }
 
     [Meter]

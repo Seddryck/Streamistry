@@ -10,7 +10,11 @@ namespace Streamistry.Json;
 public abstract class BaseJsonPathPlucker<TJson, T> : Mapper<TJson, T> where TJson : JsonNode
 {
     public BaseJsonPathPlucker(IChainablePipe<TJson> upstream, string path)
-        : base(upstream, (x) => GetValue(x, JsonPath.Parse(path)))
+        : this(path, upstream)
+    { }
+
+    protected BaseJsonPathPlucker(string path, IChainablePipe<TJson>? upstream = null)
+        : base((x) => GetValue(x, JsonPath.Parse(path)), upstream)
     { }
 
     protected static T? GetValue(TJson? node, JsonPath path)
@@ -26,8 +30,16 @@ public abstract class BaseJsonPathPlucker<TJson, T> : Mapper<TJson, T> where TJs
 
 public class PathPlucker<T> : BaseJsonPathPlucker<JsonObject, T> 
 {
+    public PathPlucker(string path)
+        : this(path, null)
+    { }
+
     public PathPlucker(IChainablePipe<JsonObject> upstream, string path)
-        : base(upstream, path)
+        : this(path, upstream)
+    { }
+
+    public PathPlucker(string path, IChainablePipe<JsonObject>? upstream = null)
+        : base(path, upstream)
     { }
 }
 

@@ -15,7 +15,7 @@ namespace Streamistry;
 public class Union<TInput> : ChainablePipe<TInput>, IProcessablePipe<TInput>
 {
     public Union(IChainablePipe<TInput>[] upstreams)
-    : base(upstreams[0]?.GetObservabilityProvider())
+    : base(upstreams[0])
     {
         foreach (var upstream in upstreams)
             upstream.RegisterDownstream(Emit, Complete);

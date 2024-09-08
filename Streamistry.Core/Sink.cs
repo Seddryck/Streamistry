@@ -8,13 +8,19 @@ using Streamistry.Observability;
 namespace Streamistry;
 public class Sink<T> : ObservablePipe, IProcessablePipe<T>
 {
-    public Action<T?> Function { get; }
+    public Action<T?> Action { get; }
+    public Pipeline? Pipeline { get; }
 
     public Sink(IChainablePort<T> upstream, Action<T?> function)
-        :base(upstream.Pipe.GetObservabilityProvider())
+        :this(function, upstream)
+    { }
+
+    protected Sink(Action<T?> action, IChainablePort<T>? upstream)
+        : base(upstream?.Pipe.GetObservabilityProvider())
     {
-        upstream.RegisterDownstream(Emit);
-        Function = function;
+        upstream?.RegisterDownstream(Emit);
+        Action = action;
+        Pipeline = upstream?.Pipe.Pipeline;
     }
 
     [Meter]
@@ -23,5 +29,5 @@ public class Sink<T> : ObservablePipe, IProcessablePipe<T>
 
     [Trace]
     protected void Invoke(T? obj)
-        => Function.Invoke(obj);
+        => Action.Invoke(obj);
 }

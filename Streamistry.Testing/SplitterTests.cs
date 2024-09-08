@@ -12,8 +12,7 @@ public class SplitterTests
     [Test]
     public void Emit_Splitter_Successful()
     {
-        var pipeline = new Pipeline<string?>();
-        var splitter = new Splitter<string?, string?>(pipeline, x => x?.Split(';') ?? null);
+        var splitter = new Splitter<string?, string?>(x => x?.Split(';') ?? null);
         Assert.Multiple(() =>
         {
             Assert.That(splitter.EmitAndGetOutput("foo;bar;quark"), Is.EqualTo("quark"));
@@ -24,8 +23,7 @@ public class SplitterTests
     [Test]
     public void Emit_NullSplitter_Successful()
     {
-        var pipeline = new Pipeline<string?>();
-        var splitter = new Splitter<string?, string?>(pipeline, x => x?.Split(';') ?? null);
+        var splitter = new Splitter<string?, string?>(x => x?.Split(';') ?? null);
         Assert.Multiple(() =>
         {
             Assert.That(splitter.EmitAndGetOutput(string.Empty), Is.EqualTo(string.Empty));

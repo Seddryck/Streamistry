@@ -29,7 +29,15 @@ public struct MaxState<T>() where T : INumber<T>
 
 public class Max<TInput> : Aggregator<TInput, MaxState<TInput>, TInput> where TInput : INumber<TInput>
 {
-    public Max(IChainablePipe<TInput> upstream, Expression<Action<Aggregator<TInput, MaxState<TInput>, TInput>>>? completion = null)
+    public Max(Expression<Action<Aggregator<TInput, MaxState<TInput>, TInput>>>? completion = null)
+        : this(completion, null)
+    { }
+
+    public Max(IChainablePipe<TInput>? upstream, Expression<Action<Aggregator<TInput, MaxState<TInput>, TInput>>>? completion = null)
+        : this(completion, upstream)
+    { }
+
+    protected Max(Expression<Action<Aggregator<TInput, MaxState<TInput>, TInput>>>? completion = null, IChainablePipe<TInput>? upstream = null)
         : base(upstream
             , (x, y) => x.Append(y)
             , (x) => x.Select()

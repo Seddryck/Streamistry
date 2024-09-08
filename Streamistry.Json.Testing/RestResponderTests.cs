@@ -23,14 +23,13 @@ public class RestResponderTests
         var client = mockHttp.ToHttpClient();
         client.BaseAddress = new Uri("http://localhost");
 
-        var pipeline = new Pipeline<int>();
-        var mapper = new RestResponder<int, JsonObject>(pipeline, client, x => $"/customer/{x}");
-        var plunker = new PathPlucker<string>(mapper, "$.user.name");
+        var rest = new RestResponder<int, JsonObject>(client, x => $"/customer/{x}");
+        var plunker = new PathPlucker<string>(rest, "$.user.name");
         var sink = new MemorySink<string>(plunker);
 
-        pipeline.Emit(1);
-        pipeline.Emit(2);
-        pipeline.Emit(3);
+        rest.Emit(1);
+        rest.Emit(2);
+        rest.Emit(3);
 
         Assert.That(sink.State.Count, Is.EqualTo(3));
         Assert.Multiple(() =>
