@@ -14,3 +14,16 @@ updates:
       - "dependency-update"
     commit-message:
       prefix: "chore"
+    groups:
+      NUnit:
+          patterns:
+            - "NUnit"
+      Microsoft.NET.Test.Sdk:
+          patterns:
+            - "Microsoft.NET.Test.Sdk"
+      Moq:
+          patterns:
+            - "Moq"
+      DotNet.ReproducibleBuilds:
+          patterns:
+            - "DotNet.ReproducibleBuilds"
