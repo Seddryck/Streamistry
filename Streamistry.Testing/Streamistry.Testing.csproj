@@ -24,7 +24,7 @@
 		<ProjectReference Include="..\..\Streamistry\Streamistry.Core\Streamistry.csproj" />
 	</ItemGroup>
   <ItemGroup>
-    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.2.4">
+    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.2.25">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
