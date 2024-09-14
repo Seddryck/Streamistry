@@ -13,16 +13,14 @@ public class MaxTests
     [Test]
     public void Emit_SingleElement_Successful()
     {
-        var pipeline = new Pipeline<int>();
-        var aggregator = new Max<int>(pipeline);
+        var aggregator = new Max<int>();
         Assert.That(aggregator.EmitAndGetOutput(10), Is.EqualTo(10));
     }
 
     [Test]
     public void Emit_ManyElements_Successful()
     {
-        var pipeline = new Pipeline<int>();
-        var aggregator = new Max<int>(pipeline);
+        var aggregator = new Max<int>();
         Assert.That(aggregator.EmitAndAnyOutput(15), Is.True);
         Assert.That(aggregator.EmitAndAnyOutput(22), Is.True);
         Assert.That(aggregator.EmitAndAnyOutput(10), Is.True);
@@ -31,8 +29,7 @@ public class MaxTests
     [Test]
     public void Emit_ManyElements_CorrectResults()
     {
-        var pipeline = new Pipeline<int>();
-        var aggregator = new Max<int>(pipeline);
+        var aggregator = new Max<int>();
         Assert.That(aggregator.EmitAndGetOutput(15), Is.EqualTo(15));
         Assert.That(aggregator.EmitAndGetOutput(22), Is.EqualTo(22));
         Assert.That(aggregator.EmitAndGetOutput(10), Is.EqualTo(22));

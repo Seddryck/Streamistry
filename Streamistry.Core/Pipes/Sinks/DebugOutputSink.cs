@@ -9,8 +9,12 @@ using static System.Collections.Specialized.BitVector32;
 namespace Streamistry.Pipes.Sinks;
 public class DebugOutputSink<T> : Sink<T>
 {
+    public DebugOutputSink()
+        : base(Process, null)
+    { }
+
     public DebugOutputSink(IChainablePipe<T> upstream)
-        : base(upstream, Process)
+        : base(Process, upstream)
     { }
 
     public static void Process(T? obj)

@@ -46,7 +46,11 @@ public struct MedianState<T>(int count, IEnumerable<T> list) where T : INumber<T
 
 public class Median<TInput> : Aggregator<TInput, MedianState<TInput>, TInput> where TInput : INumber<TInput>
 {
-    public Median(IChainablePipe<TInput> upstream, Expression<Action<Aggregator<TInput, MedianState<TInput>, TInput>>>? completion = null)
+    public Median(IChainablePipe<TInput>? upstream = null, Expression<Action<Aggregator<TInput, MedianState<TInput>, TInput>>>? completion = null)
+        : this(completion, upstream)
+    { }
+
+    protected Median(Expression<Action<Aggregator<TInput, MedianState<TInput>, TInput>>>? completion, IChainablePipe<TInput>? upstream)
         : base(upstream
             , (x, y) => x.Append(y)
             , (x) => x.Select()
@@ -59,7 +63,11 @@ public class Median<TInput, TOuput> : Aggregator<TInput, MedianState<TOuput>, TO
         where TInput : INumber<TInput>
         where TOuput : INumber<TOuput>
 {
-    public Median(IChainablePipe<TInput> upstream, Expression<Action<Aggregator<TInput, MedianState<TOuput>, TOuput>>>? completion = null)
+    public Median(IChainablePipe<TInput>? upstream = null, Expression<Action<Aggregator<TInput, MedianState<TOuput>, TOuput>>>? completion = null)
+        : this(completion, upstream)
+    { }
+
+    protected Median(Expression<Action<Aggregator<TInput, MedianState<TOuput>, TOuput>>>? completion, IChainablePipe<TInput>? upstream)
         : base(upstream
             , (x, y) => x.Append(y is null ? default : TOuput.CreateChecked(y))
             , (x) => x.Select()

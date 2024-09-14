@@ -11,12 +11,23 @@ public abstract class ChainablePipe<T> : ObservablePipe, IChainablePipe<T>
     public MainOutputPort<T> Main { get; }
     protected Action? Completion { get; set; }
     public IChainablePipe Pipe { get => this; }
-
+    public Pipeline? Pipeline { get; protected set; }
 
     protected ChainablePipe(ObservabilityProvider? observability)
         : base(observability)
     {
         Main = new(this);
+    }
+
+    protected ChainablePipe(IChainablePipe? upstream)
+        : base(upstream?.GetObservabilityProvider())
+    {
+        Main = new(this);
+        if (upstream is not null)
+            if (upstream is Pipeline pipeline)
+                Pipeline = pipeline;
+            else
+                Pipeline = upstream.Pipeline;
     }
 
     public void RegisterDownstream(Action<T?> downstream, Action? completion)

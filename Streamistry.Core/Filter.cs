@@ -17,11 +17,17 @@ public class Filter<TInput> : BaseSingleRouterPipe<TInput, TInput>
 {
     public Func<TInput?, bool> Predicate { get; init; }
 
+    public Filter(Func<TInput?, bool> predicate)
+        : this(predicate, null)
+    { }
+
     public Filter(IChainablePort<TInput> upstream, Func<TInput?, bool> predicate)
+        : this(predicate, upstream)
+    { }
+
+    public Filter(Func<TInput?, bool> predicate, IChainablePort<TInput>? upstream = null)
     : base(upstream)
     {
-        upstream.RegisterDownstream(Emit);
-        upstream.Pipe.RegisterOnCompleted(Complete);
         Predicate = predicate;
     }
 

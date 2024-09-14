@@ -18,11 +18,19 @@ public class Mapper<TInput, TOutput> : SingleRouterPipe<TInput, TOutput>
 {
     public Func<TInput?, TOutput?> Function { get; init; }
 
-    public Mapper(IChainablePort<TInput> upstream, Func<TInput?, TOutput?> function)
+    protected Mapper(Func<TInput?, TOutput?> function, IChainablePort<TInput>? upstream)
     : base(upstream)
     {
         Function = function;
     }
+
+    public Mapper(IChainablePort<TInput> upstream, Func<TInput?, TOutput?> function)
+    : this(function, upstream)
+    { }
+
+    public Mapper(Func<TInput?, TOutput?> function)
+    : this(function, null)
+    { }
 
     [Trace]
     protected override TOutput? Invoke(TInput? obj)

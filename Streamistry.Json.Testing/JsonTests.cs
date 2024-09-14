@@ -52,8 +52,7 @@ public class JsonTests
     [TestCase(JsonThird, null)]
     public void JsonPathPlucker_ValidPath_ExistingValue(string jsonString, string? email)
     {
-        var pipeline = new Pipeline<JsonObject>();
-        var plucker = new PathPlucker<string>(pipeline, "$.user.contact.email");
+        var plucker = new PathPlucker<string>("$.user.contact.email");
         var sink = new MemorySink<string>(plucker);
         plucker.Emit((JsonObject)JsonNode.Parse(jsonString)!);
 

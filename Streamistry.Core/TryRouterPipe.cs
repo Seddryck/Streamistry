@@ -9,7 +9,7 @@ using Streamistry.Observability;
 namespace Streamistry;
 public abstract class TryRouterPipe<TInput, TOutput> : DualRouterPipe<TInput, TOutput>
 {
-    public TryRouterPipe(IChainablePort<TInput> upstream)
+    public TryRouterPipe(IChainablePort<TInput>? upstream)
     : base(upstream)
     { }
 

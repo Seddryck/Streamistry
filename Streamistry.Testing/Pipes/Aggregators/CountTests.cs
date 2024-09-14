@@ -13,16 +13,14 @@ public class CountTests
     [Test]
     public void Emit_SingleElement_Successful()
     {
-        var pipeline = new Pipeline<int>();
-        var aggregator = new Count<int>(pipeline);
+        var aggregator = new Count<int>();
         Assert.That(aggregator.EmitAndGetOutput(10), Is.EqualTo(1));
     }
 
     [Test]
     public void Emit_ManyElements_Successful()
     {
-        var pipeline = new Pipeline<int>();
-        var aggregator = new Count<int>(pipeline);
+        var aggregator = new Count<int>();
         Assert.That(aggregator.EmitAndAnyOutput(2), Is.True);
         Assert.That(aggregator.EmitAndAnyOutput(3), Is.True);
         Assert.That(aggregator.EmitAndAnyOutput(4), Is.True);
@@ -31,8 +29,7 @@ public class CountTests
     [Test]
     public void Emit_ManyElements_CorrectResults()
     {
-        var pipeline = new Pipeline<int>();
-        var aggregator = new Count<int>(pipeline);
+        var aggregator = new Count<int>();
         Assert.That(aggregator.EmitAndGetOutput(2), Is.EqualTo(1));
         Assert.That(aggregator.EmitAndGetOutput(3), Is.EqualTo(2));
         Assert.That(aggregator.EmitAndGetOutput(4), Is.EqualTo(3));
@@ -41,8 +38,7 @@ public class CountTests
     [Test]
     public void Emit_ManyElementsAsShort_Successful()
     {
-        var pipeline = new Pipeline<int>();
-        var aggregator = new Count<int, short>(pipeline);
+        var aggregator = new Count<int, short>();
         aggregator.Emit(10);
         aggregator.Emit(15);
         Assert.That(aggregator.EmitAndGetOutput(4), Is.EqualTo((short)3));

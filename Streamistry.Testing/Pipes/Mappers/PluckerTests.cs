@@ -16,8 +16,7 @@ public class PluckerTests
     [Test]
     public void Emit_HumanPluckerOnBirthDay_BirthDay()
     {
-        var pipeline = new Pipeline<Human>();
-        var plucker = new Plucker<Human, DateOnly>(pipeline, h => h.BirthDay);
+        var plucker = new Plucker<Human, DateOnly>(h => h.BirthDay);
 
         var albert = new Human("Albert Einstein", new DateOnly(1879, 3, 14));
         Assert.That(plucker.EmitAndGetOutput(albert), Is.EqualTo(new DateOnly(1879, 3, 14)));
@@ -26,8 +25,7 @@ public class PluckerTests
     [Test]
     public void Emit_HumanPluckerOnBirthMonth_Integer()
     {
-        var pipeline = new Pipeline<Human>();
-        var plucker = new Plucker<Human, int>(pipeline, h => h.BirthDay.Month);
+        var plucker = new Plucker<Human, int>(h => h.BirthDay.Month);
 
         var albert = new Human("Albert Einstein", new DateOnly(1879, 3, 14));
         Assert.That(plucker.EmitAndGetOutput(albert), Is.EqualTo(3));

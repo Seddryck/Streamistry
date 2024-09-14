@@ -23,7 +23,7 @@ public abstract class Combinator<TFirst, TSecond, TResult> : ChainablePipe<TResu
     protected IChainablePort<TSecond> SecondUpstream { get; }
 
     public Combinator(IChainablePort<TFirst> firstUpstream, IChainablePort<TSecond> secondUpstream, Func<TFirst?, TSecond?, TResult?> function)
-    : base(firstUpstream.Pipe.GetObservabilityProvider())
+    : base(firstUpstream.Pipe)
     {
         firstUpstream.RegisterDownstream(EmitFirst);
         firstUpstream.Pipe.RegisterOnCompleted(Complete);

@@ -16,8 +16,7 @@ public class DebugOutputSinkTests
     {
         using var output = new ConsoleOutput();
 
-        var pipeline = new Pipeline<int>();
-        var sink = new DebugOutputSink<int>(pipeline);
+        var sink = new DebugOutputSink<int>();
         sink.Emit(0);
 
         Assert.That(output.GetOuput(), Is.EqualTo(">>> 0\r\n"));
@@ -28,8 +27,7 @@ public class DebugOutputSinkTests
     {
         using var output = new ConsoleOutput();
 
-        var pipeline = new Pipeline<string>();
-        var sink = new DebugOutputSink<string>(pipeline);
+        var sink = new DebugOutputSink<string>();
         sink.Emit("Hello");
         sink.Emit("World");
         sink.Emit("!");

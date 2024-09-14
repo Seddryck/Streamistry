@@ -14,8 +14,7 @@ public class MemorySinkTests
     [Test]
     public void Emit_DisplayOneElement_Successful()
     {
-        var pipeline = new Pipeline<int>();
-        var sink = new MemorySink<int>(pipeline);
+        var sink = new MemorySink<int>();
         sink.Emit(0);
 
         Assert.That(sink.State, Has.Count.EqualTo(1));
@@ -25,8 +24,7 @@ public class MemorySinkTests
     [Test]
     public void Emit_DisplayThreeElements_Successful()
     {
-        var pipeline = new Pipeline<string>();
-        var sink = new MemorySink<string>(pipeline);
+        var sink = new MemorySink<string>();
 
         sink.Emit("Hello");
         Assert.Multiple(() =>

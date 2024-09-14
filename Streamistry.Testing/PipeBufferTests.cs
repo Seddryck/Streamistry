@@ -14,44 +14,34 @@ public class PipeBufferTests
     [Test]
     public void WithoutBuffer_TwoSinks_Overlaps()
     {
-        var pipeline = new Pipeline<int>();
-        var mapper = new Mapper<int, int>(pipeline, x => x + 1);
+        var source = new EnumerableSource<int>([0, 1, 2]);
+        var mapper = new Mapper<int, int>(source, x => x + 1);
         var firstSink = new DebugOutputSink<int>(mapper);
         var secondSink = new DebugOutputSink<int>(mapper);
 
         using var output = new ConsoleOutput();
-
-        pipeline.Emit(0);
-        pipeline.Emit(1);
-        pipeline.Emit(2);
+        source.Start();
         Assert.That(output.GetOuput(), Is.EqualTo(">>> 1\r\n>>> 1\r\n>>> 2\r\n>>> 2\r\n>>> 3\r\n>>> 3\r\n"));
     }
 
     [Test]
     public void WithBuffer_TwoSinks_NoOverlap()
     {
-        var pipeline = new Pipeline<int>();
-        var mapper = new Mapper<int, int>(pipeline, x => x + 1);
+        var source = new EnumerableSource<int>([0, 1, 2]);
+        var mapper = new Mapper<int, int>(source, x => x + 1);
         var firstSink = new DebugOutputSink<int>(mapper);
         var buffer = new PipeBuffer<int>(mapper);
         var secondSink = new DebugOutputSink<int>(buffer);
 
         using var output = new ConsoleOutput();
-
-        pipeline.Emit(0);
-        pipeline.Emit(1);
-        pipeline.Emit(2);
-        Assert.That(output.GetOuput(), Is.EqualTo(">>> 1\r\n>>> 2\r\n>>> 3\r\n"));
-
-        pipeline.Complete();
+        source.Start();
         Assert.That(output.GetOuput(), Is.EqualTo(">>> 1\r\n>>> 2\r\n>>> 3\r\n>>> 1\r\n>>> 2\r\n>>> 3\r\n"));
     }
 
     [Test]
     public void WithBuffer_TwoSinks2_NoOverlap()
     {
-        var pipeline = new Pipeline<int>();
-        var mapper = new Mapper<int, int>(pipeline, x => x + 1);
+        var mapper = new Mapper<int, int>(x => x + 1);
         var buffer = new PipeBuffer<int>(mapper);
 
         bool[] expected = [true, false];
@@ -61,15 +51,14 @@ public class PipeBufferTests
             Assert.That(mapper.EmitAndAnyOutputs(1, [mapper, buffer]), Is.EqualTo(expected));
             Assert.That(mapper.EmitAndAnyOutputs(2, [mapper, buffer]), Is.EqualTo(expected));
 
-            Assert.That(buffer.GetOutputs(pipeline.Complete), Is.EqualTo(new int[] { 1, 2, 3 }));
+            Assert.That(buffer.GetOutputs(mapper.Complete), Is.EqualTo(new int[] { 1, 2, 3 }));
         });
     }
 
     [Test]
     public void WithBufferMaxCapacity_TwoSinks_NoOverlap()
     {
-        var pipeline = new Pipeline<int>();
-        var mapper = new Mapper<int, int>(pipeline, x => x + 1);
+        var mapper = new Mapper<int, int>(x => x + 1);
         var buffer = new PipeBuffer<int>(mapper, 3);
 
         bool[] blocked = [true, false];
@@ -80,7 +69,7 @@ public class PipeBufferTests
             Assert.That(mapper.EmitAndAnyOutputs(1, [mapper, buffer]), Is.EqualTo(blocked));
             Assert.That(mapper.EmitAndAnyOutputs(2, [mapper, buffer]), Is.EqualTo(released));
             Assert.That(mapper.EmitAndAnyOutputs(3, [mapper, buffer]), Is.EqualTo(blocked));
-            Assert.That(buffer.GetOutputs(pipeline.Complete), Is.EqualTo(new int[] { 4 }));
+            Assert.That(buffer.GetOutputs(mapper.Complete), Is.EqualTo(new int[] { 4 }));
         });
     }
 

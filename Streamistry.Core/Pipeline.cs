@@ -9,32 +9,30 @@ namespace Streamistry;
 
 public class Pipeline : ObservablePipe
 {
-    private Action? Starting { get; }
+    private Action? Starting { get; set; }
+
+    public Pipeline(ObservabilityProvider? observability = null)
+        : this([], observability)
+    { }
 
     public Pipeline(ISource source, ObservabilityProvider? observability = null)
-        : this([source])
+        : this([source], observability)
     { }
 
     public Pipeline(ISource[] sources, ObservabilityProvider? observability = null)
         : base(observability)
     {
         foreach (var source in sources)
-        {
-            Starting += source.Start;
-            source.RegisterObservability(observability);
-        }
+            AddSource(source);
+    }
+
+    internal void AddSource(ISource source)
+    {
+        Starting += source.Start;
+        source.RegisterObservability(GetObservabilityProvider());
     }
 
     public void Start()
         => Starting?.Invoke();
 }
 
-public class Pipeline<T> : ChainablePipe<T>, IProcessablePipe<T>
-{
-    public void Emit(T? obj)
-        => PushDownstream(obj);
-
-    public Pipeline(ObservabilityProvider? provider = null)
-        : base(provider)
-    { }
-}

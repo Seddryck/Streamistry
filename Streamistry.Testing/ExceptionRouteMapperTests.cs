@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Streamistry;
 using Streamistry.Pipes.Sinks;
+using Streamistry.Pipes.Sources;
 using Streamistry.Testability;
 
 namespace Streamistry.Testing;
@@ -14,8 +15,7 @@ public class ExceptionRouterMapperTests
     [Test]
     public void Emit_ValidData_MainOnly()
     {
-        var pipeline = new Pipeline<int>();
-        var mapper = new ExceptionMapper<int, int>(pipeline, x => 60 / x);
+        var mapper = new ExceptionMapper<int, int>(x => 60 / x);
         Assert.Multiple(() =>
         {
             Assert.That(mapper.EmitAndGetOutput(10), Is.EqualTo(6));
@@ -27,8 +27,7 @@ public class ExceptionRouterMapperTests
     [Test]
     public void Emit_InvalidData_ExceptionOnly()
     {
-        var pipeline = new Pipeline<int>();
-        var mapper = new ExceptionMapper<int, int>(pipeline, x => 60 / x);
+        var mapper = new ExceptionMapper<int, int>(x => 60 / x);
         Assert.Multiple(() =>
         {
             Assert.That(mapper.EmitAndAnyOutput(0), Is.False);
@@ -40,8 +39,7 @@ public class ExceptionRouterMapperTests
     [Test]
     public void Emit_MixedData_Successful()
     {
-        var pipeline = new Pipeline<int>();
-        var mapper = new ExceptionMapper<int, int>(pipeline, x => 60 / x);
+        var mapper = new ExceptionMapper<int, int>(x => 60 / x);
         Assert.Multiple(() =>
         {
             Assert.That(mapper.EmitAndGetOutput(10), Is.EqualTo(6));
@@ -53,18 +51,19 @@ public class ExceptionRouterMapperTests
     [Test]
     public void Emit_MixedDataWithExceptionPathAndExplicitMainPath_DontFail()
     {
-        var pipeline = new Pipeline<int>();
-        var mapper = new ExceptionMapper<int, int>(pipeline, x => 60 / x);
+        var source = new EnumerableSource<int>([10, 0, 3]);
+        var mapper = new ExceptionMapper<int, int>(source, x => 60 / x);
         var mainSink = new MemorySink<int>(mapper.Main);
         var exceptionSink = new MemorySink<int>(mapper.Alternate);
-        pipeline.Emit(10);
-        pipeline.Emit(0);
-        pipeline.Emit(3);
+        source.Start();
 
-        Assert.That(mainSink.State.Count, Is.EqualTo(2));
-        Assert.That(mainSink.State.First, Is.EqualTo(6));
-        Assert.That(mainSink.State.Last, Is.EqualTo(20));
-        Assert.That(exceptionSink.State.Count, Is.EqualTo(1));
-        Assert.That(exceptionSink.State.First, Is.EqualTo(0));
+        Assert.Multiple(() =>
+        {
+            Assert.That(mainSink.State.Count, Is.EqualTo(2));
+            Assert.That(mainSink.State.First, Is.EqualTo(6));
+            Assert.That(mainSink.State.Last, Is.EqualTo(20));
+            Assert.That(exceptionSink.State.Count, Is.EqualTo(1));
+            Assert.That(exceptionSink.State.First, Is.EqualTo(0));
+        });
     }
 }

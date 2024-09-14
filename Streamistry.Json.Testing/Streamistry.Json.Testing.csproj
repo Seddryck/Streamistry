@@ -21,7 +21,7 @@
     <PackageReference Include="RichardSzalay.MockHttp" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
-		<ProjectReference Include="..\..\Streamistry\Streamistry.Core\Streamistry.csproj" />
+		<ProjectReference Include="..\Streamistry.Core\Streamistry.csproj" />
 		<ProjectReference Include="..\Streamistry.Json\Streamistry.Json.csproj" />
 	</ItemGroup>
   <ItemGroup>

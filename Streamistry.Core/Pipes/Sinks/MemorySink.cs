@@ -11,11 +11,14 @@ public class MemorySink<T> : Sink<T>
 {
     public IList<T?> State { get; }
 
-    public MemorySink(IChainablePort<T> upstream)
-        : this(upstream, []) { }
+    public MemorySink()
+        : this([], null) { }
 
-    private MemorySink(IChainablePort<T> upstream, IList<T?> state)
-        : base(upstream, state.Add)
+    public MemorySink(IChainablePort<T> upstream)
+        : this([], upstream) { }
+
+    private MemorySink(IList<T?> state, IChainablePort<T>? upstream)
+        : base(state.Add, upstream)
         => State = state;
 
     public void Clear()

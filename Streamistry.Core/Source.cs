@@ -19,6 +19,12 @@ public abstract class Source<TOutput> : ChainablePipe<TOutput>, ISource
         : base(provider)
     { }
 
+    protected Source(Pipeline pipeline)
+        : base(pipeline.GetObservabilityProvider())
+    {
+        Pipeline = pipeline;
+    }
+
     private bool IsStarted { get; set; }
 
     public void Start()
@@ -48,4 +54,16 @@ public abstract class Source<TOutput> : ChainablePipe<TOutput>, ISource
 
     public void WaitOnCompleted(IChainablePipe pipe)
         => pipe.RegisterOnCompleted(Start);
+}
+
+public class EmptySource<TOutput> : Source<TOutput>, IProcessablePipe<TOutput>
+{
+    public EmptySource()
+        :base((ObservabilityProvider?)null)
+    { }
+
+    public void Emit(TOutput? obj)
+        => PushDownstream(obj);
+
+    protected override bool TryReadNext(out TOutput? item) => throw new NotImplementedException();
 }

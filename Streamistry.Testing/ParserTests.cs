@@ -13,8 +13,7 @@ public class ParserTests
     [Test]
     public void DateParserEmit_ValidData_MainRoute()
     {
-        var pipeline = new Pipeline<string>();
-        var parser = new DateParser(pipeline);
+        var parser = new DateParser();
         Assert.Multiple(() =>
         {
             Assert.That(parser.EmitAndGetOutput("2024-08-30"), Is.EqualTo(new DateOnly(2024, 8, 30)));
@@ -26,8 +25,7 @@ public class ParserTests
     [Test]
     public void DateParserEmit_MixedData_MainRouteAndExceptionRoute()
     {
-        var pipeline = new Pipeline<string>();
-        var parser = new DateParser(pipeline);
+        var parser = new DateParser();
         Assert.Multiple(() =>
         {
             Assert.That(parser.EmitAndGetOutput("2024-08-30"), Is.EqualTo(new DateOnly(2024, 8, 30)));
@@ -42,8 +40,7 @@ public class ParserTests
     [Test]
     public void DateTimeParserEmit_ValidData_MainRoute()
     {
-        var pipeline = new Pipeline<string>();
-        var parser = new DateTimeParser(pipeline);
+        var parser = new DateTimeParser();
         Assert.Multiple(() =>
         {
             Assert.That(parser.EmitAndGetOutput("2024-08-30 17:12:16"), Is.EqualTo(new DateTime(2024, 8, 30, 17, 12, 16)));
@@ -55,8 +52,7 @@ public class ParserTests
     [Test]
     public void DateTimeParserEmit_MixedData_MainRouteAndExceptionRoute()
     {
-        var pipeline = new Pipeline<string>();
-        var parser = new DateTimeParser(pipeline);
+        var parser = new DateTimeParser();
         Assert.Multiple(() =>
         {
             Assert.That(parser.EmitAndGetOutput("2024-08-30 17:12:16"), Is.EqualTo(new DateTime(2024, 8, 30, 17, 12, 16)));

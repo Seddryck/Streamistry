@@ -9,8 +9,16 @@ using System.Threading.Tasks;
 namespace Streamistry.Pipes.Mappers;
 public class Plucker<TInput, TOutput> : Mapper<TInput, TOutput>
 {
-    public Plucker(IChainablePipe<TInput> upstream, Expression<Func<TInput, TOutput?>> expr)
-        : base(upstream, x => RetrieveProperty(x, expr))
+    public Plucker(Expression<Func<TInput, TOutput?>> expr)
+        : this(expr, null)
+    { }
+
+    public Plucker(IChainablePort<TInput> upstream, Expression<Func<TInput, TOutput?>> expr)
+        : this(expr, upstream)
+    { }
+
+    protected Plucker(Expression<Func<TInput, TOutput?>> expr, IChainablePort<TInput>? upstream = null)
+        : base(x => RetrieveProperty(x, expr), upstream)
     { }
 
     private static TOutput? RetrieveProperty(TInput? input, Expression<Func<TInput, TOutput?>> lambda)
