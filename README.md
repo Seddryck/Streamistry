@@ -1,5 +1,5 @@
 # Streamistry
-Streamistry is a lightweight library offering streaming support with features like accumulators, windows and sinks. This allows you to process and manage continuous data streams efficiently, breaking them into time-based or count-based windows for real-time analysis.
+Streamistry is a lightweight library designed to support pipeline, streaming, and ETL development for data engineering and integration. Its versatility makes it an excellent tool for building robust, scalable data workflows and optimizing data processing tasks. With features such as accumulators, windows, and sinks, it efficiently handles streaming.
 
 [About][] | [Installing][] | [Quickstart][]
 
