@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Streamistry.Testability;
+using Streamistry.Pipes.Combinators;
 
 namespace Streamistry.Testing.Pipes.Combinators;
 public class ZipperTests
@@ -39,7 +40,7 @@ public class ZipperTests
     {
         var first = new EmptySource<int>();
         var second = new EmptySource<int>();
-        var combinator = new Zipper<int, int, int>(first, second, (x, y) => x*y);
+        var combinator = new Zipper<int, int, int>(first, second, (x, y) => x * y);
 
         Assert.Multiple(() =>
         {
@@ -89,5 +90,37 @@ public class ZipperTests
             Assert.That(second.EmitAndGetOutput(5, combinator), Is.EqualTo("*****"));
             Assert.That(second.EmitAndGetOutput(3, combinator), Is.EqualTo("!!!"));
         });
+    }
+
+    [Test]
+    public void Emit_ZipThreeStreams_Successful()
+    {
+        var year = new EmptySource<int>();
+        var month = new EmptySource<int>();
+        var day = new EmptySource<int>();
+        var combinator = new Zipper<int, int, int, DateOnly>(year, month, day, (x, y, z) => new DateOnly(x, y, z));
+
+        year.Emit(2024);
+        month.Emit(9);
+        Assert.That(day.EmitAndGetOutput(15, combinator), Is.EqualTo(new DateOnly(2024, 9, 15)));
+    }
+
+    [Test]
+    public void Emit_ZipSixStreams_Successful()
+    {
+        var year = new EmptySource<int>();
+        var month = new EmptySource<int>();
+        var day = new EmptySource<int>();
+        var hour = new EmptySource<int>();
+        var minute = new EmptySource<int>();
+        var second = new EmptySource<int>();
+        var combinator = new Zipper<int, int, int, int, int, int, DateTime>(year, month, day, hour, minute, second, (y, m, d, h, i, s) => new DateTime(y, m, d, h, i, s));
+
+        year.Emit(2024);
+        month.Emit(9);
+        hour.Emit(17);
+        second.Emit(45);
+        minute.Emit(12);
+        Assert.That(day.EmitAndGetOutput(15, combinator), Is.EqualTo(new DateTime(2024, 9, 15, 17, 12, 45)));
     }
 }

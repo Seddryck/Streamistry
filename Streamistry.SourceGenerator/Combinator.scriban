@@ -1,0 +1,80 @@
+﻿/// <summary>
+/// Represents a pipeline element that merges multiple upstream streams into a single downstream stream by applying a specified mapping function to corresponding values from each upstream.
+/// The output stream type is determined by the result of the mapping function applied to the input elements.
+/// </summary>
+{{~ for type in generics ~}}
+/// <typeparam name="{{type}}">The type of the elements in the input stream {{ for.index + 1 }}.</typeparam>
+{{~ end ~}}
+/// <typeparam name="TResult">The type of the elements in the output stream, determined by the result of the mapping function.</typeparam>
+public abstract partial class Combinator<{{ generics | array.join ", " }}, TResult > : ChainablePipe<TResult>
+{
+    public Func<{{ generics | array.join "?, " }}?, TResult?> Function { get; init; }
+    protected int BranchesCompleted { get; set; }
+    {{~ for type in generics ~}}
+    protected IChainablePort<{{ type }}?> Upstream{{ for.index + 1 }} { get; }
+    {{~ end ~}}
+
+    public Combinator(
+        {{~ for type in generics ~}}
+                IChainablePort<{{ type }}?> upstream{{ for.index + 1 }},
+        {{~ end ~}}
+                Func<{{ generics | array.join "?, " }}?, TResult?> function)
+    : base(upstream1.Pipe)
+    {
+        {{~ for type in generics ~}}
+        upstream{{ for.index + 1 }}.RegisterDownstream(Emit{{ for.index + 1 }});
+        upstream{{ for.index + 1 }}.Pipe.RegisterOnCompleted(Complete);
+        Upstream{{ for.index + 1 }} = upstream{{ for.index + 1 }};
+        {{~ end ~}}
+        Function = function;
+    }
+
+    {{~ for type in generics ~}}
+    public void Emit{{ for.index + 1 }}({{ type }}? value)
+    {
+        Queue(Upstream{{for.index + 1}}, value);
+        if (TryGetElements(
+            {{-
+            func concat; ret string.append "out var item" $0; end
+            indexes | array.each @concat | array.join ", "
+            }}))
+            PushDownstream(Invoke(
+            {{-
+            func concat; ret string.append "item" $0; end
+            indexes | array.each @concat | array.join ", "
+            }}));
+    }
+    {{~ end ~}}
+
+    public override void Complete()
+    {
+        BranchesCompleted += 1;
+        if (BranchesCompleted >= {{ generics.size }})
+        {
+            BranchesCompleted = 0;
+            PushComplete();
+        }
+    }
+
+    [Trace]
+    protected TResult? Invoke(
+            {{-
+            func concat; ret string.append "T" $0 | string.append "? item" | string.append $0; end
+            indexes | array.each @concat | array.join ", "
+            -}}
+            )
+        => Function.Invoke(
+            {{-
+            func concat; ret string.append "item" $0; end
+            indexes | array.each @concat | array.join ", "
+            -}}
+            );
+
+    protected abstract bool TryGetElements(
+            {{-
+            func concat; ret string.append "out T" $0 | string.append "? item" | string.append $0; end
+            indexes | array.each @concat | array.join ", "
+            }});
+
+    protected abstract void Queue<T>(IChainablePort<T?> upstream, T? value);
+}
