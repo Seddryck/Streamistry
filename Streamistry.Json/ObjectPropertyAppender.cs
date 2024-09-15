@@ -7,6 +7,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Json.More;
 using Json.Path;
+using Streamistry.Pipes.Combinators;
 
 
 namespace Streamistry.Json;
@@ -15,7 +16,7 @@ public class ObjectPropertyAppender<TInputMain, TInputSecondary> : Zipper<TInput
     where TInputSecondary : JsonNode
 {
 
-    public ObjectPropertyAppender(IChainablePort<TInputMain> mainUpstream, IChainablePort<TInputSecondary> secondUpstream, string path)
+    public ObjectPropertyAppender(IChainablePort<TInputMain?> mainUpstream, IChainablePort<TInputSecondary?> secondUpstream, string path)
         : base(mainUpstream, secondUpstream, (x, y) => AppendProperty(x, y, path))
     { }
 

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Streamistry.Pipes.Mappers;
-using Streamistry.Pipes.Sinks;
+using Streamistry.Pipes.Combinators;
 using Streamistry.Pipes.Sources;
 using Streamistry.Testability;
 
