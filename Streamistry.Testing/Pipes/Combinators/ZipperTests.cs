@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Streamistry.Testability;
+using Streamistry.Pipes.Combinators;
 
 namespace Streamistry.Testing.Pipes.Combinators;
 public class ZipperTests

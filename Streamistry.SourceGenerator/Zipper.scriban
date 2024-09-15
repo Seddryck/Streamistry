@@ -1,0 +1,56 @@
+﻿public partial class Zipper<{{ generics | array.join ", " }}, TResult> : Combinator<{{ generics | array.join ", " }}, TResult>
+{
+    {{~ for type in generics ~}}
+    private Queue<{{ type }}?> Queue{{ for.index + 1 }} { get; } = new();
+    {{~ end ~}}
+
+    public Zipper(
+            {{~ for type in generics ~}}
+            IChainablePort<{{ type }}?> upstream{{ for.index + 1 }},
+            {{~ end ~}}
+            Func<{{ generics | array.join "?, " }}?, TResult?> function
+        )
+        : base(
+            {{~ for type in generics ~}}
+            upstream{{ for.index + 1 }},
+            {{~ end ~}}
+            function
+        )
+    { }
+
+    protected override bool TryGetElements(
+            {{-
+            func concat; ret string.append "out T" $0 | string.append "? item" | string.append $0; end
+            indexes | array.each @concat | array.join ", "
+            }})
+    {
+        if (
+            {{-
+            func concat; ret string.append "Queue" $0 | string.append ".Count > 0"; end
+            indexes | array.each @concat | array.join " && "
+            -}}
+        )
+        {
+            {{~ for index in indexes ~}}
+            item{{index}} = Queue{{index}}.Dequeue();
+            {{~ end ~}}
+            return true;
+        }
+        {{~ for index in indexes ~}}
+        item{{index}} = default;
+        {{~ end ~}}
+        return false;
+    }
+
+    protected override void Queue<T>(IChainablePort<T?> upstream, T? value) where T : default
+    {
+        {{~ for index in indexes ~}}
+        if (upstream == Upstream{{ index }} && value is T{{ index }} t{{ index }})
+        {
+            Queue{{ index }}.Enqueue(t{{ index }});
+            return;
+        }
+        {{~ end ~}}
+        throw new ArgumentOutOfRangeException(nameof(value));
+    }
+}

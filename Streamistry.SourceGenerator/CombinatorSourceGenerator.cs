@@ -1,0 +1,28 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.CodeAnalysis.Text;
+using Microsoft.CodeAnalysis;
+using System.Resources;
+using Scriban;
+using System.Reflection;
+
+namespace Streamistry.SourceGenerator;
+
+[Generator]
+public class CombinatorSourceGenerator : BaseSourceGenerator
+{
+    public override string GenerateClasses()
+    {
+        var sb = new StringBuilder();
+        sb.Append(ReadTemplate("Header.scriban")).AppendLine();
+
+        for (int i = MIN_CARDINALITY; i <= MAX_CARDINALITY; i++)
+        {
+            sb.Append(GenerateClass(Classname, i));
+            sb.AppendLine();
+        }
+
+        return sb.ToString();
+    }
+}
