@@ -1,0 +1,23 @@
+﻿public class CombinatorBuilder<{{ generics | array.join ", " }}, TOutput> : BaseCombinatorBuilder<TOutput>
+{
+    protected Func<{{ generics | array.join "?, " }}?, TOutput> Function { get; }
+
+    public CombinatorBuilder(
+                IBuilder<IChainablePort[]> upstream
+                , Func<{{ generics | array.join "?, " }}?, TOutput> function
+        )
+        : base(upstream)
+        => (Function) = (function);
+
+    public override IChainablePort<TOutput> OnBuildPipeElement()
+    {
+        var upstreams = Upstream.BuildPipeElement();
+
+        return new Zipper<{{ generics | array.join ", " }}, TOutput>(
+                    {{~ for type in generics ~}}
+                    (IChainablePort<{{type}}?>)upstreams[{{ for.index }}],
+                    {{~ end ~}}
+                    Function ?? throw new InvalidOperationException()
+            );
+    }
+}

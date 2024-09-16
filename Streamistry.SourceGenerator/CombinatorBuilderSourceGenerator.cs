@@ -10,14 +10,14 @@ using System.Reflection;
 namespace Streamistry.SourceGenerator;
 
 [Generator]
-public class ZipperSourceGenerator : BaseSourceGenerator
+public class CombinatorBuilderSourceGenerator : BaseSourceGenerator
 {
     public override string GenerateClasses()
     {
         var sb = new StringBuilder();
         sb.Append(ReadTemplate("Header.scriban"))
             .AppendLine()
-            .AppendLine("namespace Streamistry.Pipes.Combinators;")
+            .AppendLine("namespace Streamistry.Fluent;")
             .AppendLine();
 
         for (int i = MIN_CARDINALITY; i <= MAX_CARDINALITY; i++)

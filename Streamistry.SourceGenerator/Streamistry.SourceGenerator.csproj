@@ -7,12 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="BasePipeBuilder.scriban" />
+    <None Remove="BranchesBuilder.scriban" />
     <None Remove="Combinator.scriban" />
+    <None Remove="CombinatorBuilder.scriban" />
     <None Remove="Header.scriban" />
     <None Remove="Zipper.scriban" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="BasePipeBuilder.scriban" />
+    <EmbeddedResource Include="CombinatorBuilder.scriban" />
+    <EmbeddedResource Include="BranchesBuilder.scriban" />
     <EmbeddedResource Include="Zipper.scriban" />
     <EmbeddedResource Include="Header.scriban" />
     <EmbeddedResource Include="Combinator.scriban" />

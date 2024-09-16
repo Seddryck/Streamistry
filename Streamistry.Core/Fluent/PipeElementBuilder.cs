@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Streamistry.Fluent;
 
-internal abstract class PipeElementBuilder<TInput, TOutput> : BasePipeBuilder<TOutput>
+public abstract class PipeElementBuilder<TInput, TOutput> : BasePipeBuilder<TOutput>
 {
     protected IPipeBuilder<TInput> Upstream { get; }
 
@@ -17,7 +17,7 @@ internal abstract class PipeElementBuilder<TInput, TOutput> : BasePipeBuilder<TO
 
     public PipeElementBuilder<TInput, TOutput> Checkpoint(out IChainablePort<TOutput> port)
     {
-        port = BuildPort();
+        port = BuildPipeElement();
         return this;
     }
 }

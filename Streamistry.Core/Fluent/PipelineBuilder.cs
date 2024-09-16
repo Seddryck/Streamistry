@@ -12,9 +12,9 @@ internal class PipelineBuilder<T> : IBuilder<Pipeline>
     public SourceBuilder<T> Source(IEnumerable<T> enumeration)
         => new (this, enumeration);
 
-    public Pipeline BuildPort()
-        => Instance ??= OnBuildPort();
+    public Pipeline BuildPipeElement()
+        => Instance ??= OnBuildPipeElement();
 
-    public Pipeline OnBuildPort()
+    public Pipeline OnBuildPipeElement()
         => new Pipeline();
 }

@@ -15,9 +15,9 @@ internal class SourceBuilder<TOutput> : BasePipeBuilder<TOutput>
     public SourceBuilder(IBuilder<Pipeline> upstream, IEnumerable<TOutput> enumeration)
         => (Enumeration, Upstream) = (enumeration, upstream);
 
-    public override IChainablePort<TOutput> OnBuildPort()
+    public override IChainablePort<TOutput> OnBuildPipeElement()
     {
-        var pipeline = Upstream.BuildPort();
+        var pipeline = Upstream.BuildPipeElement();
         var source = new EnumerableSource<TOutput>(pipeline, Enumeration);
         pipeline.AddSource(source);
         return source;

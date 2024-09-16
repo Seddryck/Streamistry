@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace Streamistry.Fluent;
 
-internal abstract class BasePipeBuilder<TOutput> : IPipeBuilder<TOutput>
+public abstract partial class BasePipeBuilder<TOutput> : IPipeBuilder<TOutput>
 {
     protected IChainablePort<TOutput>? Instance { get; set; }
 
-    public abstract IChainablePort<TOutput> OnBuildPort();
+    public abstract IChainablePort<TOutput> OnBuildPipeElement();
 
-    public IChainablePort<TOutput> BuildPort()
-        => Instance ??= OnBuildPort();
+    public IChainablePort<TOutput> BuildPipeElement()
+        => Instance ??= OnBuildPipeElement();
 
     public Pipeline Build()
     {
-        BuildPort();
+        BuildPipeElement();
         return Instance!.Pipe.Pipeline!;
     }
 
@@ -47,5 +47,4 @@ internal abstract class BasePipeBuilder<TOutput> : IPipeBuilder<TOutput>
         => new(this, parser);
     public ParserBuilder<TOutput> Parse()
         => new(this);
-
 }

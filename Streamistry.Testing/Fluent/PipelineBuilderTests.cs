@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_EmptyPipeline_Pipeline()
     {
-        var pipeline = new PipelineBuilder<int>().BuildPort();
+        var pipeline = new PipelineBuilder<int>().BuildPipeElement();
         Assert.That(pipeline, Is.Not.Null);
         Assert.That(pipeline, Is.TypeOf<Pipeline>());
     }
@@ -316,7 +317,7 @@ public class PipelineBuilderTests
                     'X' => 10,
                     _ => -1
                 };
-                return y>=0;
+                return y >= 0;
             }).Checkpoint(out var parser)
             .Build();
 
@@ -348,5 +349,72 @@ public class PipelineBuilderTests
 
         var output = aggr.GetOutputs(pipeline.Start);
         Assert.That(output.Last(), Is.EqualTo(16));
+    }
+
+
+    [Test]
+    public void Build_CombineTwoUpstreamsCheckpoint_Success()
+    {
+        var pipeline = new PipelineBuilder<string>()
+            .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
+            .Parse()
+                .AsDate()
+            .Branch(
+                day => day.Map(x => x.AddDays(1)).Pluck(x => x.Day)
+                , month => month.Map(x => x.ToString("MMMM", CultureInfo.InvariantCulture)))
+            .Zip((day, month) => $"{day} {month}").Checkpoint(out var zip)
+            .Build();
+
+        Assert.That(pipeline, Is.Not.Null);
+        Assert.That(zip, Is.Not.Null);
+
+        var output = zip.GetOutputs(pipeline.Start);
+        Assert.That(output, Does.Contain("15 September"));
+        Assert.That(output, Does.Contain("16 September"));
+    }
+
+    [Test]
+    public void Build_CombineThreeUpstreamsCheckpoint_Success()
+    {
+        var pipeline = new PipelineBuilder<string>()
+            .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
+            .Parse()
+                .AsDate()
+            .Branch(
+                day => day.Map(x => x.AddDays(1)).Pluck(x => x.Day)
+                , month => month.Map(x => x.ToString("MMMM", CultureInfo.InvariantCulture))
+                , year => year.Pluck(x => x.Year).Map(x => x + 1))
+            .Zip((day, month, year) => $"on {day} {month} {year}").Checkpoint(out var zip)
+            .Build();
+
+        Assert.That(pipeline, Is.Not.Null);
+        Assert.That(zip, Is.Not.Null);
+
+        var output = zip.GetOutputs(pipeline.Start);
+        Assert.That(output, Does.Contain("on 15 September 2025"));
+        Assert.That(output, Does.Contain("on 16 September 2025"));
+    }
+
+    [Test]
+    public void Build_CombineFiveUpstreamsCheckpoint_Success()
+    {
+        var pipeline = new PipelineBuilder<int>()
+            .Source([1, 2, 3])
+            .Branch(
+                stream1 => stream1.Map(x => x += 1)
+                , stream2 => stream2.Map(x => x += 2)
+                , stream3 => stream3.Map(x => x += 3)
+                , stream4 => stream4.Map(x => x += 4)
+                , stream5 => stream5.Map(x => x += 5))
+            .Zip((stream1, stream2, stream3, stream4, stream5) => stream1 + stream2 + stream3 + stream4 + stream5).Checkpoint(out var zip)
+            .Build();
+
+        Assert.That(pipeline, Is.Not.Null);
+        Assert.That(zip, Is.Not.Null);
+
+        var output = zip.GetOutputs(pipeline.Start);
+        Assert.That(output, Does.Contain(20));
+        Assert.That(output, Does.Contain(25));
+        Assert.That(output, Does.Contain(30));
     }
 }

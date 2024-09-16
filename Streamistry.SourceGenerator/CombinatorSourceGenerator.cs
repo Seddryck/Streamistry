@@ -15,7 +15,10 @@ public class CombinatorSourceGenerator : BaseSourceGenerator
     public override string GenerateClasses()
     {
         var sb = new StringBuilder();
-        sb.Append(ReadTemplate("Header.scriban")).AppendLine();
+        sb.Append(ReadTemplate("Header.scriban"))
+            .AppendLine()
+            .AppendLine("namespace Streamistry;")
+            .AppendLine();
 
         for (int i = MIN_CARDINALITY; i <= MAX_CARDINALITY; i++)
         {

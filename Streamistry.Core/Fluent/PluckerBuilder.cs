@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Streamistry.Pipes.Mappers;
 
 namespace Streamistry.Fluent;
-internal class PluckerBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
+public class PluckerBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
 {
     protected Expression<Func<TInput, TOutput?>> Expr { get; set; }
 
@@ -15,9 +15,9 @@ internal class PluckerBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOut
         : base(upstream)
         => (Expr) = (expr);
 
-    public override IChainablePort<TOutput> OnBuildPort()
+    public override IChainablePort<TOutput> OnBuildPipeElement()
         => new Plucker<TInput, TOutput>(
-                Upstream.BuildPort()
+                Upstream.BuildPipeElement()
                 , Expr ?? throw new InvalidOperationException()
             );
 }

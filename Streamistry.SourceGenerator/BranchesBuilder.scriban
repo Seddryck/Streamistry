@@ -1,0 +1,32 @@
+﻿public partial class BranchesBuilder<TInput, {{ generics | array.join ", " }}> : BranchesBuilder<TInput>
+{
+    {{~ for type in generics ~}}
+    protected Func<BasePipeBuilder<TInput>, BasePipeBuilder<{{type}}>> Pipe{{ for.index + 1 }} { get; }
+    {{~ end ~}}
+
+    public BranchesBuilder(
+                BasePipeBuilder<TInput> upstream 
+                {{~ for type in generics ~}}
+                , Func<BasePipeBuilder<TInput>, BasePipeBuilder<{{type}}>> pipe{{ for.index + 1 }}
+                {{~ end ~}}
+        )
+        : base(upstream)
+    {
+        {{~ for type in generics ~}}
+        Pipe{{ for.index + 1 }} = pipe{{ for.index + 1 }};
+        {{~ end ~}}
+    }
+
+    public override IChainablePort[] OnBuildPipeElement()
+    {
+        Upstream.BuildPipeElement();
+        return [
+            {{~ for type in generics ~}}
+            Pipe{{ for.index + 1 }}.Invoke(Upstream).BuildPipeElement(),
+            {{~ end ~}}
+        ];
+    }
+
+    public CombinatorBuilder<{{ generics | array.join ", " }}, TOutput> Zip<TOutput>(Func<{{ generics | array.join "?, " }}?, TOutput> function)
+        => new(this, function);
+}
