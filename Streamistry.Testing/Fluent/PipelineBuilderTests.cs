@@ -508,6 +508,33 @@ public class PipelineBuilderTests
     }
 
     [Test]
+    public void Build_InBranchOfBranchCheckpointForAllPortsTypedAllAsserted_Success()
+    {
+        var pipeline = new PipelineBuilder<string>()
+            .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
+            .Parse()
+                .AsDate()
+            .Branch(
+                day => day.Map(x => x.AddDays(1)).Pluck(x => x.Day).Branch(
+                    day1 => day1.Map(x => x + 1)
+                    , day2 => day2.Map(x => x + 2)
+                ).Zip((x,y)=> x + y)
+                , month => month.Map(x => x.ToString("MMMM", CultureInfo.InvariantCulture))
+            ).Checkpoints(out var portDay, out var portMonth)
+            .Build();
+
+        Assert.That(pipeline, Is.Not.Null);
+        Assert.That(portDay, Is.Not.Null);
+        Assert.That(portMonth, Is.Not.Null);
+
+        var action = pipeline.Start;
+        var (outputDay, outputMonth) = action.GetMultipleOutputs(portDay, portMonth);
+        Assert.That(outputDay, Does.Contain(33));
+        Assert.That(outputDay, Does.Contain(35));
+        Assert.That(outputMonth, Does.Contain("September"));
+    }
+
+    [Test]
     public void Build_CombineFiveUpstreamsCheckpoint_Success()
     {
         var pipeline = new PipelineBuilder<int>()
