@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Streamistry.Pipes.Parsers;
 
 namespace Streamistry.Fluent;
+
 public class ParserBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
 {
     protected IFormatProvider? FormatProvider { get; set; }
@@ -14,7 +15,7 @@ public class ParserBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput
 
     public ParserBuilder(IPipeBuilder<TInput> upstream, ParserDelegate<TInput, TOutput> parseFunction)
         : base(upstream)
-    => ParseFunction = parseFunction;
+    => (ParseFunction) = (parseFunction);
 
     public ParserBuilder<TInput, TOutput> WithFormatProvider(IFormatProvider formatProvider)
     {
