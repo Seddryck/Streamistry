@@ -29,4 +29,23 @@
 
     public CombinatorBuilder<{{ generics | array.join ", " }}, TOutput> Zip<TOutput>(Func<{{ generics | array.join "?, " }}?, TOutput> function)
         => new(this, function);
+
+    public BranchesBuilder<TInput, {{ generics | array.join ", " }}> Checkpoints(out IChainablePort[] ports)
+    {
+        ports = BuildPipeElement();
+        return this;
+    }
+
+    public BranchesBuilder<TInput, {{ generics | array.join ", " }}> Checkpoints(
+                {{-
+                func concat; ret string.append "out IChainablePort<T" $0 | string.append "> port" | string.append $0; end
+                indexes | array.each @concat | array.join ", "
+                -}})
+    {
+        var ports = BuildPipeElement();
+        {{~ for type in generics ~}}
+        port{{ for.index + 1 }} = ports[{{ for.index}}] as IChainablePort<{{type}}> ?? throw new InvalidCastException();
+        {{~ end ~}}
+        return this;
+    }
 }

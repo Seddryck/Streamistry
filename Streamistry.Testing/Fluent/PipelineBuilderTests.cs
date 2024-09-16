@@ -396,6 +396,118 @@ public class PipelineBuilderTests
     }
 
     [Test]
+    public void Build_InBranchCheckpoint_Success()
+    {
+        var pipeline = new PipelineBuilder<string>()
+            .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
+            .Parse()
+                .AsDate()
+            .Branch(
+                day => day.Map(x => x.AddDays(1)).Pluck(x => x.Day)
+                , month => month.Map(x => x.ToString("MMMM", CultureInfo.InvariantCulture))
+            ).Checkpoints(out var ports)
+            .Build();
+
+        Assert.That(pipeline, Is.Not.Null);
+        Assert.That(ports, Is.Not.Null);
+        Assert.That(ports, Has.Length.EqualTo(2));
+
+        var outputMonth = ((IChainablePort<string>)ports[1]).GetOutputs(pipeline.Start);
+        Assert.That(outputMonth, Does.Contain("September"));
+    }
+
+    [Test]
+    public void Build_InBranchCheckpointForAllPorts_Success()
+    {
+        var pipeline = new PipelineBuilder<string>()
+            .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
+            .Parse()
+                .AsDate()
+            .Branch(
+                day => day.Map(x => x.AddDays(1)).Pluck(x => x.Day)
+                , month => month.Map(x => x.ToString("MMMM", CultureInfo.InvariantCulture))
+            ).Checkpoints(out var ports)
+            .Build();
+
+        Assert.That(pipeline, Is.Not.Null);
+        Assert.That(ports, Is.Not.Null);
+        Assert.That(ports, Has.Length.EqualTo(2));
+
+        var outputMonth = ((IChainablePort<string>)ports[1]).GetOutputs(pipeline.Start);
+        Assert.That(outputMonth, Does.Contain("September"));
+    }
+
+
+    [Test]
+    public void Build_InBranchCheckpointWithDiscardedPorts_Success()
+    {
+        var pipeline = new PipelineBuilder<string>()
+            .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
+            .Parse()
+                .AsDate()
+            .Branch(
+                day => day.Map(x => x.AddDays(1)).Pluck(x => x.Day)
+                , month => month.Map(x => x.ToString("MMMM", CultureInfo.InvariantCulture))
+                , year => year.Pluck(x => x.Year).Map(x => x + 1)
+            ).Checkpoints(out var _, out var monthPort, out var _)
+            .Build();
+
+        Assert.That(pipeline, Is.Not.Null);
+        Assert.That(monthPort, Is.Not.Null);
+
+        var outputMonth = monthPort.GetOutputs(pipeline.Start);
+        Assert.That(outputMonth, Does.Contain("September"));
+    }
+
+    [Test]
+    public void Build_InBranchCheckpointForAllPortsAllAsserted_Success()
+    {
+        var pipeline = new PipelineBuilder<string>()
+            .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
+            .Parse()
+                .AsDate()
+            .Branch(
+                day => day.Map(x => x.AddDays(1)).Pluck(x => x.Day)
+                , month => month.Map(x => x.ToString("MMMM", CultureInfo.InvariantCulture))
+            ).Checkpoints(out var ports)
+            .Build();
+
+        Assert.That(pipeline, Is.Not.Null);
+        Assert.That(ports, Is.Not.Null);
+        Assert.That(ports, Has.Length.EqualTo(2));
+
+        var action = pipeline.Start;
+        var (outputDay, outputMonth) = action.GetMultipleOutputs((IChainablePort<int>)ports[0], (IChainablePort<string>)ports[1]);
+        Assert.That(outputDay, Does.Contain(15));
+        Assert.That(outputDay, Does.Contain(16));
+        Assert.That(outputMonth, Does.Contain("September"));
+    }
+
+    [Test]
+    public void Build_InBranchCheckpointForAllPortsTypedAllAsserted_Success()
+    {
+        var pipeline = new PipelineBuilder<string>()
+            .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
+            .Parse()
+                .AsDate()
+            .Branch(
+                day => day.Map(x => x.AddDays(1)).Pluck(x => x.Day)
+                , month => month.Map(x => x.ToString("MMMM", CultureInfo.InvariantCulture))
+            ).Checkpoints(out var portDay, out var portMonth)
+            .Build();
+
+        Assert.That(pipeline, Is.Not.Null);
+        Assert.That(portDay, Is.Not.Null);
+        Assert.That(portMonth, Is.Not.Null);
+
+        var action = pipeline.Start;
+        var (outputDay, outputMonth) = action.GetMultipleOutputs(portDay, portMonth);
+        Assert.That(outputDay, Does.Contain(15));
+        Assert.That(outputDay, Does.Contain(16));
+        Assert.That(outputMonth, Does.Contain("September"));
+    }
+
+    [Test]
     public void Build_CombineFiveUpstreamsCheckpoint_Success()
     {
         var pipeline = new PipelineBuilder<int>()

@@ -120,6 +120,16 @@ public static class PipeTestingExtensions
         return [.. outputs];
     }
 
+    public static (T1?[], T2?[]) GetMultipleOutputs<T1, T2>(this Action action, IChainablePort<T1> output1, IChainablePort<T2> output2)
+    {
+        var outputs1 = new List<T1?>();
+        output1.RegisterDownstream(outputs1.Add);
+        var outputs2 = new List<T2?>();
+        output2.RegisterDownstream(outputs2.Add);
+        action.Invoke();
+        return ([.. outputs1], [.. outputs2]);
+    }
+
     public static void RegisterDownstreamIfPossible(this IChainablePipe pipe, Action<object?> action)
     {
         // Get the type of the pipe object
