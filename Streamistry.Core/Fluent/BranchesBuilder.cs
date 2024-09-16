@@ -24,4 +24,10 @@ public abstract class BranchesBuilder<TInput> : IBuilder<IChainablePort[]>
         BuildPipeElement();
         return Instances![0].Pipe.Pipeline!;
     }
+
+}
+
+public partial class BranchesBuilder<TInput, T1, T2> : BranchesBuilder<TInput>
+{
+    
 }
