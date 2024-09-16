@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Streamistry.Fluent;
-internal class SplitterBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
+public class SplitterBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
 {
     protected Func<TInput?, TOutput[]?>? Function { get; set; }
 
@@ -13,9 +13,9 @@ internal class SplitterBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOu
         : base(upstream)
         => (Function) = (function);
 
-    public override IChainablePort<TOutput> OnBuildPort()
+    public override IChainablePort<TOutput> OnBuildPipeElement()
         => new Splitter<TInput, TOutput>(
-                Upstream.BuildPort()
+                Upstream.BuildPipeElement()
                 , Function ?? throw new InvalidOperationException()
             );
 }

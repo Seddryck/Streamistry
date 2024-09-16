@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Streamistry.Pipes.Parsers;
 
 namespace Streamistry.Fluent;
-internal class ParserBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
+public class ParserBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
 {
     protected IFormatProvider? FormatProvider { get; set; }
     protected ParserDelegate<TInput, TOutput> ParseFunction { get; }
@@ -22,11 +22,11 @@ internal class ParserBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutp
         return this;
     }
 
-    public override IChainablePort<TOutput> OnBuildPort()
-        => new Parser<TInput, TOutput>(Upstream.BuildPort(), ParseFunction);
+    public override IChainablePort<TOutput> OnBuildPipeElement()
+        => new Parser<TInput, TOutput>(Upstream.BuildPipeElement(), ParseFunction);
 }
 
-internal class ParserBuilder<TInput>
+public class ParserBuilder<TInput>
 {
     protected IPipeBuilder<TInput> Upstream { get; }
     protected IFormatProvider? FormatProvider { get; set; }
@@ -46,7 +46,7 @@ internal class ParserBuilder<TInput>
     }
 }
 
-internal class SpecializedParserBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
+public class SpecializedParserBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
 {
     protected Type Type { get; }
     protected IFormatProvider? FormatProvider { get; set; }
@@ -55,9 +55,9 @@ internal class SpecializedParserBuilder<TInput, TOutput> : PipeElementBuilder<TI
         : base(upstream)
         => (Type, FormatProvider) = (type, formatProvider);
 
-    public override IChainablePort<TOutput> OnBuildPort()
+    public override IChainablePort<TOutput> OnBuildPipeElement()
     {
-        return (IChainablePort<TOutput>)Activator.CreateInstance(Type, Upstream.BuildPort(), FormatProvider)!;
+        return (IChainablePort<TOutput>)Activator.CreateInstance(Type, Upstream.BuildPipeElement(), FormatProvider)!;
     }
 
     public SpecializedParserBuilder<TInput, TOutput> WithFormatProvider(IFormatProvider formatProvider)
@@ -89,9 +89,9 @@ internal class SpecializedParserBuilder<TInput, TOutput> : PipeElementBuilder<TI
 //        return this;
 //    }
 
-//    public override IChainablePort<TOutput> OnBuildPort()
+//    public override IChainablePort<TOutput> OnBuildPipeElement()
 //        => new Parser<TInput, TAccumulate, TOutput>(
-//                Upstream.BuildPort()
+//                Upstream.BuildPipeElement()
 //                , Accumulator ?? throw new InvalidOperationException()
 //                , Selector ?? throw new InvalidOperationException()
 //                , Seed

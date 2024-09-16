@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Streamistry.Fluent;
-internal class MapperBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
+public class MapperBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
 {
     protected Func<TInput?, TOutput?>? Function { get; set; }
 
@@ -13,9 +13,9 @@ internal class MapperBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutp
         : base(upstream)
         => (Function) = (function);
 
-    public override IChainablePort<TOutput> OnBuildPort()
+    public override IChainablePort<TOutput> OnBuildPipeElement()
         => new Mapper<TInput, TOutput>(
-                Upstream.BuildPort()
+                Upstream.BuildPipeElement()
                 , Function ?? throw new InvalidOperationException()
             );
 }

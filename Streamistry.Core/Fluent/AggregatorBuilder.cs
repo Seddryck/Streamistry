@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Streamistry.Pipes.Aggregators;
 
 namespace Streamistry.Fluent;
-internal class AggregatorBuilder<TInput, TAccumulate, TOutput>
+public class AggregatorBuilder<TInput, TAccumulate, TOutput>
 {
     protected IPipeBuilder<TInput> Upstream { get; }
 
@@ -26,10 +26,9 @@ internal class AggregatorBuilder<TInput, TAccumulate, TOutput>
     => new SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput>(Upstream, typeof(Sum<,>), [typeof(TInput), typeof(TOutput)]);
     public SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput> AsCount()
     => new SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput>(Upstream, typeof(Count<,>), [typeof(TInput), typeof(TOutput)]);
-
 }
 
-internal class SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput> : PipeElementBuilder<TInput, TOutput>
+public class SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput> : PipeElementBuilder<TInput, TOutput>
 {
     protected Type Type { get; }
     protected Type[] GenericTypeParameters { get; } = [typeof(int)];
@@ -37,14 +36,14 @@ internal class SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput> : Pipe
         : base(upstream)
         => (Type, GenericTypeParameters) = (type, genericTypeParameters);
 
-    public override IChainablePort<TOutput> OnBuildPort()
+    public override IChainablePort<TOutput> OnBuildPipeElement()
     {
         var t = Type.MakeGenericType(GenericTypeParameters);
-        return (IChainablePort<TOutput>)Activator.CreateInstance(t, Upstream.BuildPort(), null)!;
+        return (IChainablePort<TOutput>)Activator.CreateInstance(t, Upstream.BuildPipeElement(), null)!;
     }
 }
 
-internal class UniversalAggregatorBuilder<TInput, TAccumulate, TOutput> : PipeElementBuilder<TInput, TOutput>
+public class UniversalAggregatorBuilder<TInput, TAccumulate, TOutput> : PipeElementBuilder<TInput, TOutput>
 {
     protected Func<TAccumulate?, TInput?, TAccumulate?>? Accumulator { get; }
     protected Func<TAccumulate?, TOutput?>? Selector { get; set; } = x => (TOutput?)Convert.ChangeType(x, typeof(TOutput));
@@ -66,12 +65,11 @@ internal class UniversalAggregatorBuilder<TInput, TAccumulate, TOutput> : PipeEl
         return this;
     }
 
-    public override IChainablePort<TOutput> OnBuildPort()
+    public override IChainablePort<TOutput> OnBuildPipeElement()
         => new Aggregator<TInput, TAccumulate, TOutput>(
-                Upstream.BuildPort()
+                Upstream.BuildPipeElement()
                 , Accumulator ?? throw new InvalidOperationException()
                 , Selector ?? throw new InvalidOperationException()
                 , Seed
             );
-
 }

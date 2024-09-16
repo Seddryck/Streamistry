@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Streamistry.Pipes.Sinks;
 
 namespace Streamistry.Fluent;
-internal class SinkBuilder<TInput>
+public class SinkBuilder<TInput>
 {
     protected IPipeBuilder<TInput> Upstream { get; }
     private Type? SinkType { get; set; }
@@ -22,7 +22,7 @@ internal class SinkBuilder<TInput>
 
     public Pipeline Build()
     {
-        var sink = (Sink<TInput>)Activator.CreateInstance(SinkType ?? throw new InvalidOperationException(), [Upstream.BuildPort()])!;
+        var sink = (Sink<TInput>)Activator.CreateInstance(SinkType ?? throw new InvalidOperationException(), [Upstream.BuildPipeElement()])!;
         return sink.Pipeline!;
     }
 }

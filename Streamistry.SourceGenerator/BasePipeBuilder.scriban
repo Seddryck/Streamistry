@@ -1,0 +1,9 @@
+﻿public abstract partial class BasePipeBuilder<TOutput> : IPipeBuilder<TOutput>
+{
+    public BranchesBuilder<TOutput, {{ generics | array.join ", " }}> Branch<{{ generics | array.join ", " }}>(
+            {{-
+            func concat; ret string.append "Func<BasePipeBuilder<TOutput>, BasePipeBuilder<T" $0 | string.append ">> upstream" | string.append $0; end
+            indexes | array.each @concat | array.join ", "
+            }})
+        => new(this, upstream{{ indexes | array.join ", upstream" }});
+}

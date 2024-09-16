@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Streamistry.Fluent;
-internal class FilterBuilder<TInput> : PipeElementBuilder<TInput, TInput>, IPipeBuilder<TInput>
+public class FilterBuilder<TInput> : PipeElementBuilder<TInput, TInput>, IPipeBuilder<TInput>
 {
     protected Func<TInput?, bool>? Function { get; }
 
@@ -13,9 +13,9 @@ internal class FilterBuilder<TInput> : PipeElementBuilder<TInput, TInput>, IPipe
         :base(upstream)
         => (Function) = (function);
 
-    public override IChainablePort<TInput> OnBuildPort()
+    public override IChainablePort<TInput> OnBuildPipeElement()
         => new Filter<TInput>(
-                Upstream.BuildPort()
+                Upstream.BuildPipeElement()
                 , Function ?? throw new InvalidOperationException()
             );
 }
