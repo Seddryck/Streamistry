@@ -8,41 +8,6 @@ using Streamistry.Pipes.Parsers;
 
 namespace Streamistry.Fluent;
 
-public class ParserBuilder<TInput, TOutput, TFailure> : IBuilder<IChainablePort[]>
-{
-    protected BasePipeBuilder<TInput> Upstream { get; }
-    protected IFormatProvider? FormatProvider { get; set; }
-    protected ParserDelegate<TInput, TOutput> ParseFunction { get; }
-    protected Func<BasePipeBuilder<TInput>, BasePipeBuilder<TOutput>> SuccessPipe { get; }
-    protected Func<BasePipeBuilder<TInput>, BasePipeBuilder<TFailure>> FailurePipe { get; }
-    protected IChainablePort[]? Instances { get; set; }
-
-    public ParserBuilder(
-                BasePipeBuilder<TInput> upstream
-                , ParserDelegate<TInput, TOutput> parseFunction
-                , Func<BasePipeBuilder<TInput>, BasePipeBuilder<TOutput>> successPipe
-                , Func<BasePipeBuilder<TInput>, BasePipeBuilder<TFailure>> failurePipe)
-        => (Upstream, ParseFunction, SuccessPipe, FailurePipe) = (upstream, parseFunction, successPipe, failurePipe);
-
-    public ParserBuilder<TInput, TOutput, TFailure> WithFormatProvider(IFormatProvider formatProvider)
-    {
-        FormatProvider = formatProvider;
-        return this;
-    }
-
-    public IChainablePort[] BuildPipeElement()
-        => Instances ??= OnBuildPipeElement();
-
-    public IChainablePort[] OnBuildPipeElement()
-    {
-        Upstream.BuildPipeElement();
-        return [
-            new Parser<TInput, TOutput>(Upstream.BuildPipeElement(), ParseFunction),
-            FailurePipe.Invoke(Upstream).BuildPipeElement(),
-        ];
-    }
-}
-
 public class ParserBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
 {
     protected IFormatProvider? FormatProvider { get; set; }
