@@ -20,7 +20,7 @@ public class ObjectPropertyAppenderTests
         var pipeline = new Pipeline([persons, birthdates]);
         var personObject = new ObjectParser(persons);
         var birthdateValue = new ValueMapper<DateOnly>(birthdates, date => date.ToString("yyyy-MM-dd"));
-        var appender = new ObjectPropertyAppender<JsonObject, JsonValue>(personObject, birthdateValue, "$.user.birthdate");
+        var appender = new ObjectPropertyAppender<JsonObject, JsonValue>(personObject!, birthdateValue!, "$.user.birthdate");
         var sink = new MemorySink<JsonObject>(appender);
         pipeline.Start();
 
