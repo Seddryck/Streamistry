@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Streamistry.Pipes.Sources;
 
 namespace Streamistry.Fluent;
-internal class SourceBuilder<TOutput> : BasePipeBuilder<TOutput>
+public class SourceBuilder<TOutput> : BasePipeBuilder<TOutput>
 {
     protected IBuilder<Pipeline> Upstream { get; }
 

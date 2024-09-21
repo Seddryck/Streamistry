@@ -22,12 +22,18 @@ public abstract partial class BasePipeBuilder<TOutput> : IPipeBuilder<TOutput>
         return Instance!.Pipe.Pipeline!;
     }
 
+    public BasePipeBuilder<TOutput> Checkpoint(out IChainablePort<TOutput> port)
+    {
+        port = BuildPipeElement();
+        return this;
+    }
+
     public SinkBuilder<TOutput> Sink()
         => new(this);
 
-    public FilterBuilder<TOutput> Filter(Func<TOutput?, bool>? function)
-        => new(this, function);
     public MapperBuilder<TOutput, TNext> Map<TNext>(Func<TOutput?, TNext?>? function)
+        => new(this, function);
+    public FilterBuilder<TOutput> Filter(Func<TOutput?, bool>? function)
         => new(this, function);
     public PluckerBuilder<TOutput, TNext> Pluck<TNext>(Expression<Func<TOutput, TNext?>> expr)
         => new(this, expr);
