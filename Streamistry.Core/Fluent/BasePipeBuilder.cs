@@ -53,4 +53,7 @@ public abstract partial class BasePipeBuilder<TOutput> : IPipeBuilder<TOutput>
         => new(this, parser);
     public ParserBuilder<TOutput> Parse()
         => new(this);
+
+    public BinderBuilder<TOutput, TNext> Bind<TNext>(Segment<TOutput, TNext> segment)
+        => new(this, segment);
 }

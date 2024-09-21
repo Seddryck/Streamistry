@@ -518,7 +518,7 @@ public class PipelineBuilderTests
                 day => day.Map(x => x.AddDays(1)).Pluck(x => x.Day).Branch(
                     day1 => day1.Map(x => x + 1)
                     , day2 => day2.Map(x => x + 2)
-                ).Zip((x,y)=> x + y)
+                ).Zip((x, y) => x + y)
                 , month => month.Map(x => x.ToString("MMMM", CultureInfo.InvariantCulture))
             ).Checkpoints(out var portDay, out var portMonth)
             .Build();
@@ -555,5 +555,56 @@ public class PipelineBuilderTests
         Assert.That(output, Does.Contain(20));
         Assert.That(output, Does.Contain(25));
         Assert.That(output, Does.Contain(30));
+    }
+
+    [Test]
+    public void Build_WithSingleSegment_Success()
+    {
+        var segment = new Segment<int, int>(x => x.Map(y => y * 2).Filter(y => y % 5 == 3));
+
+        var pipeline = new PipelineBuilder()
+            .Source([1, 2, 3])
+            .Map(x => x * 3)
+            .Bind(segment)
+            .Map(x => x % 4).Checkpoint(out var sink)
+            .Build();
+
+        var output = sink.GetOutputs(pipeline.Start);
+        Assert.That(output, Does.Contain(2));
+    }
+
+    [Test]
+    public void Build_WithSingleSegmentChangeType_Success()
+    {
+        var segment = new Segment<int, string>(x => x.Map(y => y + 3).Map(y => new string('*', y)));
+
+        var pipeline = new PipelineBuilder()
+            .Source([1, 2, 3])
+            .Map(x => x - 2)
+            .Bind(segment)
+            .Map(x => x!.PadLeft(4, '-')).Checkpoint(out var sink)
+            .Build();
+
+        var output = sink.GetOutputs(pipeline.Start);
+        Assert.That(output, Does.Contain("--**"));
+        Assert.That(output, Does.Contain("-***"));
+        Assert.That(output, Does.Contain("****"));
+    }
+
+    [Test]
+    public void Build_WithManySegments_Success()
+    {
+        var odd = new Segment<int, int>(x => x.Filter(y => y % 2 == 1).Map(y => y * 2));
+        var even = new Segment<int, int>(x => x.Filter(y => y % 2 == 0).Map(y => y * 5));
+
+        var pipeline = new PipelineBuilder()
+            .Source([1, 2, 3, 6])
+            .Branch(odd, even)
+            .Zip((x, y) => x + y).Checkpoint(out var zip)
+            .Build();
+
+        var output = zip.GetOutputs(pipeline.Start);
+        Assert.That(output, Does.Contain(12));
+        Assert.That(output, Does.Contain(36));
     }
 }
