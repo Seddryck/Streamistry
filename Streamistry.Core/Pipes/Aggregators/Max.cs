@@ -23,8 +23,6 @@ public struct MaxState<T>() where T : INumber<T>
 
     public readonly T? Select()
         => IsEmpty ? default : Value;
-
-    public static readonly MaxState<T> @Default = new();
 }
 
 public class Max<TInput> : Aggregator<TInput, MaxState<TInput>, TInput> where TInput : INumber<TInput>
@@ -41,7 +39,7 @@ public class Max<TInput> : Aggregator<TInput, MaxState<TInput>, TInput> where TI
         : base(upstream
             , (x, y) => x.Append(y)
             , (x) => x.Select()
-            , MaxState<TInput>.Default
+            , new MaxState<TInput>()
             , completion)
     { }
 }
