@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using Streamistry.Observability;
 
 namespace Streamistry;
-public class Sink<T> : ObservablePipe, IProcessablePipe<T>
+public class Sink<T> : ObservablePipe, IProcessablePipe<T>, IBindablePipe<T>
 {
     public Action<T?> Action { get; }
-    public Pipeline? Pipeline { get; }
+    public Pipeline? Pipeline { get; private set; }
 
     public Sink(IChainablePort<T> upstream, Action<T?> function)
         :this(function, upstream)
@@ -30,4 +30,14 @@ public class Sink<T> : ObservablePipe, IProcessablePipe<T>
     [Trace]
     protected void Invoke(T? obj)
         => Action.Invoke(obj);
+    public void Bind(IChainablePort<T> input)
+    {
+        input.RegisterDownstream(Emit);
+        Pipeline = input.Pipe.Pipeline;
+    }
+
+    public void Unbind(IChainablePort<T> input)
+    {
+        input.UnregisterDownstream(Emit);
+    }
 }

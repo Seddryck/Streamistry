@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Streamistry.Observability;
 
 namespace Streamistry;
-public abstract class BaseSingleRouterPipe<TInput, TOutput> : ChainablePipe<TOutput>, IProcessablePipe<TInput>
+public abstract class BaseSingleRouterPipe<TInput, TOutput> : ChainablePipe<TOutput>, IProcessablePipe<TInput>, IBindablePipe<TInput>
 {
     protected BaseSingleRouterPipe(IChainablePort<TInput>? upstream)
         : base(upstream?.Pipe)
@@ -18,6 +18,17 @@ public abstract class BaseSingleRouterPipe<TInput, TOutput> : ChainablePipe<TOut
 
     [Meter]
     public abstract void Emit(TInput? obj);
+
+    public void Bind(IChainablePort<TInput> input)
+    {
+        input.RegisterDownstream(Emit);
+        Pipeline = input.Pipe.Pipeline;
+    }
+
+    public void Unbind(IChainablePort<TInput> input)
+    {
+        input.UnregisterDownstream(Emit);
+    }
 }
 
 public abstract class SingleRouterPipe<TInput, TOutput> : BaseSingleRouterPipe<TInput, TOutput>
