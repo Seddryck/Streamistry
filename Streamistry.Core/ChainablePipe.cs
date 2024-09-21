@@ -42,6 +42,9 @@ public abstract class ChainablePipe<T> : ObservablePipe, IChainablePipe<T>
     public void RegisterDownstream(Action<T?> action)
         => Main.RegisterDownstream(action);
 
+    public void UnregisterDownstream(Action<T?> downstream)
+        => Main.UnregisterDownstream(downstream);
+
     protected void PushDownstream(T? obj)
         => Main.PushDownstream(obj);
 

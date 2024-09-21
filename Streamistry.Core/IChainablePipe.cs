@@ -19,6 +19,7 @@ public interface IChainablePipe : IObservablePipe
 public interface IChainablePort<T> : IChainablePort
 {
     void RegisterDownstream(Action<T?> action);
+    void UnregisterDownstream(Action<T?> downstream);
 }
 
 public interface IChainablePort
