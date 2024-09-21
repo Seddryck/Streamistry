@@ -14,7 +14,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_EmptyPipeline_Pipeline()
     {
-        var pipeline = new PipelineBuilder<int>().BuildPipeElement();
+        var pipeline = new PipelineBuilder().BuildPipeElement();
         Assert.That(pipeline, Is.Not.Null);
         Assert.That(pipeline, Is.TypeOf<Pipeline>());
     }
@@ -22,7 +22,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_SourceWithinPipeline_Pipeline()
     {
-        var pipeline = new PipelineBuilder<int>()
+        var pipeline = new PipelineBuilder()
             .Source([1, 2, 3])
             .Build();
 
@@ -33,7 +33,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_SourceThenPipeWithinPipeline_Pipeline()
     {
-        var pipeline = new PipelineBuilder<int>()
+        var pipeline = new PipelineBuilder()
             .Source([1, 2, 3])
             .Filter(x => x % 2 != 0)
             .Build();
@@ -45,7 +45,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_SourceThenSinkWithinPipeline_Pipeline()
     {
-        var pipeline = new PipelineBuilder<int>()
+        var pipeline = new PipelineBuilder()
             .Source([1, 2, 3])
             .Sink().InMemory()
             .Build();
@@ -57,7 +57,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_FilterCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<int>()
+        var pipeline = new PipelineBuilder()
             .Source([1, 2, 3])
             .Filter(x => x % 2 != 0).Checkpoint(out var filter)
             .Build();
@@ -72,7 +72,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_PluckerCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<int>()
+        var pipeline = new PipelineBuilder()
             .Source([1, 2, 3])
             .Map(x => new DateOnly(2024, x, 1))
             .Pluck(x => x.Month).Checkpoint(out var plucker)
@@ -93,7 +93,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_SplitterCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["1-2-3", "4-5"])
             .Split(x => x?.Split('-') ?? []).Checkpoint(out var splitter)
             .Build();
@@ -112,7 +112,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_AggregateMaxCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<int>()
+        var pipeline = new PipelineBuilder()
             .Source([1, 3, 2])
             .Aggregate().AsMax().Checkpoint(out var aggr)
             .Build();
@@ -127,7 +127,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_AggregateMinCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<int>()
+        var pipeline = new PipelineBuilder()
             .Source([1, 3, 2])
             .Aggregate().AsMin().Checkpoint(out var aggr)
             .Build();
@@ -142,7 +142,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_AggregateAverageCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<int>()
+        var pipeline = new PipelineBuilder()
             .Source([1, 3, 2])
             .Aggregate().AsAverage().Checkpoint(out var aggr)
             .Build();
@@ -157,7 +157,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_AggregateMedianCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<int>()
+        var pipeline = new PipelineBuilder()
             .Source([1, 3, 2])
             .Aggregate().AsMedian().Checkpoint(out var aggr)
             .Build();
@@ -172,7 +172,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_AggregateSumCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<int>()
+        var pipeline = new PipelineBuilder()
             .Source([1, 3, 2])
             .Aggregate().AsSum().Checkpoint(out var aggr)
             .Build();
@@ -187,7 +187,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_AggregateCountCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<int>()
+        var pipeline = new PipelineBuilder()
             .Source([1, 3, 2])
             .Aggregate().AsCount().Checkpoint(out var aggr)
             .Build();
@@ -202,7 +202,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_AggregateUniversalCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["f", "oo", "Bar"])
             .Aggregate((x, y) => x + y).Checkpoint(out var aggr)
             .Build();
@@ -217,7 +217,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_AggregateUniversal2Checkpoint_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["f", "oo", "Bar"])
             .Aggregate<int>((x, y) => x + (string.IsNullOrEmpty(y) ? 0 : y!.Length)).Checkpoint(out var aggr)
             .Build();
@@ -233,7 +233,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_AggregateUniversal3Checkpoint_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["f", "oo", "Bar"])
             .Aggregate<(int, int), bool>((x, y) => char.IsUpper(y![0]) ? (x.Item1++, x.Item2) : (x.Item1, x.Item2++))
                 .WithSelector(x => x.Item1 > x.Item2)
@@ -250,7 +250,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_AggregateUniversal4Checkpoint_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["f", "oo", "Bar"])
             .Aggregate<(int Upper, int Lower), bool>((x, y) => char.IsUpper(y![0]) ? (x.Upper++, x.Lower) : (x.Upper, x.Lower++))
                 .WithSelector(x => x.Upper > x.Lower)
@@ -268,7 +268,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_ParserDateCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
             .Parse()
                 .AsDate()
@@ -286,7 +286,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_ParserDateTimeCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["2024-09-14 11:12:20", "2024-09-15 17:12:16", "2024-45-78"])
             .Parse()
                 .AsDateTime()
@@ -306,7 +306,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_ParserRomanFiguresCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<char>()
+        var pipeline = new PipelineBuilder()
             .Source(['I', 'X', 'Z'])
             .Parse((char x, out int y) =>
             {
@@ -333,7 +333,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_ComplexTryOnlyMainCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
             .Parse()
                 .AsDate()
@@ -355,7 +355,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_CombineTwoUpstreamsCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
             .Parse()
                 .AsDate()
@@ -376,7 +376,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_CombineThreeUpstreamsCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
             .Parse()
                 .AsDate()
@@ -398,7 +398,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_InBranchCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
             .Parse()
                 .AsDate()
@@ -419,7 +419,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_InBranchCheckpointForAllPorts_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
             .Parse()
                 .AsDate()
@@ -441,7 +441,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_InBranchCheckpointWithDiscardedPorts_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
             .Parse()
                 .AsDate()
@@ -462,7 +462,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_InBranchCheckpointForAllPortsAllAsserted_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
             .Parse()
                 .AsDate()
@@ -486,7 +486,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_InBranchCheckpointForAllPortsTypedAllAsserted_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
             .Parse()
                 .AsDate()
@@ -510,7 +510,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_InBranchOfBranchCheckpointForAllPortsTypedAllAsserted_Success()
     {
-        var pipeline = new PipelineBuilder<string>()
+        var pipeline = new PipelineBuilder()
             .Source(["2024-09-14", "2024-09-15", "2024-45-78"])
             .Parse()
                 .AsDate()
@@ -537,7 +537,7 @@ public class PipelineBuilderTests
     [Test]
     public void Build_CombineFiveUpstreamsCheckpoint_Success()
     {
-        var pipeline = new PipelineBuilder<int>()
+        var pipeline = new PipelineBuilder()
             .Source([1, 2, 3])
             .Branch(
                 stream1 => stream1.Map(x => x += 1)

@@ -13,10 +13,4 @@ public abstract class BaseCombinatorBuilder<TOutput> : BasePipeBuilder<TOutput>
     public BaseCombinatorBuilder(IBuilder<IChainablePort[]> upstream)
         : base()
         => (Upstream) = (upstream);
-
-    public BasePipeBuilder<TOutput> Checkpoint(out IChainablePort<TOutput> port)
-    {
-        port = BuildPipeElement();
-        return this;
-    }
 }

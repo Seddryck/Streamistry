@@ -14,10 +14,4 @@ public abstract class PipeElementBuilder<TInput, TOutput> : BasePipeBuilder<TOut
 
     public PipeElementBuilder(IPipeBuilder<TInput> upstream)
         => Upstream = upstream;
-
-    public PipeElementBuilder<TInput, TOutput> Checkpoint(out IChainablePort<TOutput> port)
-    {
-        port = BuildPipeElement();
-        return this;
-    }
 }
