@@ -22,8 +22,6 @@ public struct AverageState<T>(T count, T total) where T : INumber<T>
 
     public readonly T? Select()
         => count > T.Zero ? total / count : default;
-
-    public static readonly AverageState<T> @Default = new();
 }
 
 public class Average<T> : Aggregator<T, AverageState<T>, T> where T : INumber<T>
@@ -40,7 +38,7 @@ public class Average<T> : Aggregator<T, AverageState<T>, T> where T : INumber<T>
         : base(upstream
             , (x, y) => x.Append(y)
             , (x) => x.Select()
-            , AverageState<T>.Default
+            , new AverageState<T>()
             , completion)
     { }
 }
@@ -61,7 +59,7 @@ public class Average<T, U> : Aggregator<T, AverageState<U>, U>
         : base(upstream
             , (x, y) => x.Append(y is null ? default : U.CreateChecked(y))
             , (x) => x.Select()
-            , AverageState<U>.Default
+            , new AverageState<U>()
             , completion)
     { }
 }

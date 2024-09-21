@@ -40,8 +40,6 @@ public struct MedianState<T>(int count, IEnumerable<T> list) where T : INumber<T
             return left;
         return ((left / T.CreateChecked(2)) + (right / T.CreateChecked(2)) + (T.IsOddInteger(left) && T.IsOddInteger(right) ? T.One : T.Zero));
     }
-
-    public static readonly MedianState<T> @Default = new();
 }
 
 public class Median<TInput> : Aggregator<TInput, MedianState<TInput>, TInput> where TInput : INumber<TInput>
@@ -54,7 +52,7 @@ public class Median<TInput> : Aggregator<TInput, MedianState<TInput>, TInput> wh
         : base(upstream
             , (x, y) => x.Append(y)
             , (x) => x.Select()
-            , MedianState<TInput>.Default
+            , new MedianState<TInput>()
             , completion)
     { }
 }
@@ -71,7 +69,7 @@ public class Median<TInput, TOuput> : Aggregator<TInput, MedianState<TOuput>, TO
         : base(upstream
             , (x, y) => x.Append(y is null ? default : TOuput.CreateChecked(y))
             , (x) => x.Select()
-            , MedianState<TOuput>.Default
+            , new MedianState<TOuput>()
             , completion)
     { }
 }
