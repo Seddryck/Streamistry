@@ -25,3 +25,10 @@ public abstract class BranchesBuilder<TInput> : IBuilder<IChainablePort[]>
         return Instances![0].Pipe.Pipeline!;
     }
 }
+
+public class InvalidUpstreamBranchException : InvalidOperationException
+{
+    public InvalidUpstreamBranchException(Type T1, Type T2)
+        : base($"Input branches of the Union operators must have the same type. Following distinct types were detected '{T1.Name}' and '{T2.Name}'")
+    { }
+}

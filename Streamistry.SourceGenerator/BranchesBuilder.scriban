@@ -30,6 +30,15 @@
     public CombinatorBuilder<{{ generics | array.join ", " }}, TOutput> Zip<TOutput>(Func<{{ generics | array.join "?, " }}?, TOutput> function)
         => new(this, function);
 
+    public UnionBuilder<T1> Union()
+    {
+        {{~ for type in generics | array.offset 1 ~}}
+        if (typeof(T1) != typeof({{type}}))
+            throw new InvalidUpstreamBranchException(typeof(T1), typeof({{type}}));
+        {{~ end ~}}
+        return new(this);
+    }
+
     public BranchesBuilder<TInput, {{ generics | array.join ", " }}> Checkpoints(out IChainablePort[] ports)
     {
         ports = BuildPipeElement();
