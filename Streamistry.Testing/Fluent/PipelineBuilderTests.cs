@@ -642,8 +642,8 @@ public class PipelineBuilderTests
     }
 
     public record Animal(string Name);
-    public record Carnivore(string Name) : Animal(Name);
-    public record Frugivore(string Name) : Animal(Name);
+    public record Carnivore(string Name) : Animal(Name) { public string? Eat { get; set; } }
+    public record Frugivore(string Name) : Animal(Name) { public string? Eat { get; set; } }
 
     [Test]
     public void Build_WithUnionButDifferentTypeLinkedByInheritance_Failure()
@@ -663,8 +663,8 @@ public class PipelineBuilderTests
     public void Build_WithMoreThanTwoUpstreamsUnion_Success()
     {
         var common = new Segment<Animal, Animal>(x => x.Filter(y => y is not Carnivore && y is not Frugivore).Map(y => y));
-        var carnivore = new Segment<Animal, Animal>(x => x.Filter(y => y is Carnivore).Map(y => y));
-        var frugivore = new Segment<Animal, Animal>(x => x.Filter(y => y is Frugivore).Map(y => y));
+        var carnivore = new Segment<Animal, Animal>(x => x.Cast<Carnivore>().Safe().Map(y => { y!.Eat = "Meat"; return y; }).Cast<Animal>());
+        var frugivore = new Segment<Animal, Animal>(x => x.Cast<Frugivore>().Safe().Map(y => { y!.Eat = "Fruit"; return y; }).Cast<Animal>());
 
         var pipeline = new PipelineBuilder()
             .Source([new Animal("Bird"), new Carnivore("Dog")])
