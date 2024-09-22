@@ -607,4 +607,71 @@ public class PipelineBuilderTests
         Assert.That(output, Does.Contain(12));
         Assert.That(output, Does.Contain(36));
     }
+
+    [Test]
+    public void Build_WithUnion_Success()
+    {
+        var odd = new Segment<int, int>(x => x.Filter(y => y % 2 == 1).Map(y => y * 2));
+        var even = new Segment<int, int>(x => x.Filter(y => y % 2 == 0).Map(y => y * 5));
+
+        var pipeline = new PipelineBuilder()
+            .Source([1, 2, 3, 6])
+            .Branch(odd, even)
+            .Union().Checkpoint(out var union)
+            .Build();
+
+        var output = union.GetOutputs(pipeline.Start);
+        Assert.That(output, Does.Contain(2));
+        Assert.That(output, Does.Contain(10));
+        Assert.That(output, Does.Contain(6));
+        Assert.That(output, Does.Contain(30));
+    }
+
+    [Test]
+    public void Build_WithUnionButDifferentType_Failure()
+    {
+        var odd = new Segment<int, int>(x => x.Filter(y => y % 2 == 1).Map(y => y * 2));
+        var even = new Segment<int, string>(x => x.Filter(y => y % 2 == 0).Map(y => new string('*', y)));
+
+        var pipeline = new PipelineBuilder()
+            .Source([1, 2, 3, 6])
+            .Branch(odd, even);
+
+        var ex = Assert.Throws<InvalidUpstreamBranchException>(() => pipeline.Union());
+        Assert.That(ex.Message, Is.EqualTo("Input branches of the Union operators must have the same type. Following distinct types were detected 'Int32' and 'String'"));
+    }
+
+    public record Animal(string Name);
+    public record Carnivore(string Name) : Animal(Name);
+    public record Frugivore(string Name) : Animal(Name);
+
+    [Test]
+    public void Build_WithUnionButDifferentTypeLinkedByInheritance_Failure()
+    {
+        var notCarnivore = new Segment<Animal, Animal>(x => x.Filter(y => y is not Carnivore).Map(y => y));
+        var carnivore = new Segment<Animal, Carnivore>(x => x.Filter(y => y is Carnivore).Map(y => (Carnivore)y!));
+
+        var pipeline = new PipelineBuilder()
+            .Source([new Animal("Bird"), new Carnivore("Dog")])
+            .Branch(notCarnivore, carnivore);
+
+        var ex = Assert.Throws<InvalidUpstreamBranchException>(() => pipeline.Union());
+        Assert.That(ex.Message, Is.EqualTo("Input branches of the Union operators must have the same type. Following distinct types were detected 'Animal' and 'Carnivore'"));
+    }
+
+    [Test]
+    public void Build_WithMoreThanTwoUpstreamsUnion_Success()
+    {
+        var common = new Segment<Animal, Animal>(x => x.Filter(y => y is not Carnivore && y is not Frugivore).Map(y => y));
+        var carnivore = new Segment<Animal, Animal>(x => x.Filter(y => y is Carnivore).Map(y => y));
+        var frugivore = new Segment<Animal, Animal>(x => x.Filter(y => y is Frugivore).Map(y => y));
+
+        var pipeline = new PipelineBuilder()
+            .Source([new Animal("Bird"), new Carnivore("Dog")])
+            .Branch(common, carnivore, frugivore)
+            .Union().Checkpoint(out var union)
+            .Build();
+
+        Assert.That(union.GetOutputs(pipeline.Start), Has.Length.EqualTo(2));
+    }
 }
