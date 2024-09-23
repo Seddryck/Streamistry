@@ -91,6 +91,26 @@ public class PipelineBuilderTests
     }
 
     [Test]
+    public void Build_ConstantCheckpoint_Success()
+    {
+        var pipeline = new PipelineBuilder()
+            .Source([1, 2, 3])
+            .Constant(0).Checkpoint(out var constant)
+            .Build();
+
+        Assert.That(pipeline, Is.Not.Null);
+        Assert.That(constant, Is.Not.Null);
+
+        var output = constant.GetOutputs(pipeline.Start);
+        Assert.Multiple(() =>
+        {
+            Assert.That(output[0], Is.EqualTo(0));
+            Assert.That(output[1], Is.EqualTo(0));
+            Assert.That(output[2], Is.EqualTo(0));
+        });
+    }
+
+    [Test]
     public void Build_SplitterCheckpoint_Success()
     {
         var pipeline = new PipelineBuilder()

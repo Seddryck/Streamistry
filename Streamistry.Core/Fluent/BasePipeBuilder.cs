@@ -39,6 +39,8 @@ public abstract partial class BasePipeBuilder<TOutput> : IPipeBuilder<TOutput>
         => new(this, expr);
     public CasterBuilder<TOutput, TNext> Cast<TNext>()
         => new(this);
+    public ConstantBuilder<TOutput, TNext> Constant<TNext>(TNext value)
+        => new(this, value);
     public SplitterBuilder<TOutput, TNext> Split<TNext>(Func<TOutput?, TNext[]?>? function)
         => new(this, function);
 
