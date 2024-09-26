@@ -88,10 +88,10 @@ public class Caster<TInput, TOutput> : Mapper<TInput, TOutput>
             ImplicitOperator = implicitOperator;
         }
 
-        public TOutput? Cast(TInput? input)
+        public TOutput Cast(TInput input)
         {
             if (input is null)
-                return default;
+                return default!;
 
             if (ImplicitOperator is not null)
                 return ImplicitOperator.Invoke(input);
@@ -135,7 +135,7 @@ public class SafeCaster<TInput, TOutput> : TryRouterPipe<TInput, TOutput>
             CasterHelper<TInput, TOutput>.GetExplicitOperator());
     }
 
-    protected override bool TryInvoke(TInput? obj, [NotNullWhen(true)] out TOutput? value)
+    protected override bool TryInvoke(TInput obj, [NotNullWhen(true)] out TOutput? value)
         => Caster.TryCast(obj, out value);
 
     private class InternalCaster
@@ -149,11 +149,11 @@ public class SafeCaster<TInput, TOutput> : TryRouterPipe<TInput, TOutput>
             ExplicitOperator = explicitOperator;
         }
 
-        public bool TryCast(TInput? input, out TOutput? output)
+        public bool TryCast(TInput input, out TOutput output)
         {
             if (input is null)
             {
-                output = default;
+                output = default!;
                 return true;
             }
 
@@ -172,7 +172,7 @@ public class SafeCaster<TInput, TOutput> : TryRouterPipe<TInput, TOutput>
                 }
                 catch
                 {
-                    output = default;
+                    output = default!;
                     return false;
                 }
             }
@@ -192,7 +192,7 @@ public class SafeCaster<TInput, TOutput> : TryRouterPipe<TInput, TOutput>
                 catch
                 { }
 
-            output = default;
+            output = default!;
             return false;
         }
     }

@@ -45,21 +45,21 @@ public class SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput> : PipeEl
 
 public class UniversalAggregatorBuilder<TInput, TAccumulate, TOutput> : PipeElementBuilder<TInput, TOutput>
 {
-    protected Func<TAccumulate?, TInput?, TAccumulate?>? Accumulator { get; }
-    protected Func<TAccumulate?, TOutput?>? Selector { get; set; } = x => (TOutput?)Convert.ChangeType(x, typeof(TOutput));
-    protected TAccumulate? Seed { get; set; } = default;
+    protected Func<TAccumulate, TInput, TAccumulate>? Accumulator { get; }
+    protected Func<TAccumulate, TOutput>? Selector { get; set; } = x => (TOutput)Convert.ChangeType(x, typeof(TOutput))!;
+    protected TAccumulate Seed { get; set; } = default!;
 
-    public UniversalAggregatorBuilder(IPipeBuilder<TInput> upstream, Func<TAccumulate?, TInput?, TAccumulate?> accumulator)
+    public UniversalAggregatorBuilder(IPipeBuilder<TInput> upstream, Func<TAccumulate, TInput, TAccumulate> accumulator)
         : base(upstream)
         => (Accumulator) = (accumulator);
 
-    public UniversalAggregatorBuilder<TInput, TAccumulate, TOutput> WithSelector(Func<TAccumulate?, TOutput?>? selector)
+    public UniversalAggregatorBuilder<TInput, TAccumulate, TOutput> WithSelector(Func<TAccumulate, TOutput>? selector)
     {
         Selector = selector;
         return this;
     }
 
-    public UniversalAggregatorBuilder<TInput, TAccumulate, TOutput> WithSeed(TAccumulate? seed)
+    public UniversalAggregatorBuilder<TInput, TAccumulate, TOutput> WithSeed(TAccumulate seed)
     {
         Seed = seed;
         return this;

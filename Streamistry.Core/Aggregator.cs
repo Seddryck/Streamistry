@@ -18,12 +18,12 @@ namespace Streamistry;
 /// <typeparam name="TResult">The type of the elements in the output stream, determined by applying a selection function to the accumulated state.</typeparam>
 public class Aggregator<TSource, TAccumulate, TResult> : SingleRouterPipe<TSource, TResult>
 {
-    public Func<TAccumulate?, TSource?, TAccumulate?> Accumulator { get; }
-    public Func<TAccumulate?, TResult?> Selector { get; }
+    public Func<TAccumulate, TSource, TAccumulate> Accumulator { get; }
+    public Func<TAccumulate, TResult> Selector { get; }
     public TAccumulate? State { get; set; }
     private TAccumulate? Seed { get; }
 
-    public Aggregator(IChainablePort<TSource>? upstream, Func<TAccumulate?, TSource?, TAccumulate?> accumulator, Func<TAccumulate?, TResult?> selector, TAccumulate? seed = default, Expression<Action<Aggregator<TSource, TAccumulate, TResult>>>? completion = null)
+    public Aggregator(IChainablePort<TSource>? upstream, Func<TAccumulate, TSource, TAccumulate> accumulator, Func<TAccumulate, TResult> selector, TAccumulate? seed = default, Expression<Action<Aggregator<TSource, TAccumulate, TResult>>>? completion = null)
         : base(upstream)
     {
         (Accumulator, Selector, State, Seed) = (accumulator, selector, seed, seed);
@@ -32,9 +32,9 @@ public class Aggregator<TSource, TAccumulate, TResult> : SingleRouterPipe<TSourc
     }
 
     [Trace]
-    protected override TResult? Invoke(TSource? obj)
+    protected override TResult Invoke(TSource obj)
     {
-        State = Accumulator.Invoke(State, obj);
+        State = Accumulator.Invoke(State!, obj);
         return Selector.Invoke(State);
     }
 

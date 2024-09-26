@@ -13,12 +13,12 @@ public class Translator<TInput, TOutput> : Mapper<TInput, TOutput>, IPreparableP
 
     public Translator(IChainablePipe<TInput> upstream
                         , IChainablePipe<KeyValuePair<TInput, TOutput>> dictionary)
-        : this(upstream, dictionary, x => default)
+        : this(upstream, dictionary, x => default!)
     { }
 
     public Translator(IChainablePipe<TInput> upstream
                         , IChainablePipe<KeyValuePair<TInput, TOutput>> dictionary
-                        , Func<TInput?, TOutput?> notFound)
+                        , Func<TInput, TOutput> notFound)
         : base(upstream, notFound)
     {
         dictionary.RegisterDownstream(EmitDictionayEntry, CompleteDictionayEntry);
@@ -36,12 +36,12 @@ public class Translator<TInput, TOutput> : Mapper<TInput, TOutput>, IPreparableP
     public virtual void CompleteDictionayEntry()
         => Preparation?.Invoke();
 
-    protected override TOutput? Invoke(TInput? value)
+    protected override TOutput Invoke(TInput value)
     {
         if (value is not null && Store.TryGetValue(value, out var output))
             return output;
         else
-            return base.Invoke(value);
+            return base.Invoke(value!);
     }
 
     public void RegisterOnPrepared(Action downstream)

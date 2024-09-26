@@ -11,7 +11,7 @@ namespace Streamistry.Pipes.Aggregators;
 public struct MaxState<T>() where T : INumber<T>
 {
     private bool IsEmpty { get; set; } = true;
-    private T? Value { get; set; } = default;
+    private T Value { get; set; } = default!;
 
     public MaxState<T> Append(T? value)
     {
@@ -21,8 +21,8 @@ public struct MaxState<T>() where T : INumber<T>
         return this;
     }
 
-    public readonly T? Select()
-        => IsEmpty ? default : Value;
+    public readonly T Select()
+        => IsEmpty ? default! : Value;
 }
 
 public class Max<TInput> : Aggregator<TInput, MaxState<TInput>, TInput> where TInput : INumber<TInput>

@@ -14,7 +14,7 @@ public abstract class ExceptionRouterPipe<TInput, TOutput> : DualRouterPipe<TInp
     { }
 
     [Trace]
-    public override void Emit(TInput? obj)
+    public override void Emit(TInput obj)
     {
         if (TryCatchInvoke(obj, out var value, out var exception))
             PushDownstream(value);
@@ -23,9 +23,9 @@ public abstract class ExceptionRouterPipe<TInput, TOutput> : DualRouterPipe<TInp
     }
 
     [Trace]
-    protected virtual bool TryCatchInvoke(TInput? obj, out TOutput? value, out Exception? ex)
+    protected virtual bool TryCatchInvoke(TInput obj, out TOutput value, out Exception? ex)
     {
-        value = default;
+        value = default!;
         ex = null;
         try
         {
@@ -40,5 +40,5 @@ public abstract class ExceptionRouterPipe<TInput, TOutput> : DualRouterPipe<TInp
     }
 
     [Trace]
-    protected abstract TOutput? Invoke(TInput? obj);
+    protected abstract TOutput Invoke(TInput obj);
 }

@@ -52,9 +52,9 @@ build_script:
 test_script:
 - pwsh: |
     $ErrorActionPreference = "Stop"
-    dotnet test Streamistry.Testing -c Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Threshold=10 /p:ThresholdType=line /p:CoverletOutput=../.coverage/coverage.Streamistry.xml --test-adapter-path:. --logger:Appveyor --no-build --nologo
+    dotnet test Streamistry.Testing -c Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Include="[Streamistry]*" /p:Threshold=10 /p:ThresholdType=line /p:CoverletOutput=../.coverage/coverage.Streamistry.xml --test-adapter-path:. --logger:Appveyor --no-build --nologo
     $globalTestResult = $LastExitCode
-    dotnet test Streamistry.Json.Testing -c Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Threshold=10 /p:ThresholdType=line /p:CoverletOutput=../.coverage/coverage.Streamistry.Json.xml --test-adapter-path:. --logger:Appveyor --no-build --nologo
+    dotnet test Streamistry.Json.Testing -c Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Include="[Streamistry.Json]*" /p:Threshold=10 /p:ThresholdType=line /p:CoverletOutput=../.coverage/coverage.Streamistry.Json.xml --test-adapter-path:. --logger:Appveyor --no-build --nologo
     $globalTestResult = $LastExitCode
     if($globalTestResult -ne 0) { $host.SetShouldExit($globalTestResult) }
 

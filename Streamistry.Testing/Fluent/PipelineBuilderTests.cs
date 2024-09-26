@@ -694,4 +694,41 @@ public class PipelineBuilderTests
 
         Assert.That(union.GetOutputs(pipeline.Start), Has.Length.EqualTo(2));
     }
+
+    [Test]
+    public void Build_WithNullAndNotNull_Success()
+    {
+        var isNull = new Segment<Animal?, Animal>(x => x.IsNull().Constant(new Animal("Dragon")));
+        var isNotNull = new Segment<Animal?, Animal>(x => x.IsNotNull<Animal>().Cast<Carnivore>().Safe().Map(y => { y!.Eat = "Meat"; return y; }).Cast<Animal>());
+
+        var pipeline = new PipelineBuilder()
+            .Source([new Animal("Bird"), null, new Carnivore("Dog"), new Frugivore("Parrot")])
+            .Branch(isNull, isNotNull)
+            .Union().Checkpoint(out var union)
+            .Build();
+
+        var outputs = union.GetOutputs(pipeline.Start);
+        Assert.That(outputs, Has.Length.EqualTo(2));
+        Assert.That(outputs.Select(x => x!.Name), Does.Contain("Dragon"));
+        Assert.That(outputs.Select(x => x!.Name), Does.Contain("Dog"));
+    }
+
+    [Test]
+    public void Build_WithNullAndNotNullValueType_Success()
+    {
+        var isNull = new Segment<int?, int>(x => x.IsNull().Constant(0));
+        var isNotNull = new Segment<int?, int>(x => x.IsNotNull<int>());
+
+        var pipeline = new PipelineBuilder()
+            .Source(new int?[] {1, null, 3})
+            .Branch(isNull, isNotNull)
+            .Union().Checkpoint(out var union)
+            .Build();
+
+        var outputs = union.GetOutputs(pipeline.Start);
+        Assert.That(outputs, Has.Length.EqualTo(3));
+        Assert.That(outputs, Does.Contain(1));
+        Assert.That(outputs, Does.Contain(0));
+        Assert.That(outputs, Does.Contain(3));
+    }
 }

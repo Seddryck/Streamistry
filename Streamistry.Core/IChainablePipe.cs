@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Streamistry;
 public interface IChainablePipe<T> : IChainablePort<T>, IChainablePipe
 {
-    void RegisterDownstream(Action<T?> downstream, Action? complete);
+    void RegisterDownstream(Action<T> downstream, Action? complete);
 }
 
 public interface IChainablePipe : IObservablePipe
@@ -18,8 +18,8 @@ public interface IChainablePipe : IObservablePipe
 
 public interface IChainablePort<T> : IChainablePort
 {
-    void RegisterDownstream(Action<T?> action);
-    void UnregisterDownstream(Action<T?> downstream);
+    void RegisterDownstream(Action<T> action);
+    void UnregisterDownstream(Action<T> downstream);
 }
 
 public interface IChainablePort

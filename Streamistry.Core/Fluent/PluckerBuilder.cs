@@ -9,9 +9,9 @@ using Streamistry.Pipes.Mappers;
 namespace Streamistry.Fluent;
 public class PluckerBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
 {
-    protected Expression<Func<TInput, TOutput?>> Expr { get; set; }
+    protected Expression<Func<TInput, TOutput>> Expr { get; set; }
 
-    public PluckerBuilder(IPipeBuilder<TInput> upstream, Expression<Func<TInput, TOutput?>> expr)
+    public PluckerBuilder(IPipeBuilder<TInput> upstream, Expression<Func<TInput, TOutput>> expr)
         : base(upstream)
         => (Expr) = (expr);
 

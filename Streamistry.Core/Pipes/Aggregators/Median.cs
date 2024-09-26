@@ -23,10 +23,10 @@ public struct MedianState<T>(int count, IEnumerable<T> list) where T : INumber<T
         return this;
     }
 
-    public T? Select()
+    public T Select()
     {
         if (list is null || count == 0)
-            return default;
+            return default!;
 
         if (!IsOrdered)
             list = list.OrderBy(x => x);
