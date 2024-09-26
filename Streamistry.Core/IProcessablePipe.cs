@@ -14,5 +14,5 @@ public interface IBindablePipe<T>
 
 public interface IProcessablePipe<T>
 {
-    void Emit(T? obj);
+    void Emit(T obj);
 }

@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 namespace Streamistry.Fluent;
 public class MapperBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>, ISafeBuilder<MapperBuilder<TInput, TOutput>>
 {
-    protected Func<TInput?, TOutput?>? Function { get; set; }
+    protected Func<TInput, TOutput>? Function { get; set; }
     private bool IsSafe { get; set; } = false;
 
-    public MapperBuilder(IPipeBuilder<TInput> upstream, Func<TInput?, TOutput?>? function)
+    public MapperBuilder(IPipeBuilder<TInput> upstream, Func<TInput, TOutput>? function)
         : base(upstream)
         => (Function) = (function);
 

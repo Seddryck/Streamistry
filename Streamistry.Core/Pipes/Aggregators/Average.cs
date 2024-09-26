@@ -20,8 +20,8 @@ public struct AverageState<T>(T count, T total) where T : INumber<T>
         return this;
     }
 
-    public readonly T? Select()
-        => count > T.Zero ? total / count : default;
+    public readonly T Select()
+        => count > T.Zero ? total / count : default!;
 }
 
 public class Average<T> : Aggregator<T, AverageState<T>, T> where T : INumber<T>

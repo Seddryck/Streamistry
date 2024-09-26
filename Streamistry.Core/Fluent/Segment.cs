@@ -41,10 +41,10 @@ public class Segment<TInput, TOutput> : IPipeBuilder<TInput>
         public IBindablePipe<T> GetTarget()
             => Target ?? throw new InvalidOperationException();
 
-        public void RegisterDownstream(Action<T?> downstream)
+        public void RegisterDownstream(Action<T> downstream)
             => Target ??= (IBindablePipe<T>)downstream.Target!;
 
-        public void UnregisterDownstream(Action<T?> downstream)
+        public void UnregisterDownstream(Action<T> downstream)
             => Target ??= (IBindablePipe<T>)downstream.Target!;
 
 

@@ -21,7 +21,7 @@ public abstract class DualRouterPipe<TInput, TOutput> : ChainablePipe<TOutput>, 
     }
 
     [Meter]
-    public abstract void Emit(TInput? obj);
+    public abstract void Emit(TInput obj);
 
     public void Bind(IChainablePort<TInput> input)
     {

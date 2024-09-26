@@ -17,14 +17,14 @@ public abstract class BaseJsonPathPlucker<TJson, T> : Mapper<TJson, T> where TJs
         : base((x) => GetValue(x, JsonPath.Parse(path)), upstream)
     { }
 
-    protected static T? GetValue(TJson? node, JsonPath path)
+    protected static T GetValue(TJson? node, JsonPath path)
     {
         var matches = path.Evaluate(node).Matches;
         if (matches.Count==0)
-            return default;
+            return default!;
         if (matches[0].Value.TryGetValue<T>(out var value))
             return value;
-        return default;
+        return default!;
     }
 }
 

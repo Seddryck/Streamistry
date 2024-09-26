@@ -9,10 +9,12 @@ using Streamistry.Testability;
 namespace Streamistry.Testing;
 public class SplitterTests
 {
+    private static readonly string[] EmptyArray = Array.Empty<string>();
+
     [Test]
     public void Emit_Splitter_Successful()
     {
-        var splitter = new Splitter<string?, string?>(x => x?.Split(';') ?? null);
+        var splitter = new Splitter<string?, string?>(x => x?.Split(';') ?? EmptyArray);
         Assert.Multiple(() =>
         {
             Assert.That(splitter.EmitAndGetOutput("foo;bar;quark"), Is.EqualTo("quark"));
@@ -23,7 +25,7 @@ public class SplitterTests
     [Test]
     public void Emit_NullSplitter_Successful()
     {
-        var splitter = new Splitter<string?, string?>(x => x?.Split(';') ?? null);
+        var splitter = new Splitter<string?, string?>(x => x?.Split(';') ?? EmptyArray);
         Assert.Multiple(() =>
         {
             Assert.That(splitter.EmitAndGetOutput(string.Empty), Is.EqualTo(string.Empty));

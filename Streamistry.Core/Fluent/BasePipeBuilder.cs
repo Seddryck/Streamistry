@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -31,24 +32,29 @@ public abstract partial class BasePipeBuilder<TOutput> : IPipeBuilder<TOutput>
     public SinkBuilder<TOutput> Sink()
         => new(this);
 
-    public MapperBuilder<TOutput, TNext> Map<TNext>(Func<TOutput?, TNext?>? function)
+    public MapperBuilder<TOutput, TNext> Map<TNext>(Func<TOutput, TNext>? function)
         => new(this, function);
-    public FilterBuilder<TOutput> Filter(Func<TOutput?, bool>? function)
+    public FilterBuilder<TOutput> Filter(Func<TOutput, bool>? function)
         => new(this, function);
-    public PluckerBuilder<TOutput, TNext> Pluck<TNext>(Expression<Func<TOutput, TNext?>> expr)
+    public FilterNullBuilder<TOutput> IsNull()
+        => new(this);
+    public FilterNotNullBuilder<TOutput, TNext> IsNotNull<TNext>()
+        where TNext : notnull
+        => new(this);
+    public PluckerBuilder<TOutput, TNext> Pluck<TNext>(Expression<Func<TOutput, TNext>> expr)
         => new(this, expr);
     public CasterBuilder<TOutput, TNext> Cast<TNext>()
         => new(this);
     public ConstantBuilder<TOutput, TNext> Constant<TNext>(TNext value)
         => new(this, value);
-    public SplitterBuilder<TOutput, TNext> Split<TNext>(Func<TOutput?, TNext[]?>? function)
+    public SplitterBuilder<TOutput, TNext> Split<TNext>(Func<TOutput, TNext[]>? function)
         => new(this, function);
 
-    public UniversalAggregatorBuilder<TOutput, TAccumulate, TNext> Aggregate<TAccumulate, TNext>(Func<TAccumulate?, TOutput?, TAccumulate?> accumulator)
+    public UniversalAggregatorBuilder<TOutput, TAccumulate, TNext> Aggregate<TAccumulate, TNext>(Func<TAccumulate, TOutput, TAccumulate> accumulator)
         => new(this, accumulator);
-    public UniversalAggregatorBuilder<TOutput, TNext, TNext> Aggregate<TNext>(Func<TNext?, TOutput?, TNext?> accumulator)
+    public UniversalAggregatorBuilder<TOutput, TNext, TNext> Aggregate<TNext>(Func<TNext, TOutput, TNext> accumulator)
         => new(this, accumulator);
-    public UniversalAggregatorBuilder<TOutput, TOutput, TOutput> Aggregate(Func<TOutput?, TOutput?, TOutput?> accumulator)
+    public UniversalAggregatorBuilder<TOutput, TOutput, TOutput> Aggregate(Func<TOutput, TOutput, TOutput> accumulator)
         => new(this, accumulator);
     public AggregatorBuilder<TOutput, TOutput, TOutput> Aggregate()
         => new(this);
@@ -61,3 +67,4 @@ public abstract partial class BasePipeBuilder<TOutput> : IPipeBuilder<TOutput>
     public BinderBuilder<TOutput, TNext> Bind<TNext>(Segment<TOutput, TNext> segment)
         => new(this, segment);
 }
+

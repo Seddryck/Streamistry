@@ -9,27 +9,27 @@ using System.Threading.Tasks;
 namespace Streamistry.Pipes.Mappers;
 public class Plucker<TInput, TOutput> : Mapper<TInput, TOutput>
 {
-    public Plucker(Expression<Func<TInput, TOutput?>> expr)
+    public Plucker(Expression<Func<TInput, TOutput>> expr)
         : this(expr, null)
     { }
 
-    public Plucker(IChainablePort<TInput> upstream, Expression<Func<TInput, TOutput?>> expr)
+    public Plucker(IChainablePort<TInput> upstream, Expression<Func<TInput, TOutput>> expr)
         : this(expr, upstream)
     { }
 
-    protected Plucker(Expression<Func<TInput, TOutput?>> expr, IChainablePort<TInput>? upstream = null)
+    protected Plucker(Expression<Func<TInput, TOutput>> expr, IChainablePort<TInput>? upstream = null)
         : base(x => RetrieveProperty(x, expr), upstream)
     { }
 
-    private static TOutput? RetrieveProperty(TInput? input, Expression<Func<TInput, TOutput?>> lambda)
+    private static TOutput RetrieveProperty(TInput input, Expression<Func<TInput, TOutput>> lambda)
     {
         if (input is null)
-            return default;
+            return default!;
 
-        return (TOutput?)GetNestedPropertyValue(input, lambda);
+        return (TOutput)GetNestedPropertyValue(input, lambda);
     }
 
-    public static object? GetNestedPropertyValue(object target, LambdaExpression lambda)
+    public static object GetNestedPropertyValue(object target, LambdaExpression lambda)
     {
         MemberExpression? expr;
         if (lambda.Body is not MemberExpression)
@@ -57,6 +57,6 @@ public class Plucker<TInput, TOutput> : Mapper<TInput, TOutput>
                 ?? throw new ArgumentException("Member is not a property");
             item = propertyInfo.GetValue(item);
         }
-        return item;
+        return item!;
     }
 }

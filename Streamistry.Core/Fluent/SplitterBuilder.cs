@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace Streamistry.Fluent;
 public class SplitterBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
 {
-    protected Func<TInput?, TOutput[]?>? Function { get; set; }
+    protected Func<TInput, TOutput[]>? Function { get; set; }
 
-    public SplitterBuilder(IPipeBuilder<TInput> upstream, Func<TInput?, TOutput[]?>? function)
+    public SplitterBuilder(IPipeBuilder<TInput> upstream, Func<TInput, TOutput[]>? function)
         : base(upstream)
         => (Function) = (function);
 

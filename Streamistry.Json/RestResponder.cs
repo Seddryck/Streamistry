@@ -10,10 +10,10 @@ using Streamistry.Observability;
 using Streamistry.Pipes.Parsers;
 
 namespace Streamistry.Json;
-public class RestResponder<TInput, TOutput> : TryRouterPipe<TInput, TOutput>, IProcessablePipe<TInput?> where TOutput : JsonNode
+public class RestResponder<TInput, TOutput> : TryRouterPipe<TInput, TOutput>, IProcessablePipe<TInput> where TOutput : JsonNode
 {
     protected HttpClient Client { get; }
-    protected Func<TInput?, string> UrlBuiler { get; }
+    protected Func<TInput, string> UrlBuiler { get; }
 
     public RestResponder(HttpClient client, Func<TInput?, string> urlBuilder)
         : this(client, urlBuilder, null)
@@ -23,7 +23,7 @@ public class RestResponder<TInput, TOutput> : TryRouterPipe<TInput, TOutput>, IP
         : this(client, urlBuilder, upstream)
     { }
 
-    protected RestResponder(HttpClient client, Func<TInput?, string> urlBuilder, IChainablePort<TInput>? upstream = null)
+    protected RestResponder(HttpClient client, Func<TInput, string> urlBuilder, IChainablePort<TInput>? upstream = null)
         : base(upstream)
     {
         Client = client;
@@ -31,7 +31,7 @@ public class RestResponder<TInput, TOutput> : TryRouterPipe<TInput, TOutput>, IP
     }
 
     [Meter]
-    protected override bool TryInvoke(TInput? obj, [NotNullWhen(true)] out TOutput? value)
+    protected override bool TryInvoke(TInput obj, [NotNullWhen(true)] out TOutput? value)
     {
         value = null;
         var url = UrlBuiler.Invoke(obj);
@@ -63,7 +63,4 @@ public class RestResponder<TInput, TOutput> : TryRouterPipe<TInput, TOutput>, IP
             return reader.ReadToEnd();
         }
     }
-
-
-
 }

@@ -17,7 +17,7 @@ public abstract class BaseSingleRouterPipe<TInput, TOutput> : ChainablePipe<TOut
     }
 
     [Meter]
-    public abstract void Emit(TInput? obj);
+    public abstract void Emit(TInput obj);
 
     public void Bind(IChainablePort<TInput> input)
     {
@@ -38,12 +38,12 @@ public abstract class SingleRouterPipe<TInput, TOutput> : BaseSingleRouterPipe<T
     { }
 
     [Meter]
-    public override void Emit(TInput? obj)
+    public override void Emit(TInput obj)
     {
         var value = Invoke(obj);
         PushDownstream(value);
     }
 
     [Trace]
-    protected abstract TOutput? Invoke(TInput? obj);
+    protected abstract TOutput Invoke(TInput obj);
 }

@@ -16,23 +16,23 @@ namespace Streamistry;
 /// <typeparam name="TOutput">The type of the elements in the output stream after the function is applied.</typeparam>
 public class Mapper<TInput, TOutput> : SingleRouterPipe<TInput, TOutput>
 {
-    public Func<TInput?, TOutput?> Function { get; init; }
+    public Func<TInput, TOutput> Function { get; init; }
 
-    protected Mapper(Func<TInput?, TOutput?> function, IChainablePort<TInput>? upstream)
+    protected Mapper(Func<TInput, TOutput> function, IChainablePort<TInput>? upstream)
     : base(upstream)
     {
         Function = function;
     }
 
-    public Mapper(IChainablePort<TInput> upstream, Func<TInput?, TOutput?> function)
+    public Mapper(IChainablePort<TInput> upstream, Func<TInput, TOutput> function)
     : this(function, upstream)
     { }
 
-    public Mapper(Func<TInput?, TOutput?> function)
+    public Mapper(Func<TInput, TOutput> function)
     : this(function, null)
     { }
 
     [Trace]
-    protected override TOutput? Invoke(TInput? obj)
+    protected override TOutput Invoke(TInput obj)
         => Function.Invoke(obj);
 }

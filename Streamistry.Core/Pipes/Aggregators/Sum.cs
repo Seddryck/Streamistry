@@ -16,7 +16,7 @@ public class Sum<TInput> : Aggregator<TInput, TInput, TInput> where TInput : INu
         : this(default, completion, upstream) { }
 
     protected Sum(TInput? seed = default, Expression<Action<Aggregator<TInput, TInput, TInput>>>? completion = null, IChainablePipe<TInput>? upstream = null)
-        : base(upstream, (x, y) => x is null || y is null ? default : x += y, (x) => x, seed, completion)
+        : base(upstream, (x, y) => x is null || y is null ? default! : x += y, (x) => x, seed, completion)
     { }
 }
 
@@ -32,6 +32,6 @@ public class Sum<TInput, TOutput> : Aggregator<TInput, TOutput, TOutput>
 
     protected Sum(TOutput? seed = default, Expression<Action<Aggregator<TInput, TOutput, TOutput>>>? completion = null, IChainablePipe<TInput>? upstream = null)
         : base(upstream
-            , (x, y) => x is null || y is null ? default : x += TOutput.CreateChecked(y), (x) => x, seed, completion)
+            , (x, y) => x is null || y is null ? default! : x += TOutput.CreateChecked(y), (x) => x, seed, completion)
     { }
 }

@@ -14,7 +14,7 @@ public abstract class TryRouterPipe<TInput, TOutput> : DualRouterPipe<TInput, TO
     { }
 
     [Meter]
-    public override void Emit(TInput? obj)
+    public override void Emit(TInput obj)
     {
         if (TryInvoke(obj, out var value))
             PushDownstream(value);
@@ -23,5 +23,5 @@ public abstract class TryRouterPipe<TInput, TOutput> : DualRouterPipe<TInput, TO
     }
 
     [Trace]
-    protected abstract bool TryInvoke(TInput? obj, [NotNullWhen(true)] out TOutput? value);
+    protected abstract bool TryInvoke(TInput obj, [NotNullWhen(true)] out TOutput? value);
 }

@@ -15,24 +15,24 @@ namespace Streamistry;
 /// <typeparam name="TOutput">The type of the elements in the output stream after the function is applied.</typeparam>
 public class Splitter<TInput, TOutput> : BaseSingleRouterPipe<TInput, TOutput>
 {
-    public Func<TInput?, TOutput[]?> Function { get; init; }
+    public Func<TInput, TOutput[]> Function { get; init; }
 
-    public Splitter(IChainablePort<TInput> upstream, Func<TInput?, TOutput[]?> function)
+    public Splitter(IChainablePort<TInput> upstream, Func<TInput, TOutput[]> function)
         : this(function, upstream)
     { }
 
-    public Splitter(Func<TInput?, TOutput[]?> function)
+    public Splitter(Func<TInput, TOutput[]> function)
         : this(function, null)
     { }
 
-    protected Splitter(Func<TInput?, TOutput[]?> function, IChainablePort<TInput>? upstream = null)
+    protected Splitter(Func<TInput, TOutput[]> function, IChainablePort<TInput>? upstream = null)
         : base(upstream)
     {
         Function = function;
     }
 
     [Meter]
-    public override void Emit(TInput? obj)
+    public override void Emit(TInput obj)
     {
         var results = Invoke(obj);
         if (results is null)
@@ -43,6 +43,6 @@ public class Splitter<TInput, TOutput> : BaseSingleRouterPipe<TInput, TOutput>
     }
 
     [Trace]
-    protected TOutput[]? Invoke(TInput? obj)
+    protected TOutput[]? Invoke(TInput obj)
         => Function.Invoke(obj);
 }
