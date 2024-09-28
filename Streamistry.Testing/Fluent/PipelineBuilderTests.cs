@@ -720,7 +720,7 @@ public class PipelineBuilderTests
         var isNotNull = new Segment<int?, int>(x => x.IsNotNull<int>());
 
         var pipeline = new PipelineBuilder()
-            .Source(new int?[] {1, null, 3})
+            .Source(new int?[] { 1, null, 3 })
             .Branch(isNull, isNotNull)
             .Union().Checkpoint(out var union)
             .Build();
@@ -730,5 +730,103 @@ public class PipelineBuilderTests
         Assert.That(outputs, Does.Contain(1));
         Assert.That(outputs, Does.Contain(0));
         Assert.That(outputs, Does.Contain(3));
+    }
+
+    [Test]
+    public void Build_WithRoutes_Success()
+    {
+        var main = new Segment<int, int>(x => x.Map(x => ++x));
+        var exception = new Segment<int, int>(x => x.Map(x => --x));
+
+        var pipeline = new PipelineBuilder()
+            .Source([0, 1, 2])
+            .Map(x => 6 / x).Safe()
+                .Route(x => x.Main, main)
+                .Route(x => x.Alternate, exception)
+            .Union<int>().Checkpoint(out var union)
+            .Build();
+
+        var outputs = union.GetOutputs(pipeline.Start);
+        Assert.That(outputs, Has.Length.EqualTo(3));
+        Assert.That(outputs, Does.Contain(7));
+        Assert.That(outputs, Does.Contain(4));
+        Assert.That(outputs, Does.Contain(-1));
+    }
+
+    [Test]
+    public void Build_WithRoutesInline_Success()
+    {
+        var pipeline = new PipelineBuilder()
+            .Source([0, 1, 2])
+            .Map(x => 6 / x).Safe()
+                .Route<int, int>(x => x.Main, x => x.Map(x => ++x))
+                .Route<int, int>(x => x.Alternate, x => x.Map(x => --x))
+            .Union<int>().Checkpoint(out var union)
+            .Build();
+
+        var outputs = union.GetOutputs(pipeline.Start);
+        Assert.That(outputs, Has.Length.EqualTo(3));
+        Assert.That(outputs, Does.Contain(7));
+        Assert.That(outputs, Does.Contain(4));
+        Assert.That(outputs, Does.Contain(-1));
+    }
+
+    [Test]
+    public void Build_WithRoutesInlineConverge_Success()
+    {
+        var pipeline = new PipelineBuilder()
+            .Source([0, 1, 2])
+            .Map(x => 6 / x).Safe()
+            .Converge<int>()
+                .Route<int>(x => x.Main, x => x.Map(x => ++x))
+                .Route<int>(x => x.Alternate, x => x.Map(x => --x))
+            .Union().Checkpoint(out var union)
+            .Build();
+
+        var outputs = union.GetOutputs(pipeline.Start);
+        Assert.That(outputs, Has.Length.EqualTo(3));
+        Assert.That(outputs, Does.Contain(7));
+        Assert.That(outputs, Does.Contain(4));
+        Assert.That(outputs, Does.Contain(-1));
+    }
+
+
+    [Test]
+    public void Build_WithRoutesInlineForParsers_Success()
+    {
+        var pipeline = new PipelineBuilder()
+            .Source(["2024-02-16", "2024-02-58", "2024-02-20"])
+            .Parse()
+                .AsDate()
+                    .Route<DateOnly, DateOnly>(x => x.Main, x => x.Map(x => x.AddDays(-1)))
+                    .Route<string, DateOnly>(x => x.Alternate, x => x.Constant(new DateOnly(2024, 2, 1)))
+            .Union<DateOnly>().Checkpoint(out var union)
+            .Build();
+
+        var outputs = union.GetOutputs(pipeline.Start);
+        Assert.That(outputs, Has.Length.EqualTo(3));
+        Assert.That(outputs, Does.Contain(new DateOnly(2024, 2, 15)));
+        Assert.That(outputs, Does.Contain(new DateOnly(2024, 2, 19)));
+        Assert.That(outputs, Does.Contain(new DateOnly(2024, 2, 1)));
+    }
+
+    [Test]
+    public void Build_WithRoutesForParsers_Success()
+    {
+        var pipeline = new PipelineBuilder()
+            .Source(["2024-02-16", "2024-02-58", "2024-02-20"])
+            .Parse()
+                .AsDate()
+            .Converge<DateOnly>()
+                .Route<DateOnly>(x => x.Main, x => x.Map(x => x.AddDays(-1)))
+                .Route<string>(x => x.Alternate, x => x.Constant(new DateOnly(2024, 2, 1)))
+            .Union().Checkpoint(out var union)
+            .Build();
+
+        var outputs = union.GetOutputs(pipeline.Start);
+        Assert.That(outputs, Has.Length.EqualTo(3));
+        Assert.That(outputs, Does.Contain(new DateOnly(2024, 2, 15)));
+        Assert.That(outputs, Does.Contain(new DateOnly(2024, 2, 19)));
+        Assert.That(outputs, Does.Contain(new DateOnly(2024, 2, 1)));
     }
 }

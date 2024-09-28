@@ -24,11 +24,14 @@ public abstract class BaseSingleRouterPipe<TInput, TOutput> : ChainablePipe<TOut
         input.RegisterDownstream(Emit);
         Pipeline = input.Pipe.Pipeline;
     }
+    public void Bind(IChainablePort input)
+        => Bind(input as IChainablePort<TInput> ?? throw new InvalidCastException());
 
     public void Unbind(IChainablePort<TInput> input)
-    {
-        input.UnregisterDownstream(Emit);
-    }
+        => input.UnregisterDownstream(Emit);
+
+    public void Unbind(IChainablePort input)
+        => Unbind(input as IChainablePort<TInput> ?? throw new InvalidCastException());
 }
 
 public abstract class SingleRouterPipe<TInput, TOutput> : BaseSingleRouterPipe<TInput, TOutput>

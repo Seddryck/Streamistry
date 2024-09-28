@@ -7,7 +7,17 @@ using Streamistry.Observability;
 
 namespace Streamistry.Fluent;
 
-public class Segment<TInput, TOutput> : IPipeBuilder<TInput>
+public interface ISegment
+{
+    (IBindablePipe input, IChainablePort output) Craft(Pipeline pipeline);
+}
+
+public interface ISegment<TInput, TOutput> : ISegment
+{
+    new (IBindablePipe<TInput> input, IChainablePort<TOutput> output) Craft(Pipeline pipeline);
+}
+
+public class Segment<TInput, TOutput> : IPipeBuilder<TInput>, ISegment<TInput, TOutput>
 {
     private VirtualInput<TInput> Input { get; set; } = new();
     internal Func<BasePipeBuilder<TInput>, BasePipeBuilder<TOutput>> Builder { get; }
@@ -21,13 +31,16 @@ public class Segment<TInput, TOutput> : IPipeBuilder<TInput>
     public IChainablePort<TInput> OnBuildPipeElement()
         => new VirtualInput<TInput>();
 
-    public (IBindablePipe<TInput> input, IChainablePort<TOutput>) Craft(Pipeline pipeline)
+    public (IBindablePipe<TInput> input, IChainablePort<TOutput> output) Craft(Pipeline pipeline)
     {
         Input.Pipeline = pipeline;
         var builder = Builder.Invoke(Input);
         builder.Build();
         return (Input.GetTarget(), builder.BuildPipeElement());
     }
+
+    (IBindablePipe input, IChainablePort output) ISegment.Craft(Pipeline pipeline)
+        => Craft(pipeline);
 
     private class VirtualInput<T> : BasePipeBuilder<T>, IChainablePort<T>, IChainablePipe
     {

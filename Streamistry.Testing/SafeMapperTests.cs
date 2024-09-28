@@ -15,7 +15,7 @@ public class ExceptionRouterMapperTests
     [Test]
     public void Emit_ValidData_MainOnly()
     {
-        var mapper = new ExceptionMapper<int, int>(x => 60 / x);
+        var mapper = new SafeMapper<int, int>(x => 60 / x);
         Assert.Multiple(() =>
         {
             Assert.That(mapper.EmitAndGetOutput(10), Is.EqualTo(6));
@@ -27,7 +27,7 @@ public class ExceptionRouterMapperTests
     [Test]
     public void Emit_InvalidData_ExceptionOnly()
     {
-        var mapper = new ExceptionMapper<int, int>(x => 60 / x);
+        var mapper = new SafeMapper<int, int>(x => 60 / x);
         Assert.Multiple(() =>
         {
             Assert.That(mapper.EmitAndAnyOutput(0), Is.False);
@@ -39,7 +39,7 @@ public class ExceptionRouterMapperTests
     [Test]
     public void Emit_MixedData_Successful()
     {
-        var mapper = new ExceptionMapper<int, int>(x => 60 / x);
+        var mapper = new SafeMapper<int, int>(x => 60 / x);
         Assert.Multiple(() =>
         {
             Assert.That(mapper.EmitAndGetOutput(10), Is.EqualTo(6));
@@ -52,7 +52,7 @@ public class ExceptionRouterMapperTests
     public void Emit_MixedDataWithExceptionPathAndExplicitMainPath_DontFail()
     {
         var source = new EnumerableSource<int>([10, 0, 3]);
-        var mapper = new ExceptionMapper<int, int>(source, x => 60 / x);
+        var mapper = new SafeMapper<int, int>(source, x => 60 / x);
         var mainSink = new MemorySink<int>(mapper.Main);
         var exceptionSink = new MemorySink<int>(mapper.Alternate);
         source.Start();
