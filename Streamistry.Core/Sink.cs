@@ -35,9 +35,12 @@ public class Sink<T> : ObservablePipe, IProcessablePipe<T>, IBindablePipe<T>
         input.RegisterDownstream(Emit);
         Pipeline = input.Pipe.Pipeline;
     }
+    public void Bind(IChainablePort input)
+        => Bind(input as IChainablePort<T> ?? throw new InvalidCastException());
 
     public void Unbind(IChainablePort<T> input)
-    {
-        input.UnregisterDownstream(Emit);
-    }
+        => input.UnregisterDownstream(Emit);
+
+    public void Unbind(IChainablePort input)
+        => Unbind(input as IChainablePort<T> ?? throw new InvalidCastException());
 }

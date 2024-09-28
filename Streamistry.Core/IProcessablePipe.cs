@@ -6,7 +6,13 @@ using System.Threading.Tasks;
 
 namespace Streamistry;
 
-public interface IBindablePipe<T>
+public interface IBindablePipe
+{
+    void Bind(IChainablePort input);
+    void Unbind(IChainablePort input);
+}
+
+public interface IBindablePipe<T> : IBindablePipe
 {
     void Bind(IChainablePort<T> input);
     void Unbind(IChainablePort<T> input);

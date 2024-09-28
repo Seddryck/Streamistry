@@ -8,7 +8,7 @@ using Streamistry.Pipes.Parsers;
 
 namespace Streamistry.Fluent;
 
-public class ParserBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
+public class ParserBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>, IBuilder<IDualRoute>
 {
     protected IFormatProvider? FormatProvider { get; set; }
     protected ParserDelegate<TInput, TOutput> ParseFunction { get; }
@@ -25,6 +25,10 @@ public class ParserBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput
 
     public override IChainablePort<TOutput> OnBuildPipeElement()
         => new Parser<TInput, TOutput>(Upstream.BuildPipeElement(), ParseFunction);
+    IDualRoute IBuilder<IDualRoute>.BuildPipeElement()
+        => base.BuildPipeElement().Pipe is IDualRoute dual ? dual : throw new InvalidCastException();
+    IDualRoute IBuilder<IDualRoute>.OnBuildPipeElement()
+        => throw new NotImplementedException();
 }
 
 public class ParserBuilder<TInput>
@@ -47,7 +51,7 @@ public class ParserBuilder<TInput>
     }
 }
 
-public class SpecializedParserBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
+public class SpecializedParserBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>, IBuilder<IDualRoute>
 {
     protected Type Type { get; }
     protected IFormatProvider? FormatProvider { get; set; }
@@ -57,45 +61,38 @@ public class SpecializedParserBuilder<TInput, TOutput> : PipeElementBuilder<TInp
         => (Type, FormatProvider) = (type, formatProvider);
 
     public override IChainablePort<TOutput> OnBuildPipeElement()
-    {
-        return (IChainablePort<TOutput>)Activator.CreateInstance(Type, Upstream.BuildPipeElement(), FormatProvider)!;
-    }
+        => (IChainablePort<TOutput>)Activator.CreateInstance(
+                Type
+                , Upstream.BuildPipeElement()
+                , FormatProvider)!;
+
+    IDualRoute IBuilder<IDualRoute>.BuildPipeElement()
+        => base.BuildPipeElement().Pipe is IDualRoute dual ? dual : throw new InvalidCastException();
+    IDualRoute IBuilder<IDualRoute>.OnBuildPipeElement()
+        => throw new NotImplementedException();
 
     public SpecializedParserBuilder<TInput, TOutput> WithFormatProvider(IFormatProvider formatProvider)
     {
         FormatProvider = formatProvider;
         return this;
     }
+
+    public RoutesBuilder Route<TPort, TNext>(Func<IDualRoute, IChainablePort> port, Segment<TPort, TNext> segment)
+    {
+        var routeBuilder = new RoutesBuilder(this);
+        routeBuilder.Add(port, segment);
+        return routeBuilder;
+    }
+
+    public RoutesBuilder Route<TPort, TNext>(Func<IDualRoute, IChainablePort> port, Func<BasePipeBuilder<TPort>, BasePipeBuilder<TNext>> path)
+    {
+        var routeBuilder = new RoutesBuilder(this);
+        routeBuilder.Add(port, new Segment<TPort, TNext>(path));
+        return routeBuilder;
+    }
+
+    public ConvergerBuilder<TNext> Converge<TNext>()
+        => new(this);
 }
 
-//internal class UniversalParserBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput>
-//{
-//    protected Func<TAccumulate?, TInput?, TAccumulate?>? Accumulator { get; }
-//    protected Func<TAccumulate?, TOutput?>? Selector { get; set; } = x => (TOutput?)Convert.ChangeType(x, typeof(TOutput));
-//    protected TAccumulate? Seed { get; set; } = default;
 
-//    public UniversalParserBuilder(IPipeBuilder<TInput> upstream, Func<TAccumulate?, TInput?, TAccumulate?> accumulator)
-//        : base(upstream)
-//        => (Accumulator) = (accumulator);
-
-//    public UniversalParserBuilder<TInput, TAccumulate, TOutput> WithSelector(Func<TAccumulate?, TOutput?>? selector)
-//    {
-//        Selector = selector;
-//        return this;
-//    }
-
-//    public UniversalParserBuilder<TInput, TAccumulate, TOutput> WithSeed(TAccumulate? seed)
-//    {
-//        Seed = seed;
-//        return this;
-//    }
-
-//    public override IChainablePort<TOutput> OnBuildPipeElement()
-//        => new Parser<TInput, TAccumulate, TOutput>(
-//                Upstream.BuildPipeElement()
-//                , Accumulator ?? throw new InvalidOperationException()
-//                , Selector ?? throw new InvalidOperationException()
-//                , Seed
-//            );
-
-//}

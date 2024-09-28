@@ -7,21 +7,21 @@ using System.Threading.Tasks;
 using Streamistry.Observability;
 
 namespace Streamistry;
-public class ExceptionMapper<TInput, TOutput> : ExceptionRouterPipe<TInput, TOutput>
+public class SafeMapper<TInput, TOutput> : ExceptionRouterPipe<TInput, TOutput>
 {
     public Func<TInput, TOutput> Function { get; init; }
 
-    protected ExceptionMapper(Func<TInput, TOutput> function, IChainablePort<TInput> ? upstream)
+    protected SafeMapper(Func<TInput, TOutput> function, IChainablePort<TInput> ? upstream)
         : base(upstream)
     {
         Function = function;
     }
 
-    public ExceptionMapper(IChainablePort<TInput> upstream, Func<TInput, TOutput> function)
+    public SafeMapper(IChainablePort<TInput> upstream, Func<TInput, TOutput> function)
         : this(function, upstream)
     { }
 
-    public ExceptionMapper(Func<TInput, TOutput> function)
+    public SafeMapper(Func<TInput, TOutput> function)
         : this(function, null)
     { }
 

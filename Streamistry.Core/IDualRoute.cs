@@ -5,8 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Streamistry;
-public interface IDualRoute<TMain, TAlternate> : IChainablePort<TMain>, IProcessablePipe<TAlternate>
+public interface IDualRoute<TMain, TAlternate> : IDualRoute, IChainablePort<TMain>, IProcessablePipe<TAlternate>
 {
-    OutputPort<TMain> Main { get; }
-    OutputPort<TAlternate> Alternate { get; }
+    new OutputPort<TMain> Main { get; }
+    new OutputPort<TAlternate> Alternate { get; }
+}
+
+public interface IDualRoute : IChainablePipe
+{
+    IChainablePort Main { get; }
+    IChainablePort Alternate { get; }
 }
