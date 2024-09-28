@@ -218,6 +218,9 @@ csharp_style_prefer_pattern_matching = true:silent
 csharp_style_prefer_not_pattern = true:suggestion
 csharp_style_prefer_extended_property_pattern = true:suggestion
 
+[*.cs]
+dotnet_diagnostic.SA1402.severity = none
+
 # Xml project files
 [*.{csproj,props,targets}]
 indent_size = 2

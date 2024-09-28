@@ -16,7 +16,7 @@ public abstract class ExceptionRouterPipe<TInput, TOutput> : DualRouterPipe<TInp
     [Trace]
     public override void Emit(TInput obj)
     {
-        if (TryCatchInvoke(obj, out var value, out var exception))
+        if (TryCatchInvoke(obj, out var value, out var _))
             PushDownstream(value);
         else
             Alternate.PushDownstream(obj);

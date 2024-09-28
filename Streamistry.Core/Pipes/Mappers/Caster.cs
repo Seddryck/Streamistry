@@ -62,8 +62,6 @@ internal class CasterHelper<TInput, TOutput>
         }
         return null;
     }
-
-
 }
 
 public class Caster<TInput, TOutput> : Mapper<TInput, TOutput>

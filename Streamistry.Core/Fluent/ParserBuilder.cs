@@ -40,9 +40,9 @@ public class ParserBuilder<TInput>
         => Upstream = upstream;
 
     public SpecializedParserBuilder<TInput, DateOnly> AsDate()
-        => new SpecializedParserBuilder<TInput, DateOnly>(Upstream, typeof(DateParser), FormatProvider);
+        => new (Upstream, typeof(DateParser), FormatProvider);
     public SpecializedParserBuilder<TInput, DateTime> AsDateTime()
-        => new SpecializedParserBuilder<TInput, DateTime>(Upstream, typeof(DateTimeParser), FormatProvider);
+        => new (Upstream, typeof(DateTimeParser), FormatProvider);
 
     public ParserBuilder<TInput> WithFormatProvider(IFormatProvider formatProvider)
     {

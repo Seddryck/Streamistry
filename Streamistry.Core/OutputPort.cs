@@ -27,7 +27,7 @@ public class OutputPort<T> : IChainablePort<T>
         => Downstream?.Invoke(obj);
 
     public Action<T>[] GetDownstreamInvocations()
-        => Downstream?.GetInvocationList().Cast<Action<T>>().ToArray() ?? Array.Empty<Action<T>>();
+        => Downstream?.GetInvocationList().Cast<Action<T>>().ToArray() ?? [];
 }
 
 public class MainOutputPort<T> : OutputPort<T>

@@ -62,8 +62,11 @@ public class PipelineBuilderTests
             .Filter(x => x % 2 != 0).Checkpoint(out var filter)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(filter, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(filter, Is.Not.Null);
+        });
 
         var output = filter.GetOutputs(pipeline.Start);
         Assert.That(output, Has.Length.EqualTo(2));
@@ -78,8 +81,11 @@ public class PipelineBuilderTests
             .Pluck(x => x.Month).Checkpoint(out var plucker)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(plucker, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(plucker, Is.Not.Null);
+        });
 
         var output = plucker.GetOutputs(pipeline.Start);
         Assert.Multiple(() =>
@@ -98,8 +104,11 @@ public class PipelineBuilderTests
             .Constant(0).Checkpoint(out var constant)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(constant, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(constant, Is.Not.Null);
+        });
 
         var output = constant.GetOutputs(pipeline.Start);
         Assert.Multiple(() =>
@@ -118,8 +127,11 @@ public class PipelineBuilderTests
             .Split(x => x?.Split('-') ?? []).Checkpoint(out var splitter)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(splitter, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(splitter, Is.Not.Null);
+        });
 
         var output = splitter.GetOutputs(pipeline.Start);
         Assert.Multiple(() =>
@@ -137,8 +149,11 @@ public class PipelineBuilderTests
             .Aggregate().AsMax().Checkpoint(out var aggr)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(aggr, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(aggr, Is.Not.Null);
+        });
 
         var output = aggr.GetOutputs(pipeline.Start);
         Assert.That(output.Last(), Is.EqualTo(3));
@@ -152,8 +167,11 @@ public class PipelineBuilderTests
             .Aggregate().AsMin().Checkpoint(out var aggr)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(aggr, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(aggr, Is.Not.Null);
+        });
 
         var output = aggr.GetOutputs(pipeline.Start);
         Assert.That(output.Last(), Is.EqualTo(1));
@@ -167,8 +185,11 @@ public class PipelineBuilderTests
             .Aggregate().AsAverage().Checkpoint(out var aggr)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(aggr, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(aggr, Is.Not.Null);
+        });
 
         var output = aggr.GetOutputs(pipeline.Start);
         Assert.That(output.Last(), Is.EqualTo(2));
@@ -182,8 +203,11 @@ public class PipelineBuilderTests
             .Aggregate().AsMedian().Checkpoint(out var aggr)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(aggr, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(aggr, Is.Not.Null);
+        });
 
         var output = aggr.GetOutputs(pipeline.Start);
         Assert.That(output.Last(), Is.EqualTo(2));
@@ -197,8 +221,11 @@ public class PipelineBuilderTests
             .Aggregate().AsSum().Checkpoint(out var aggr)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(aggr, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(aggr, Is.Not.Null);
+        });
 
         var output = aggr.GetOutputs(pipeline.Start);
         Assert.That(output.Last(), Is.EqualTo(6));
@@ -212,8 +239,11 @@ public class PipelineBuilderTests
             .Aggregate().AsCount().Checkpoint(out var aggr)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(aggr, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(aggr, Is.Not.Null);
+        });
 
         var output = aggr.GetOutputs(pipeline.Start);
         Assert.That(output.Last(), Is.EqualTo(3));
@@ -227,8 +257,11 @@ public class PipelineBuilderTests
             .Aggregate((x, y) => x + y).Checkpoint(out var aggr)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(aggr, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(aggr, Is.Not.Null);
+        });
 
         var output = aggr.GetOutputs(pipeline.Start);
         Assert.That(output.Last(), Is.EqualTo("fooBar"));
@@ -242,8 +275,11 @@ public class PipelineBuilderTests
             .Aggregate<int>((x, y) => x + (string.IsNullOrEmpty(y) ? 0 : y!.Length)).Checkpoint(out var aggr)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(aggr, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(aggr, Is.Not.Null);
+        });
 
         var output = aggr.GetOutputs(pipeline.Start);
         Assert.That(output.Last(), Is.EqualTo(6));
@@ -260,8 +296,11 @@ public class PipelineBuilderTests
                 .Checkpoint(out var aggr)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(aggr, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(aggr, Is.Not.Null);
+        });
 
         var output = aggr.GetOutputs(pipeline.Start);
         Assert.That(output.Last(), Is.EqualTo(false));
@@ -278,8 +317,11 @@ public class PipelineBuilderTests
                 .Checkpoint(out var aggr)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(aggr, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(aggr, Is.Not.Null);
+        });
 
         var output = aggr.GetOutputs(pipeline.Start);
         Assert.That(output.Last(), Is.EqualTo(true));
@@ -295,8 +337,11 @@ public class PipelineBuilderTests
                 .Checkpoint(out var parser)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(parser, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(parser, Is.Not.Null);
+        });
 
         var output = parser.GetOutputs(pipeline.Start);
         Assert.That(output, Does.Contain(new DateOnly(2024, 09, 14)));
@@ -313,8 +358,11 @@ public class PipelineBuilderTests
                 .Checkpoint(out var parser)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(parser, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(parser, Is.Not.Null);
+        });
 
         var output = parser.GetOutputs(pipeline.Start);
         Assert.That(output, Has.Length.EqualTo(2));
@@ -341,8 +389,11 @@ public class PipelineBuilderTests
             }).Checkpoint(out var parser)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(parser, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(parser, Is.Not.Null);
+        });
 
         var output = parser.GetOutputs(pipeline.Start);
         Assert.That(output, Has.Length.EqualTo(2));
@@ -364,8 +415,11 @@ public class PipelineBuilderTests
                 .Checkpoint(out var aggr)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(aggr, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(aggr, Is.Not.Null);
+        });
 
         var output = aggr.GetOutputs(pipeline.Start);
         Assert.That(output.Last(), Is.EqualTo(16));
@@ -385,8 +439,11 @@ public class PipelineBuilderTests
             .Zip((day, month) => $"{day} {month}").Checkpoint(out var zip)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(zip, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(zip, Is.Not.Null);
+        });
 
         var output = zip.GetOutputs(pipeline.Start);
         Assert.That(output, Does.Contain("15 September"));
@@ -407,8 +464,11 @@ public class PipelineBuilderTests
             .Zip((day, month, year) => $"on {day} {month} {year}").Checkpoint(out var zip)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(zip, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(zip, Is.Not.Null);
+        });
 
         var output = zip.GetOutputs(pipeline.Start);
         Assert.That(output, Does.Contain("on 15 September 2025"));
@@ -428,8 +488,11 @@ public class PipelineBuilderTests
             ).Checkpoints(out var ports)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(ports, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(ports, Is.Not.Null);
+        });
         Assert.That(ports, Has.Length.EqualTo(2));
 
         var outputMonth = ((IChainablePort<string>)ports[1]).GetOutputs(pipeline.Start);
@@ -449,8 +512,11 @@ public class PipelineBuilderTests
             ).Checkpoints(out var ports)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(ports, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(ports, Is.Not.Null);
+        });
         Assert.That(ports, Has.Length.EqualTo(2));
 
         var outputMonth = ((IChainablePort<string>)ports[1]).GetOutputs(pipeline.Start);
@@ -472,8 +538,11 @@ public class PipelineBuilderTests
             ).Checkpoints(out var _, out var monthPort, out var _)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(monthPort, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(monthPort, Is.Not.Null);
+        });
 
         var outputMonth = monthPort.GetOutputs(pipeline.Start);
         Assert.That(outputMonth, Does.Contain("September"));
@@ -492,15 +561,21 @@ public class PipelineBuilderTests
             ).Checkpoints(out var ports)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(ports, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(ports, Is.Not.Null);
+        });
         Assert.That(ports, Has.Length.EqualTo(2));
 
         var action = pipeline.Start;
         var (outputDay, outputMonth) = action.GetMultipleOutputs((IChainablePort<int>)ports[0], (IChainablePort<string>)ports[1]);
         Assert.That(outputDay, Does.Contain(15));
-        Assert.That(outputDay, Does.Contain(16));
-        Assert.That(outputMonth, Does.Contain("September"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(outputDay, Does.Contain(16));
+            Assert.That(outputMonth, Does.Contain("September"));
+        });
     }
 
     [Test]
@@ -516,15 +591,21 @@ public class PipelineBuilderTests
             ).Checkpoints(out var portDay, out var portMonth)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(portDay, Is.Not.Null);
-        Assert.That(portMonth, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(portDay, Is.Not.Null);
+            Assert.That(portMonth, Is.Not.Null);
+        });
 
         var action = pipeline.Start;
         var (outputDay, outputMonth) = action.GetMultipleOutputs(portDay, portMonth);
         Assert.That(outputDay, Does.Contain(15));
-        Assert.That(outputDay, Does.Contain(16));
-        Assert.That(outputMonth, Does.Contain("September"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(outputDay, Does.Contain(16));
+            Assert.That(outputMonth, Does.Contain("September"));
+        });
     }
 
     [Test]
@@ -543,15 +624,21 @@ public class PipelineBuilderTests
             ).Checkpoints(out var portDay, out var portMonth)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(portDay, Is.Not.Null);
-        Assert.That(portMonth, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(portDay, Is.Not.Null);
+            Assert.That(portMonth, Is.Not.Null);
+        });
 
         var action = pipeline.Start;
         var (outputDay, outputMonth) = action.GetMultipleOutputs(portDay, portMonth);
         Assert.That(outputDay, Does.Contain(33));
-        Assert.That(outputDay, Does.Contain(35));
-        Assert.That(outputMonth, Does.Contain("September"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(outputDay, Does.Contain(35));
+            Assert.That(outputMonth, Does.Contain("September"));
+        });
     }
 
     [Test]
@@ -568,8 +655,11 @@ public class PipelineBuilderTests
             .Zip((stream1, stream2, stream3, stream4, stream5) => stream1 + stream2 + stream3 + stream4 + stream5).Checkpoint(out var zip)
             .Build();
 
-        Assert.That(pipeline, Is.Not.Null);
-        Assert.That(zip, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pipeline, Is.Not.Null);
+            Assert.That(zip, Is.Not.Null);
+        });
 
         var output = zip.GetOutputs(pipeline.Start);
         Assert.That(output, Does.Contain(20));
