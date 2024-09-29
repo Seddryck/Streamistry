@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Streamistry.Json;
 internal class ArraySplitter : Splitter<JsonArray, JsonObject>
 {
-    public ArraySplitter(IChainablePipe<JsonArray> upstream)
+    public ArraySplitter(IChainablePort<JsonArray> upstream)
         : base(upstream, x => [..Split(x)])
     { }
 

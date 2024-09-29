@@ -53,7 +53,7 @@ public class ObjectPropertyAppender<TInputMain, TInputSecondary> : Zipper<TInput
     private static void CreatePathAndAddProperty(JsonNode root, string jsonPath, string propertyName, JsonNode value)
     {
         var segments = jsonPath.TrimStart('$').Split('.', StringSplitOptions.RemoveEmptyEntries);
-        JsonNode current = root;
+        var current = root;
 
         foreach (var segment in segments)
         {

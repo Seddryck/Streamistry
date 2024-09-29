@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
 using Streamistry.Pipes.Parsers;
 
 namespace Streamistry.Fluent;
@@ -33,8 +34,8 @@ public class ParserBuilder<TInput, TOutput> : PipeElementBuilder<TInput, TOutput
 
 public class ParserBuilder<TInput>
 {
-    protected IPipeBuilder<TInput> Upstream { get; }
-    protected IFormatProvider? FormatProvider { get; set; }
+    public IPipeBuilder<TInput> Upstream { get; }
+    public IFormatProvider? FormatProvider { get; protected set; }
 
     public ParserBuilder(IPipeBuilder<TInput> upstream)
         => Upstream = upstream;
@@ -61,10 +62,22 @@ public class SpecializedParserBuilder<TInput, TOutput> : PipeElementBuilder<TInp
         => (Type, FormatProvider) = (type, formatProvider);
 
     public override IChainablePort<TOutput> OnBuildPipeElement()
-        => (IChainablePort<TOutput>)Activator.CreateInstance(
+        => IsFormatProviderEnabled(Type)
+            ? (IChainablePort<TOutput>)Activator.CreateInstance(
                 Type
                 , Upstream.BuildPipeElement()
-                , FormatProvider)!;
+                , FormatProvider)!
+            : (IChainablePort<TOutput>)Activator.CreateInstance(
+                Type
+                , Upstream.BuildPipeElement()
+                )!;
+
+    private bool IsFormatProviderEnabled(Type type)
+    {
+        var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance)
+                        .Where(x => x.GetParameters().Length <= 2);
+        return ctors.Any(x => x.GetParameters().Length == 2);
+    }
 
     IDualRoute IBuilder<IDualRoute>.BuildPipeElement()
         => base.BuildPipeElement().Pipe is IDualRoute dual ? dual : throw new InvalidCastException();

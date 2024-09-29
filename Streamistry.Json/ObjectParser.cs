@@ -14,7 +14,6 @@ public class ObjectParser : StringParser<JsonObject>
         : base(upstream, new ParserDelegate<string, JsonObject>(TryParse))
     { }
 
-
     private static bool TryParse(string? text, [NotNullWhen(true)] out JsonObject? value)
     {
         value = null;
