@@ -15,17 +15,17 @@ public class AggregatorBuilder<TInput, TAccumulate, TOutput>
         => Upstream = upstream;
 
     public SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput> AsMax()
-        => new SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput>(Upstream, typeof(Max<>), [typeof(TInput)]);
+        => new (Upstream, typeof(Max<>), [typeof(TInput)]);
     public SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput> AsMin()
-        => new SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput>(Upstream, typeof(Min<>), [typeof(TInput)]);
+        => new (Upstream, typeof(Min<>), [typeof(TInput)]);
     public SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput> AsAverage()
-    => new SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput>(Upstream, typeof(Average<,>), [typeof(TInput), typeof(TOutput)]);
+    => new (Upstream, typeof(Average<,>), [typeof(TInput), typeof(TOutput)]);
     public SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput> AsMedian()
-    => new SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput>(Upstream, typeof(Median<,>), [typeof(TInput), typeof(TOutput)]);
+    => new (Upstream, typeof(Median<,>), [typeof(TInput), typeof(TOutput)]);
     public SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput> AsSum()
-    => new SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput>(Upstream, typeof(Sum<,>), [typeof(TInput), typeof(TOutput)]);
+    => new (Upstream, typeof(Sum<,>), [typeof(TInput), typeof(TOutput)]);
     public SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput> AsCount()
-    => new SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput>(Upstream, typeof(Count<,>), [typeof(TInput), typeof(TOutput)]);
+    => new (Upstream, typeof(Count<,>), [typeof(TInput), typeof(TOutput)]);
 }
 
 public class SpecializedAggregatorBuilder<TInput, TAccumulate, TOutput> : PipeElementBuilder<TInput, TOutput>

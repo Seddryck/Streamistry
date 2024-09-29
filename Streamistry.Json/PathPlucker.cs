@@ -9,11 +9,11 @@ using Json.Path;
 namespace Streamistry.Json;
 public abstract class BaseJsonPathPlucker<TJson, T> : Mapper<TJson, T> where TJson : JsonNode
 {
-    public BaseJsonPathPlucker(IChainablePipe<TJson> upstream, string path)
+    public BaseJsonPathPlucker(IChainablePort<TJson> upstream, string path)
         : this(path, upstream)
     { }
 
-    protected BaseJsonPathPlucker(string path, IChainablePipe<TJson>? upstream = null)
+    protected BaseJsonPathPlucker(string path, IChainablePort<TJson>? upstream = null)
         : base((x) => GetValue(x, JsonPath.Parse(path)), upstream)
     { }
 
@@ -34,18 +34,18 @@ public class PathPlucker<T> : BaseJsonPathPlucker<JsonObject, T>
         : this(path, null)
     { }
 
-    public PathPlucker(IChainablePipe<JsonObject> upstream, string path)
+    public PathPlucker(IChainablePort<JsonObject> upstream, string path)
         : this(path, upstream)
     { }
 
-    public PathPlucker(string path, IChainablePipe<JsonObject>? upstream = null)
+    public PathPlucker(string path, IChainablePort<JsonObject>? upstream = null)
         : base(path, upstream)
     { }
 }
 
-public class JsonPathArrayPlucker<T> : BaseJsonPathPlucker<JsonArray, T>
+public class PathArrayPlucker<T> : BaseJsonPathPlucker<JsonArray, T>
 {
-    public JsonPathArrayPlucker(IChainablePipe<JsonArray> upstream, string path)
+    public PathArrayPlucker(IChainablePort<JsonArray> upstream, string path)
         : base(upstream, path)
     { }
 }
