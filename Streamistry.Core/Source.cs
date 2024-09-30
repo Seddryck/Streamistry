@@ -13,7 +13,7 @@ namespace Streamistry;
 /// The output stream is composed of elements that satisfy the predicate; elements that do not satisfy the predicate are excluded from the downstream stream.
 /// </summary>
 /// <typeparam name="TOutput">The type of the elements in both the input and output streams.</typeparam>
-public abstract class Source<TOutput> : ChainablePipe<TOutput>, ISource
+public abstract class Source<TOutput> : ChainablePipe<TOutput>, ISource, IDisposable
 {
     protected Source(ObservabilityProvider? provider)
         : base(provider)
@@ -32,13 +32,24 @@ public abstract class Source<TOutput> : ChainablePipe<TOutput>, ISource
         if (IsStarted)
             return;
         IsStarted = true;
-        Read();
+        Setup();
+        try
+        { Read(); }
+        finally
+        { Stop(); }
     }
 
     public void Stop()
     {
+        Cleanup();
         IsStarted = false;
     }
+
+    public virtual void Setup()
+    { }
+
+    public virtual void Cleanup()
+    { }
 
     protected virtual void Read()
     {
@@ -54,6 +65,36 @@ public abstract class Source<TOutput> : ChainablePipe<TOutput>, ISource
 
     public void WaitOnCompleted(IChainablePipe pipe)
         => pipe.RegisterOnCompleted(Start);
+
+    #region IDisposable
+    private bool disposed = false;
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        if (disposing)
+            DisposeManagedObjects();
+
+        DisposeUnmanagedObjects();
+
+        disposed = true;
+    }
+
+    protected virtual void DisposeManagedObjects()
+    {
+        Stop();
+    }
+
+    protected virtual void DisposeUnmanagedObjects()
+    { }
+    #endregion
 }
 
 public class EmptySource<TOutput> : Source<TOutput>, IProcessablePipe<TOutput>

@@ -6,30 +6,23 @@ using System.Threading.Tasks;
 using Streamistry.Observability;
 
 namespace Streamistry;
-public class Sink<T> : ObservablePipe, IProcessablePipe<T>, IBindablePipe<T>
+public abstract class BaseSink<T> : ObservablePipe, IProcessablePipe<T>, IBindablePipe<T>
 {
-    public Action<T?> Action { get; }
     public Pipeline? Pipeline { get; private set; }
 
-    public Sink(IChainablePort<T> upstream, Action<T?> function)
-        :this(function, upstream)
-    { }
-
-    protected Sink(Action<T?> action, IChainablePort<T>? upstream)
+   protected BaseSink(IChainablePort<T>? upstream)
         : base(upstream?.Pipe.GetObservabilityProvider())
     {
         upstream?.RegisterDownstream(Emit);
-        Action = action;
         Pipeline = upstream?.Pipe.Pipeline;
     }
 
     [Meter]
-    public void Emit(T? obj)
+    public void Emit(T obj)
         => Invoke(obj);
 
     [Trace]
-    protected void Invoke(T? obj)
-        => Action.Invoke(obj);
+    protected abstract void Invoke(T obj);
     public void Bind(IChainablePort<T> input)
     {
         input.RegisterDownstream(Emit);
@@ -43,4 +36,27 @@ public class Sink<T> : ObservablePipe, IProcessablePipe<T>, IBindablePipe<T>
 
     public void Unbind(IChainablePort input)
         => Unbind(input as IChainablePort<T> ?? throw new InvalidCastException());
+}
+
+public class Sink<T> : BaseSink<T>
+{
+    public Action<T> Action { get; }
+
+    public Sink(Action<T> function)
+        : this(function, null)
+    { }
+
+    public Sink(IChainablePort<T> upstream, Action<T> function)
+        : this(function, upstream)
+    { }
+
+    protected Sink(Action<T> action, IChainablePort<T>? upstream)
+        : base(upstream)
+    {
+        Action = action;
+    }
+
+    [Trace]
+    protected override void Invoke(T obj)
+        => Action.Invoke(obj);
 }

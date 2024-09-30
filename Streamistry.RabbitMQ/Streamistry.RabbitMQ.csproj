@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Streamistry.RabbitMQ.MassTransit</PackageId>
+    <RepositoryUrl>https://github.com/Seddryck/Streamistry</RepositoryUrl>
+    <PackageTags>etl;data-engineering;data-integration;data-pipeline;streaming-data;json;RabbitMQ;MassTransit</PackageTags>
+    <Description>The RabbitMQ package of Streamistry is specifically designed to handle RabbitMQ integration within pipeline, streaming, and ETL processes. Its powerful and flexible features make it an essential tool for managing complex pipelines.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MethodBoundaryAspect.Fody" Version="2.0.149" />
+    <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Streamistry.Core\Streamistry.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.2.25">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>
