@@ -41,7 +41,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Streamistry.Json", "Streami
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Streamistry.Json.Testing", "Streamistry.Json.Testing\Streamistry.Json.Testing.csproj", "{84FA815D-FE05-4B57-9BB1-156E7B217576}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streamistry.SourceGenerator", "Streamistry.SourceGenerator\Streamistry.SourceGenerator.csproj", "{D367F51E-2A7F-4C06-B1DE-1D9845C3C435}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Streamistry.SourceGenerator", "Streamistry.SourceGenerator\Streamistry.SourceGenerator.csproj", "{D367F51E-2A7F-4C06-B1DE-1D9845C3C435}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RabbitMQ", "RabbitMQ", "{756FEE91-D720-4257-93F4-9FDBC5D2FDFC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Streamistry.RabbitMQ", "Streamistry.RabbitMQ\Streamistry.RabbitMQ.csproj", "{98664B2E-0182-466D-B38B-71754EDE3798}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Streamistry.RabbitMQ.Testing", "Streamistry.RabbitMQ.Testing\Streamistry.RabbitMQ.Testing.csproj", "{B0E75B0B-5D9A-410B-9B28-14A197249F61}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +75,14 @@ Global
 		{D367F51E-2A7F-4C06-B1DE-1D9845C3C435}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D367F51E-2A7F-4C06-B1DE-1D9845C3C435}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D367F51E-2A7F-4C06-B1DE-1D9845C3C435}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98664B2E-0182-466D-B38B-71754EDE3798}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98664B2E-0182-466D-B38B-71754EDE3798}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98664B2E-0182-466D-B38B-71754EDE3798}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98664B2E-0182-466D-B38B-71754EDE3798}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0E75B0B-5D9A-410B-9B28-14A197249F61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0E75B0B-5D9A-410B-9B28-14A197249F61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0E75B0B-5D9A-410B-9B28-14A197249F61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0E75B0B-5D9A-410B-9B28-14A197249F61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,6 +93,8 @@ Global
 		{210C887C-6FF3-4D1B-9A7B-894E2F286FF4} = {C923A152-4091-48BE-A984-686FF5E4ACCC}
 		{AFC0A591-FD48-481F-AB90-00E7B0926FE1} = {3AD64C0C-6DA9-4947-A225-6F68CF9A6A4D}
 		{84FA815D-FE05-4B57-9BB1-156E7B217576} = {3AD64C0C-6DA9-4947-A225-6F68CF9A6A4D}
+		{98664B2E-0182-466D-B38B-71754EDE3798} = {756FEE91-D720-4257-93F4-9FDBC5D2FDFC}
+		{B0E75B0B-5D9A-410B-9B28-14A197249F61} = {756FEE91-D720-4257-93F4-9FDBC5D2FDFC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8EABD9FE-559A-40AF-BB4B-8026F9240FEF}
