@@ -12,7 +12,7 @@ if ($force -or ($filesChanged -like "*rabbitmq*")) {
 
 	$previouslyRunning, $running = Deploy-Container -FullName "rabbitmq"
 	if (!$previouslyRunning) {
-		Start-Sleep -s 10
+		Start-Sleep -s 30
 	}
 
 	# Running QA tests

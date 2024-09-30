@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>Streamistry.RabbitMQ.MassTransit</PackageId>
+    <PackageId>Streamistry.RabbitMQ</PackageId>
     <RepositoryUrl>https://github.com/Seddryck/Streamistry</RepositoryUrl>
-    <PackageTags>etl;data-engineering;data-integration;data-pipeline;streaming-data;json;RabbitMQ;MassTransit</PackageTags>
+    <PackageTags>etl;data-engineering;data-integration;data-pipeline;streaming-data;RabbitMQ</PackageTags>
     <Description>The RabbitMQ package of Streamistry is specifically designed to handle RabbitMQ integration within pipeline, streaming, and ETL processes. Its powerful and flexible features make it an essential tool for managing complex pipelines.</Description>
   </PropertyGroup>
 
