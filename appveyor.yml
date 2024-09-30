@@ -71,7 +71,8 @@ test_script:
 
 after_test:
 - dotnet pack Streamistry.Core -p:version="%GitVersion_SemVer%" -c Release --include-symbols --no-build --nologo
-- dotnet pack Streamistry.Json -p:version="%GitVersion_SemVer%" -c Release --include-symbols --no-build --nologo 
+- dotnet pack Streamistry.Json -p:version="%GitVersion_SemVer%" -c Release --include-symbols --no-build --nologo
+- dotnet pack Streamistry.RabbitMQ -p:version="%GitVersion_SemVer%" -c Release --include-symbols --no-build --nologo 
 
 artifacts:
 - path: '**\*.nupkg'

@@ -24,7 +24,7 @@ Function Deploy-Container {
 	Begin {
 		$previously_running = $false
 		if ($null -eq $filePath -or $filePath -eq "") {
-			$filePath = ".\run-$fullname-docker.cmd"
+			$filePath = ".\Streamistry.RabbitMQ.Testing\run-$fullname-docker.cmd"
 		}
 	}
 

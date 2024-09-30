@@ -17,13 +17,13 @@ Function Run-TestSuite {
 
 	Process {
 		foreach ($framework in $frameworks) {
-			$buildMsg = & dotnet build "..\Streamistry.RabbitMQ.Testing" -c $config -f $framework --nologo
+			$buildMsg = & dotnet build ".\Streamistry.RabbitMQ.Testing" -c $config -f $framework --nologo
 			if ($lastexitcode -ne 0) {
 				Write-Warning "Cannot build the Test assembly! `r`n$($buildMsg -join "`r`n")"
 			} else {
 				foreach ($category in $categories) {
 					Write-Host "`tRunning test-suite for $category ($framework)"
-					$arguments  = @("test", "..\Streamistry.RabbitMQ.Testing")
+					$arguments  = @("test", ".\Streamistry.RabbitMQ.Testing")
 					$arguments += @("--filter", "`"TestCategory=$($category.Split("+") -join "`"`"&`"`"TestCategory=")`"")
 					$arguments += @("-c", $config)
 					$arguments += @("-f", $framework)
