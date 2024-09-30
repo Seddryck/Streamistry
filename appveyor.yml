@@ -64,7 +64,7 @@ test_script:
     .\codecov.exe --dir "./.coverage/"
 
 - pwsh: |
-      & .\Streamistry.RabbitMQ.Testing\deploy-rabbitmq-test-env.ps1 -force:$true -config "Release" -frameworks @("net8.0")
+      & .\Streamistry.RabbitMQ.Testing\deploy-rabbitmq-test-env.ps1 -config "Release" -frameworks @("net8.0")
       if ($lastexitcode -gt 0) {
         throw "At least one of the test-suite was not successful. Build stopped."
       }
