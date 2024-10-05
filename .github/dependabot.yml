@@ -27,6 +27,7 @@ updates:
       DotNet.ReproducibleBuilds:
           patterns:
             - "DotNet.ReproducibleBuilds"
-      Microsoft.CodeAnalysis.CSharp:
+      Microsoft.CodeAnalysis:
           patterns:
             - "Microsoft.CodeAnalysis.CSharp"
+            - "Microsoft.CodeAnalysis.Analyzers"
