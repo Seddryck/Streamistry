@@ -31,3 +31,6 @@ updates:
           patterns:
             - "Microsoft.CodeAnalysis.CSharp"
             - "Microsoft.CodeAnalysis.Analyzers"
+      Scriban:
+          patterns:
+            - "Scriban"
