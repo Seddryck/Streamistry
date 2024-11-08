@@ -34,3 +34,7 @@ updates:
       Scriban:
           patterns:
             - "Scriban"
+      RabbitMQ.Client:
+          patterns:
+            - "RabbitMQ.Client"
+RabbitMQ.Client 
