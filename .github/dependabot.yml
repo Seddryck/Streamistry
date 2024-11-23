@@ -18,6 +18,9 @@ updates:
       NUnit:
           patterns:
             - "NUnit"
+      NUnit.Analyzers:
+          patterns:
+            - "NUnit.Analyzers"
       Microsoft.NET.Test.Sdk:
           patterns:
             - "Microsoft.NET.Test.Sdk"
