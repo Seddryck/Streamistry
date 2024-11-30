@@ -34,6 +34,9 @@ updates:
           patterns:
             - "Microsoft.CodeAnalysis.CSharp"
             - "Microsoft.CodeAnalysis.Analyzers"
+      MethodBoundaryAspect.Fody:
+          patterns:
+            - "MethodBoundaryAspect.Fody"
       Scriban:
           patterns:
             - "Scriban"
