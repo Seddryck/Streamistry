@@ -37,6 +37,9 @@ updates:
       MethodBoundaryAspect.Fody:
           patterns:
             - "MethodBoundaryAspect.Fody"
+      System.Text.Json:
+          patterns:
+            - "System.Text.Json"
       Scriban:
           patterns:
             - "Scriban"
