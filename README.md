@@ -15,7 +15,7 @@ Streamistry is a lightweight library designed to support pipeline, streaming, an
 **Releases:** [![nuget](https://img.shields.io/nuget/v/Streamistry.svg)](https://www.nuget.org/packages/Streamistry/) <!-- [![GitHub Release Date](https://img.shields.io/github/release-date/seddryck/Streamistry.svg)](https://github.com/Seddryck/Streamistry/releases/latest) --> [![licence badge](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://github.com/Seddryck/Streamistry/blob/master/LICENSE)
 
 **Dev. activity:** [![GitHub last commit](https://img.shields.io/github/last-commit/Seddryck/Streamistry.svg)](https://github.com/Seddryck/Streamistry/commits)
-![Still maintained](https://img.shields.io/maintenance/yes/2024.svg)
+![Still maintained](https://img.shields.io/maintenance/yes/2025.svg)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/y/Seddryck/Streamistry)
 
 **Continuous integration builds:** [![Build status](https://ci.appveyor.com/api/projects/status/gf0ijb6gejf1awxr?svg=true)](https://ci.appveyor.com/project/Seddryck/Streamistry/)
