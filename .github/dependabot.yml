@@ -49,3 +49,6 @@ updates:
       RabbitMQ.Client:
           patterns:
             - "RabbitMQ.Client"
+      Microsoft.Extensions:
+          patterns:
+            - "Microsoft.Extensions.*"
