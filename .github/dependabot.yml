@@ -21,6 +21,7 @@ updates:
       NUnit.Analyzers:
           patterns:
             - "NUnit.Analyzers"
+            - "NUnit3TestAdapter"
       Microsoft.NET.Test.Sdk:
           patterns:
             - "Microsoft.NET.Test.Sdk"
