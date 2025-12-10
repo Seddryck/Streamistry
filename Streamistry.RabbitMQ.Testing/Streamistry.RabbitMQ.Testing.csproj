@@ -24,7 +24,7 @@
 		<ProjectReference Include="..\Streamistry.RabbitMQ\Streamistry.RabbitMQ.csproj" />
 	</ItemGroup>
   <ItemGroup>
-    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.2.25">
+    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.2.39">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
