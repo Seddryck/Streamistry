@@ -5,7 +5,7 @@ param(
     [string] $Task,
     [ValidateSet('net8.0', 'net9.0', 'net10.0')]
     [string] $Framework = 'net10.0',
-    [ValidatePattern('^\d+\.\d+\.\d+-ci\.[0-9A-Za-z.-]+$')]
+    [ValidatePattern('^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$')]
     [string] $Version = '0.0.0-ci.local'
 )
 

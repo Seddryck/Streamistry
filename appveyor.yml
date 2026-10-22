@@ -41,9 +41,13 @@ install:
     $env:PATH = "$dotnetDirectory;$env:PATH"
     Set-AppveyorBuildVariable -Name DOTNET_ROOT -Value $env:DOTNET_ROOT
     Set-AppveyorBuildVariable -Name PATH -Value $env:PATH
+    & dotnet tool restore
+    if ($LASTEXITCODE -ne 0) { throw 'Could not restore the pinned GitVersion tool.' }
 
 before_build:
-- cmd: gitversion /output buildserver /verbosity Minimal
+- pwsh: |
+    & dotnet tool run dotnet-gitversion -- /output buildserver /verbosity Minimal
+    if ($LASTEXITCODE -ne 0) { throw 'GitVersion calculation failed.' }
 - pwsh: Write-Host "Building Streamistry version $($env:GitVersion_SemVer)"
 - pwsh: |
     . "$env:APPVEYOR_BUILD_FOLDER\github.ps1"
