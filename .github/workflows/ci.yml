@@ -1,0 +1,180 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  version:
+    name: Calculate and validate version
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      semver: ${{ steps.version.outputs.semver }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Restore pinned GitVersion tool
+        shell: pwsh
+        run: |
+          dotnet tool restore
+          if ($LASTEXITCODE -ne 0) { throw 'GitVersion tool restore failed.' }
+      - name: Calculate version from complete history
+        id: version
+        shell: pwsh
+        run: |
+          $raw = & dotnet tool run dotnet-gitversion -- /output json /nofetch
+          if ($LASTEXITCODE -ne 0) { throw 'GitVersion calculation failed.' }
+          $calculated = ($raw -join "`n") | ConvertFrom-Json
+          if ($calculated.SemVer -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') {
+            throw 'GitVersion returned an invalid package version.'
+          }
+          if ($calculated.Sha -ne $env:GITHUB_SHA) {
+            throw 'GitVersion calculated a version for a different commit.'
+          }
+          "semver=$($calculated.SemVer)" >> $env:GITHUB_OUTPUT
+          Write-Output "Calculated version: $($calculated.SemVer)"
+      - name: Verify versioning rules
+        shell: pwsh
+        run: ./eng/Test-Versioning.ps1
+
+  unit:
+    name: Unit tests (${{ matrix.framework }}, Windows)
+    runs-on: windows-latest
+    timeout-minutes: 20
+    needs: version
+    env:
+      CI_PACKAGE_VERSION: ${{ needs.version.outputs.semver }}
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [net8.0, net9.0, net10.0]
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+      - name: Build and test core and JSON
+        shell: pwsh
+        run: ./eng/Invoke-CI.ps1 -Task Unit -Framework '${{ matrix.framework }}' -Version $env:CI_PACKAGE_VERSION
+      - name: Retain test results and coverage
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: unit-${{ matrix.framework }}-windows
+          path: artifacts/test-results/
+          if-no-files-found: warn
+
+  rabbitmq:
+    name: RabbitMQ tests (${{ matrix.framework }}, Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: version
+    env:
+      CI_PACKAGE_VERSION: ${{ needs.version.outputs.semver }}
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [net8.0, net9.0, net10.0]
+    services:
+      rabbitmq:
+        image: rabbitmq:3.13-management
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q check_running && rabbitmq-diagnostics -q check_port_connectivity"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+      - name: Build and test against RabbitMQ
+        shell: pwsh
+        run: ./eng/Invoke-CI.ps1 -Task Integration -Framework '${{ matrix.framework }}' -Version $env:CI_PACKAGE_VERSION
+      - name: Check filesystem behavior on Linux
+        if: matrix.framework == 'net10.0'
+        shell: pwsh
+        run: ./eng/Invoke-CI.ps1 -Task LinuxSmoke -Framework net10.0 -Version $env:CI_PACKAGE_VERSION
+      - name: Retain test results
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: integration-${{ matrix.framework }}-linux
+          path: artifacts/test-results/
+          if-no-files-found: warn
+
+  package:
+    name: Validate multi-target packages
+    needs: [version, unit, rabbitmq]
+    env:
+      CI_PACKAGE_VERSION: ${{ needs.version.outputs.semver }}
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          dotnet-version: 10.0.x
+      - name: Build, pack, and validate
+        shell: pwsh
+        run: ./eng/Invoke-CI.ps1 -Task Package -Version $env:CI_PACKAGE_VERSION
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: nuget-packages
+          path: artifacts/packages/*.*nupkg
+          if-no-files-found: error
+
+  result:
+    name: CI result
+    if: always()
+    needs: [version, unit, rabbitmq, package]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require every job to succeed
+        shell: pwsh
+        env:
+          UNIT_RESULT: ${{ needs.unit.result }}
+          VERSION_RESULT: ${{ needs.version.result }}
+          RABBITMQ_RESULT: ${{ needs.rabbitmq.result }}
+          PACKAGE_RESULT: ${{ needs.package.result }}
+        run: |
+          foreach ($result in @($env:VERSION_RESULT, $env:UNIT_RESULT, $env:RABBITMQ_RESULT, $env:PACKAGE_RESULT)) {
+            if ($result -ne 'success') { throw "A required CI job finished with result: $result" }
+          }
