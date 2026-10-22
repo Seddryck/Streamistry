@@ -34,7 +34,7 @@ install:
     $dotnetDirectory = Join-Path $env:TEMP 'streamistry-dotnet'
     Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile $installer
     foreach ($channel in @('8.0', '9.0', '10.0')) {
-        & $installer -Channel $channel -InstallDir $dotnetDirectory -NoPath
+        & pwsh -NoProfile -File $installer -Channel $channel -InstallDir $dotnetDirectory -NoPath
         if ($LASTEXITCODE -ne 0) { throw "Could not install .NET $channel." }
     }
     $env:DOTNET_ROOT = $dotnetDirectory
