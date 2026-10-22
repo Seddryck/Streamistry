@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +14,7 @@ public class QueueSourceTests : RabbitMQTests
     public void Setup()
     {
         foreach (var item in new string[] { "foo", "bar" })
-            AdminRabbitMQ.Channel.BasicPublish(exchange: "streamistry-X", routingKey: string.Empty, body: Encoding.UTF8.GetBytes(item));
+            AdminRabbitMQ.Channel.BasicPublishAsync(exchange: "streamistry-X", routingKey: string.Empty, body: Encoding.UTF8.GetBytes(item), mandatory: false).GetAwaiter().GetResult();
     }
 
     [Test]

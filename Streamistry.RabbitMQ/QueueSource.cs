@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -26,7 +26,7 @@ public class QueueSource : Source<string>
 
     protected override bool TryReadNext(out string? item)
     {
-        var result = Connector.GetChannel().BasicGet(QueueName, autoAck: true);
+        var result = Connector.GetChannel().BasicGetAsync(QueueName, autoAck: true).GetAwaiter().GetResult();
 
         if (result is not null)
         {

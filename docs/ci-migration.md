@@ -15,12 +15,12 @@ Implementation of this first stage is tracked in
 | Compiler | Source generator references Roslyn 4.12; project uses C# 12 | Use the .NET 10 SDK for all target frameworks, with stable SDK selection in `global.json` |
 | Generator | Roslyn analyzer project overrides the shared TFM | Preserve `netstandard2.0`; build it through project references |
 | Unit-test OS | Existing AppVeyor runner is Windows; console assertions contain CRLF | Run core and JSON tests on Windows for each TFM |
-| Integration-test OS | RabbitMQ tests require localhost AMQP; existing Docker image uses RabbitMQ 3 | Run all RabbitMQ tests on Linux for each TFM with a health-checked RabbitMQ 3.13 service |
+| Integration-test OS | RabbitMQ tests require localhost AMQP; CI and the local Docker helper use RabbitMQ 4.4.0 | Run all RabbitMQ tests on Linux for each TFM with a health-checked RabbitMQ 4.4.0 service |
 | Linux filesystem risk | Globbing tests create/read files relative to the working directory | Run a focused Linux globbing smoke test on .NET 10 |
 | RIDs and libc | No first-party native interop, RID-specific deliverables, executable, installer, or AOT publishing found | No distribution RID, architecture, or glibc/musl matrix |
 | macOS and ARM | No existing native runner or distribution contract established | Do not add these runner/architecture dimensions in this migration |
 | Package identity | AppVeyor explicitly packs three public projects | Produce one package and one symbol package per identity, containing all three TFMs |
-| Versions | The requested reference is Packata's GitVersion.yml | Copy that file verbatim, use pinned GitVersion 6.6.0 in both providers, and calculate one SemVer for every build/test/package job |
+| Versions | The requested reference is Packata's GitVersion.yml | Copy that file verbatim, use pinned GitVersion 6.8.2 in both providers, and calculate one SemVer for every build/test/package job |
 | Generated prerequisites | Scriban templates are embedded; generator is a project analyzer; icons/readme are tracked | Generate source through normal compilation; no external image-generation job |
 | Publishing | AppVeyor publishes main builds and creates GitHub releases only for patch zero | Preserve that publisher during stage one; Actions has no publish/tag/release steps |
 
@@ -82,7 +82,7 @@ this change does not add tags or rewrite published versions to compensate.
 `eng/Test-Versioning.ps1` verifies nine scenarios: a tagged release, patch
 calculation, shared untagged patch versions, advancement after a release tag,
 feature and breaking increments, an explicit minor directive, a feature
-prerelease, and the inherited GitHubFlow release branch. With GitVersion 6.6.0,
+prerelease, and the inherited GitHubFlow release branch. With GitVersion 6.8.2,
 the inherited `release` branch configuration matches `release/next` and produces
 a beta label, even though the copied config also contains Packata's `rc` entry.
 That reference behavior is preserved rather than modifying the requested config.
