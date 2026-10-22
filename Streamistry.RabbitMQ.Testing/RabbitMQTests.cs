@@ -35,7 +35,8 @@ public abstract class RabbitMQTests
             AdminRabbitMQ.Reset();
             AdminRabbitMQ.Channel.QueueDeclareAsync(
                     queue: "streamistry-Q",
-                    durable: false,
+                    // Shared across connections; RabbitMQ 4.4 rejects transient non-exclusive queues.
+                    durable: true,
                     exclusive: false, autoDelete: false
                 ).GetAwaiter().GetResult();
         }
@@ -66,7 +67,7 @@ public abstract class RabbitMQTests
     public void OneTimeTearDown()
     {
         TearDown();
-        AdminRabbitMQ.Channel.Dispose();
+        AdminRabbitMQ.Dispose();
     }
 
     [TearDown]
