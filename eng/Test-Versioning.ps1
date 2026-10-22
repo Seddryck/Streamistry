@@ -57,37 +57,26 @@ try {
     Add-FixtureCommit 'fix: correct a value'
     Assert-FixtureVersion 'Patch on main' '^1\.2\.4$'
     Add-FixtureCommit 'ci: update validation'
-    Assert-FixtureVersion 'Successive untagged patch' '^1\.2\.5$'
+    Assert-FixtureVersion 'Untagged commits share the next patch' '^1\.2\.4$'
+    Invoke-FixtureGit tag v1.2.4
+    Add-FixtureCommit 'fix: correct another value'
+    Assert-FixtureVersion 'Patch advances after a release tag' '^1\.2\.5$'
+    Invoke-FixtureGit tag v1.2.5
     Add-FixtureCommit 'feat: add a value'
     Assert-FixtureVersion 'Feature on main' '^1\.3\.0$'
-    Add-FixtureCommit 'ci!: change the build contract'
+    Invoke-FixtureGit tag v1.3.0
+    Add-FixtureCommit 'fix!: change the public contract'
     Assert-FixtureVersion 'Breaking conventional commit' '^2\.0\.0$'
-    Add-FixtureCommit 'docs: clarify behavior +semver: none'
-    Assert-FixtureVersion 'Explicit no bump' '^2\.0\.0$'
+    Invoke-FixtureGit tag v2.0.0
     Add-FixtureCommit 'chore: prepare a capability +semver: minor'
     Assert-FixtureVersion 'Explicit minor bump' '^2\.1\.0$'
-    Add-FixtureCommit 'docs: clarify the pipeline'
-    Assert-FixtureVersion 'Default patch for other messages' '^2\.1\.1$'
-    Add-FixtureCommit 'feat: defer a capability +semver: none'
-    Assert-FixtureVersion 'No bump takes precedence over feature' '^2\.1\.1$'
-    Add-FixtureCommit 'chore: change compatibility +semver: major'
-    Assert-FixtureVersion 'Explicit major bump' '^3\.0\.0$'
-    Add-FixtureCommit "ci: change compatibility`n`nBREAKING CHANGE: drop an old runner"
-    Assert-FixtureVersion 'Breaking change footer' '^4\.0\.0$'
-    Add-FixtureCommit 'docs: request a patch +semver: patch'
-    Assert-FixtureVersion 'Explicit patch bump' '^4\.0\.1$'
-    Add-FixtureCommit 'chore: defer packaging +semver: skip'
-    Assert-FixtureVersion 'Explicit skip' '^4\.0\.1$'
 
-    Invoke-FixtureGit checkout -b feat/sample v1.2.3
+    Invoke-FixtureGit checkout -b feat/sample v2.0.0
     Add-FixtureCommit 'feat: add a sample'
-    Assert-FixtureVersion 'Feature prerelease' '^1\.3\.0-beta\.sample\.\d+$'
-    Invoke-FixtureGit checkout -b fix/sample v1.2.3
-    Add-FixtureCommit 'fix: correct a sample'
-    Assert-FixtureVersion 'Fix prerelease' '^1\.2\.4-fix-sample\.\d+$'
-    Invoke-FixtureGit checkout -b release/next v1.2.3
+    Assert-FixtureVersion 'Feature prerelease' '^2\.1\.0-beta\.sample\.\d+$'
+    Invoke-FixtureGit checkout -b release/next v2.0.0
     Add-FixtureCommit 'chore: prepare release candidate'
-    Assert-FixtureVersion 'Release candidate' '^2\.0\.0-rc\.next\.\d+$'
+    Assert-FixtureVersion 'Inherited GitHubFlow release branch' '^2\.0\.1-beta\.\d+$'
 }
 finally {
     $env:GITHUB_ACTIONS = $originalGitHubActions

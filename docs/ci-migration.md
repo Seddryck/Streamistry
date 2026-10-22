@@ -20,7 +20,7 @@ Implementation of this first stage is tracked in
 | RIDs and libc | No first-party native interop, RID-specific deliverables, executable, installer, or AOT publishing found | No distribution RID, architecture, or glibc/musl matrix |
 | macOS and ARM | No existing native runner or distribution contract established | Do not add these runner/architecture dimensions in this migration |
 | Package identity | AppVeyor explicitly packs three public projects | Produce one package and one symbol package per identity, containing all three TFMs |
-| Versions | Packata uses GitVersion 6 GitHubFlow; Streamistry historically calculates untagged patches with Mainline | Pin GitVersion 6.6.0 in a local tool manifest for both providers; calculate once and pass its SemVer to every build/test/package job |
+| Versions | The requested reference is Packata's GitVersion.yml | Copy that file verbatim, use pinned GitVersion 6.6.0 in both providers, and calculate one SemVer for every build/test/package job |
 | Generated prerequisites | Scriban templates are embedded; generator is a project analyzer; icons/readme are tracked | Generate source through normal compilation; no external image-generation job |
 | Publishing | AppVeyor publishes main builds and creates GitHub releases only for patch zero | Preserve that publisher during stage one; Actions has no publish/tag/release steps |
 
@@ -66,33 +66,29 @@ cache is deliberately omitted until its key and lock-file policy are established
 
 ## Versioning policy
 
-`GitVersion.yml` uses Packata's GitVersion 6/GitHubFlow syntax, `v` tags,
-conventional-commit major/minor matching, explicit `+semver` overrides, feature
-`beta.<branch>` labels, and release `rc.<branch>` labels. The old `tag` and
-`is-mainline` properties become `label` and `is-main-branch`. Like Packata and
-PocketCsvReader, commit-message incrementing is enabled instead of restricted
-to merge messages, and the catch-all no-bump expression is removed.
+`GitVersion.yml` is copied verbatim from Packata, as requested. It uses
+`GitHubFlow/v1`, `v` tags, conventional-commit bump patterns, enabled commit-message
+incrementing, main's ContinuousDeployment/Patch settings, and Packata's feature
+and `rc` entries. Streamistry's custom Mainline strategy, maintenance-branch rules,
+and bump-pattern adaptations are removed.
 
-Streamistry retains the `Mainline` strategy because it publishes patch builds
-without tagging each one. Copying Packata's strategy defaults verbatim calculates
-`0.39.1` from Streamistry's current history, below AppVeyor's `0.39.52` baseline.
-The adapted config stays above that baseline; enabling all commit messages can
-advance the patch number compared with the old config. No tags or published
-versions are rewritten.
+This adopts Packata's tag-based version progression. Consecutive untagged patch
+commits share the same next version; a release tag advances the next patch.
+With Streamistry's existing history, the copied config can calculate a version
+below the previously published patch baseline. The publishing cutover in #309
+must establish and verify the intended release tag/version before publication;
+this change does not add tags or rewrite published versions to compensate.
 
-The default is a patch for a nonempty commit message. Feature messages select a
-minor bump, breaking messages select a major bump, and explicit `+semver: none`
-or `skip` prevents a bump. Main's fallback is `None` and the patch-message regex
-supplies the default patch: this avoids GitVersion 6's branch fallback overriding
-an explicit no-bump commit. Maintenance branches (`fix`, `refactor`, `perf`,
-`docs`, `test`, and `chore`) branch from main, matching AGENTS.md, so they do not
-accidentally inherit a feature branch's minor increment.
+`eng/Test-Versioning.ps1` verifies nine scenarios: a tagged release, patch
+calculation, shared untagged patch versions, advancement after a release tag,
+feature and breaking increments, an explicit minor directive, a feature
+prerelease, and the inherited GitHubFlow release branch. With GitVersion 6.6.0,
+the inherited `release` branch configuration matches `release/next` and produces
+a beta label, even though the copied config also contains Packata's `rc` entry.
+That reference behavior is preserved rather than modifying the requested config.
 
-`eng/Test-Versioning.ps1` verifies tagged releases, consecutive untagged patches,
-feature/breaking increments, explicit no-bump/minor overrides, and feature/fix/
-release-candidate prereleases in disposable fixture repositories under ignored
-`artifacts/`. Each commit has a distinct timestamp so traversal does not depend
-on same-second ordering. The fixtures never change real branches or tags.
+The tests use disposable fixture repositories under ignored `artifacts/`. Each
+commit has a distinct timestamp; fixtures never change real branches or tags.
 
 ## Local validation
 
