@@ -1,8 +1,8 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 function Assert-ReleaseContext {
-    param([string] $Event, [string] $Ref, [bool] $Requested, [string] $Enabled, [string] $LegacyDisabled)
-    if ($Event -ne 'workflow_dispatch' -or $Ref -ne 'refs/heads/main' -or -not $Requested) { throw 'Publishing requires an explicit dispatch on main.' }
+    param([string] $EventName, [string] $Ref, [bool] $Requested, [string] $Enabled, [string] $LegacyDisabled)
+    if ($EventName -ne 'workflow_dispatch' -or $Ref -ne 'refs/heads/main' -or -not $Requested) { throw 'Publishing requires an explicit dispatch on main.' }
     if ($Enabled -ne 'true' -or $LegacyDisabled -ne 'true') { throw 'Publishing is not enabled or AppVeyor retirement has not been confirmed.' }
 }
 function Assert-ReleaseVersion {

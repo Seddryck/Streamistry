@@ -7,7 +7,7 @@ function Assert-Rejected([string] $Name, [scriptblock] $Action) {
     if (-not $rejected) { throw "Unsafe release case accepted: $Name" }
     Write-Output "Rejected: $Name"
 }
-Assert-ReleaseContext -Event workflow_dispatch -Ref refs/heads/main -Requested $true -Enabled true -LegacyDisabled true
+Assert-ReleaseContext -EventName workflow_dispatch -Ref refs/heads/main -Requested $true -Enabled true -LegacyDisabled true
 Assert-Rejected 'PR publication' { Assert-ReleaseContext pull_request refs/heads/main $true true true }
 Assert-Rejected 'ordinary push publication' { Assert-ReleaseContext push refs/heads/main $true true true }
 Assert-Rejected 'feature branch publication' { Assert-ReleaseContext workflow_dispatch refs/heads/feat/example $true true true }
