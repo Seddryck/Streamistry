@@ -20,7 +20,7 @@ Implementation of this first stage is tracked in
 | RIDs and libc | No first-party native interop, RID-specific deliverables, executable, installer, or AOT publishing found | No distribution RID, architecture, or glibc/musl matrix |
 | macOS and ARM | No existing native runner or distribution contract established | Do not add these runner/architecture dimensions in this migration |
 | Package identity | AppVeyor explicitly packs three public projects | Produce one package and one symbol package per identity, containing all three TFMs |
-| Versions | The requested reference is Packata's GitVersion.yml | Copy that file verbatim, use pinned GitVersion 6.6.0 in both providers, and calculate one SemVer for every build/test/package job |
+| Versions | The requested reference is Packata's GitVersion.yml | Copy that file verbatim, use pinned GitVersion 6.8.2 in both providers, and calculate one SemVer for every build/test/package job |
 | Generated prerequisites | Scriban templates are embedded; generator is a project analyzer; icons/readme are tracked | Generate source through normal compilation; no external image-generation job |
 | Publishing | AppVeyor publishes main builds and creates GitHub releases only for patch zero | Preserve that publisher during stage one; Actions has no publish/tag/release steps |
 
@@ -82,7 +82,7 @@ this change does not add tags or rewrite published versions to compensate.
 `eng/Test-Versioning.ps1` verifies nine scenarios: a tagged release, patch
 calculation, shared untagged patch versions, advancement after a release tag,
 feature and breaking increments, an explicit minor directive, a feature
-prerelease, and the inherited GitHubFlow release branch. With GitVersion 6.6.0,
+prerelease, and the inherited GitHubFlow release branch. With GitVersion 6.8.2,
 the inherited `release` branch configuration matches `release/next` and produces
 a beta label, even though the copied config also contains Packata's `rc` entry.
 That reference behavior is preserved rather than modifying the requested config.

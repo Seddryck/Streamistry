@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,36 +28,36 @@ public abstract class RabbitMQTests
 
         try
         {
-            AdminRabbitMQ.Channel.QueueDeclarePassive("streamistry-Q");
+            AdminRabbitMQ.Channel.QueueDeclarePassiveAsync("streamistry-Q").GetAwaiter().GetResult();
         }
         catch (OperationInterruptedException)
         {
             AdminRabbitMQ.Reset();
-            AdminRabbitMQ.Channel.QueueDeclare(
+            AdminRabbitMQ.Channel.QueueDeclareAsync(
                     queue: "streamistry-Q",
                     durable: false,
-                    exclusive: false
-                );
+                    exclusive: false, autoDelete: false
+                ).GetAwaiter().GetResult();
         }
 
         try
         {
-            AdminRabbitMQ.Channel.ExchangeDeclarePassive("streamistry-X");
+            AdminRabbitMQ.Channel.ExchangeDeclarePassiveAsync("streamistry-X").GetAwaiter().GetResult();
         }
         catch (OperationInterruptedException)
         {
             AdminRabbitMQ.Reset();
-            AdminRabbitMQ.Channel.ExchangeDeclare(
+            AdminRabbitMQ.Channel.ExchangeDeclareAsync(
                     exchange: "streamistry-X",
-                    type: "direct"
-                );
+                    type: "direct", durable: false, autoDelete: false
+                ).GetAwaiter().GetResult();
         }
 
-        AdminRabbitMQ.Channel.QueueBind(
+        AdminRabbitMQ.Channel.QueueBindAsync(
                 queue: "streamistry-Q",
                 exchange: "streamistry-X",
                 routingKey: string.Empty
-            );
+            ).GetAwaiter().GetResult();
 
         TearDown();
     }
@@ -72,12 +72,12 @@ public abstract class RabbitMQTests
     [TearDown]
     public void TearDown()
     {
-        AdminRabbitMQ.Channel.QueuePurge("streamistry-Q");
+        AdminRabbitMQ.Channel.QueuePurgeAsync("streamistry-Q").GetAwaiter().GetResult();
     }
 
     public uint CountMessagesOnQueue()
     {
-        var queueDeclareOk = AdminRabbitMQ.Channel.QueueDeclarePassive("streamistry-Q");
+        var queueDeclareOk = AdminRabbitMQ.Channel.QueueDeclarePassiveAsync("streamistry-Q").GetAwaiter().GetResult();
         var messageCount = queueDeclareOk.MessageCount;
         return messageCount;
     }
