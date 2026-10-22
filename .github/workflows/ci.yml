@@ -104,7 +104,7 @@ jobs:
         framework: [net8.0, net9.0, net10.0]
     services:
       rabbitmq:
-        image: rabbitmq:3.13-management
+        image: rabbitmq:4.4.0-management
         ports:
           - 5672:5672
         options: >-
