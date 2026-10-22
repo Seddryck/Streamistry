@@ -5,6 +5,14 @@
 
 version: 2
 updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependency-update"
+    commit-message:
+      prefix: "ci"
   - package-ecosystem: "nuget" 
     directory: "/" 
     schedule:

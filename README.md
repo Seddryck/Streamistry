@@ -18,8 +18,9 @@ Streamistry is a lightweight library designed to support pipeline, streaming, an
 ![Still maintained](https://img.shields.io/maintenance/yes/2025.svg)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/y/Seddryck/Streamistry)
 
-**Continuous integration builds:** [![Build status](https://ci.appveyor.com/api/projects/status/gf0ijb6gejf1awxr?svg=true)](https://ci.appveyor.com/project/Seddryck/Streamistry/)
-[![Tests](https://img.shields.io/appveyor/tests/seddryck/Streamistry.svg)](https://ci.appveyor.com/project/Seddryck/Streamistry/build/tests)
+**Continuous integration builds:** [![CI](https://github.com/Seddryck/Streamistry/actions/workflows/ci.yml/badge.svg)](https://github.com/Seddryck/Streamistry/actions/workflows/ci.yml)
+
+Build, test, and package validation run on .NET 8, 9, and 10. See the [CI migration guide](docs/ci-migration.md) for the runner matrix and the staged publishing cutover.
 [![CodeFactor](https://www.codefactor.io/repository/github/seddryck/Streamistry/badge)](https://www.codefactor.io/repository/github/seddryck/Streamistry)
 [![codecov](https://codecov.io/github/Seddryck/Streamistry/branch/main/graph/badge.svg?token=YRA8IRIJYV)](https://codecov.io/github/Seddryck/Streamistry)
 <!-- [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FSeddryck%2FStreamistry.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FSeddryck%2FStreamistry?ref=badge_shield) -->

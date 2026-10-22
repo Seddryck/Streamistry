@@ -25,6 +25,23 @@ init:
 - cmd: RefreshEnv.cmd
 - pwsh: Write-Host "Target branch is '$($env:APPVEYOR_REPO_BRANCH)'"
 
+# Temporary compatibility bootstrap while AppVeyor remains the only publisher.
+# Remove with the publishing cutover tracked in GitHub issue #309.
+install:
+- pwsh: |
+    $ErrorActionPreference = 'Stop'
+    $installer = Join-Path $env:TEMP 'streamistry-dotnet-install.ps1'
+    $dotnetDirectory = Join-Path $env:TEMP 'streamistry-dotnet'
+    Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile $installer
+    foreach ($channel in @('8.0', '9.0', '10.0')) {
+        & $installer -Channel $channel -InstallDir $dotnetDirectory -NoPath
+        if ($LASTEXITCODE -ne 0) { throw "Could not install .NET $channel." }
+    }
+    $env:DOTNET_ROOT = $dotnetDirectory
+    $env:PATH = "$dotnetDirectory;$env:PATH"
+    Set-AppveyorBuildVariable -Name DOTNET_ROOT -Value $env:DOTNET_ROOT
+    Set-AppveyorBuildVariable -Name PATH -Value $env:PATH
+
 before_build:
 - cmd: gitversion /output buildserver /verbosity Minimal
 - pwsh: Write-Host "Building Streamistry version $($env:GitVersion_SemVer)"
