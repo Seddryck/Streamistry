@@ -10,9 +10,6 @@ Function Run-TestSuite {
 
 	Begin {
 		$testSuccessful = 0
-		if ($env:APPVEYOR -eq "True") {
-			$adapters = "--test-adapter-path:.", "--logger:Appveyor"
-		}
 	}
 
 	Process {
@@ -28,7 +25,6 @@ Function Run-TestSuite {
 					$arguments += @("-c", $config)
 					$arguments += @("-f", $framework)
 					$arguments += @("--no-build", "--nologo")
-					$arguments += $adapters
 					& dotnet $arguments | Out-Host
 					$testSuccessful += $lastexitcode
 				}

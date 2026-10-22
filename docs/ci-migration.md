@@ -1,148 +1,142 @@
-# GitHub Actions CI migration
+# CI, build reuse, and NuGet publishing
 
-The first stage moves build, test, coverage enforcement, and package validation to
-GitHub Actions. AppVeyor remains the only NuGet publisher until the publishing
-cutover in [#309](https://github.com/Seddryck/Streamistry/issues/309).
-Implementation of this first stage is tracked in
-[#308](https://github.com/Seddryck/Streamistry/issues/308).
+The GitHub Actions workflow replaces AppVeyor. It builds the solution once,
+tests the resulting binaries, packages those same binaries, and publishes only
+on an explicit main-branch release dispatch.
 
-## Build and distribution decisions
+## Decisions and reference workflows
 
-| Dimension | Repository evidence | Decision |
-|---|---|---|
-| Deliverables | Core, JSON, and RabbitMQ are managed libraries | Preserve `Streamistry`, `Streamistry.Json`, and `Streamistry.RabbitMQ` |
-| Target frameworks | Shared props previously targeted .NET 8/9; .NET 10 requested | Build and test `net8.0`, `net9.0`, and `net10.0` |
-| Compiler | Source generator references Roslyn 4.12; project uses C# 12 | Use the .NET 10 SDK for all target frameworks, with stable SDK selection in `global.json` |
-| Generator | Roslyn analyzer project overrides the shared TFM | Preserve `netstandard2.0`; build it through project references |
-| Unit-test OS | Existing AppVeyor runner is Windows; console assertions contain CRLF | Run core and JSON tests on Windows for each TFM |
-| Integration-test OS | RabbitMQ tests require localhost AMQP; existing Docker image uses RabbitMQ 3 | Run all RabbitMQ tests on Linux for each TFM with a health-checked RabbitMQ 3.13 service |
-| Linux filesystem risk | Globbing tests create/read files relative to the working directory | Run a focused Linux globbing smoke test on .NET 10 |
-| RIDs and libc | No first-party native interop, RID-specific deliverables, executable, installer, or AOT publishing found | No distribution RID, architecture, or glibc/musl matrix |
-| macOS and ARM | No existing native runner or distribution contract established | Do not add these runner/architecture dimensions in this migration |
-| Package identity | AppVeyor explicitly packs three public projects | Produce one package and one symbol package per identity, containing all three TFMs |
-| Versions | The requested reference is Packata's GitVersion.yml | Copy that file verbatim, use pinned GitVersion 6.6.0 in both providers, and calculate one SemVer for every build/test/package job |
-| Generated prerequisites | Scriban templates are embedded; generator is a project analyzer; icons/readme are tracked | Generate source through normal compilation; no external image-generation job |
-| Publishing | AppVeyor publishes main builds and creates GitHub releases only for patch zero | Preserve that publisher during stage one; Actions has no publish/tag/release steps |
+| Dimension | Evidence and decision |
+|---|---|
+| Frameworks/compiler | Build net8.0/net9.0/net10.0 with the .NET 10 SDK; retain the netstandard2.0 generator |
+| Unit tests | Existing console assertions use CRLF: run all core/JSON tests on Windows for each framework |
+| Linux tests | Run RabbitMQ tests on all frameworks and a .NET 10 filesystem smoke test using the Windows-built portable test assemblies |
+| Distribution | Three portable managed libraries: Streamistry, Streamistry.Json, Streamistry.RabbitMQ; no RID, architecture, AOT, or libc package matrix |
+| Build reuse | Packata keeps build/tests/pack together; DubUrl archives bin/obj for later pack jobs; PocketCsvReader separates test/package artifacts |
+| Selected design | One complete solution build, same-run bin/obj archive, Linux execution of portable test DLLs, later Windows pack with no compilation |
+| Cache | Cache only NuGet dependencies by OS and project/tool fingerprints; no cross-run compiler-output cache |
+| Version | Preserve Packata's exact GitVersion.yml and local GitVersion 6.6.0 manifest; calculate once with full history |
+| Packages | One nupkg and snupkg per identity, all three TFMs, common version; validate assemblies, symbols, icon, readme, and tested-byte provenance |
+| Release | Explicit workflow_dispatch publish=true on main; protected release environment and two activation acknowledgements |
+| Tags/release pages | Reserve every published stable version so patch progression advances; GitHub release pages remain limited to patch zero |
+| Authentication | NuGet trusted publishing and Codecov OIDC; no long-lived publishing key in repository secrets |
+| Dependencies | Checkout 7.0.1, upload-artifact 7.0.2, download-artifact 8.0.2, github-script 9.0.0, cache 6.1.0; action commits pinned |
 
-The libraries are portable managed deliverables. The Windows test choice reflects
-current test assumptions, not a Windows-only package support claim. The focused
-Linux tests do not establish a complete Linux unit-test guarantee. Dependencies
-include managed JSON, file-globbing, and RabbitMQ clients plus build-time
-Fody/Roslyn tooling; no runtime-specific package payload is introduced here.
+The action updates include those proposed in #311, #312, and #313. setup-dotnet
+6.0.0 remains current; NuGet/login 1.2.0 and codecov-action 7.1.1 are also pinned.
 
-## Workflow
+## Artifact flow
 
-`.github/workflows/ci.yml` runs on pull requests targeting main, pushes to main,
-and manual dispatch. It uses read-only repository permissions, pinned action
-revisions, and no publishing secrets. A new run cancels an obsolete run for the
-same ref. Dependabot tracks GitHub Actions updates.
+1. Calculate and validate GitVersion; run version-policy and release-guard tests.
+2. Restore once and build the entire Release solution once on Windows.
+3. Record SHA-256 hashes of the build outputs. Run the 142 core and 15 JSON tests
+   for each framework with no build/restore and the existing 10% line threshold.
+   Verify coverage instrumentation restored the original DLL/PDB bytes.
+4. Archive bin/obj and the commit/version/hash manifest. Upload this immutable
+   same-run artifact named with the tested commit SHA.
+5. Three Linux jobs download that artifact and verify its hashes. Run RabbitMQ
+   tests via VSTest directly against the compiled DLLs; no compilation or NuGet
+   restore occurs. The .NET 10 job also runs the filesystem smoke test.
+6. After all tests pass, a Windows job downloads the same archive. Refresh
+   machine-specific restore assets, then pack with --no-build --no-restore.
+   Packing must preserve every compiled output hash.
+7. Verify every packaged DLL/PDB equals the recorded tested build asset. Retain
+   the six packages and a provenance manifest binding package/asset hashes,
+   version, and commit.
+8. Codecov separately downloads the retained OpenCover reports and authenticates
+   with OIDC. Fork PRs retain reports but skip authenticated upload.
+9. CI result requires all validation jobs, including coverage where applicable.
+   The publish job downloads only the validated package artifact from this run,
+   rechecks its provenance, and never builds or packs.
 
-1. Version: fetch complete Git history and tags, restore the pinned local tool,
-   calculate the version, verify it belongs to the checked-out commit, and test
-   the version rules against isolated Git histories.
-2. Windows matrix: restore the solution, build core/JSON test projects for the
-   selected TFM, then run each without rebuilding or restoring. Keep the existing
-   10% line-coverage threshold for each tested library. Store TRX and OpenCover
-   reports in a uniquely named artifact for each framework/OS.
-3. Linux matrix: wait for RabbitMQ server and port health, build its test project,
-   and run the complete RabbitMQ test category on every TFM. Run the filesystem
-   smoke test in the .NET 10 job. Service setup is unconditional; an unavailable
-   broker fails CI instead of silently skipping integration tests.
-4. After every test job succeeds, build the complete Release solution, pack the
-   three public projects once with `--no-build --no-restore`, validate them, and
-   retain the packages. The packaging build includes all TFMs and the generator.
-5. `CI result` succeeds only if the version, unit, integration, and package jobs all
-   succeeded. It fails on failed, cancelled, or skipped prerequisites.
+Artifacts provide exact run provenance. NuGet cache hits only avoid dependency
+downloads; a cache miss cannot change which binaries are tested or published.
+Original test suites are still executed on every run, including cache hits.
 
-`eng/Test-Packages.ps1` requires exactly three `.nupkg` files and three `.snupkg`
-files, verifies their identities and common version, checks every TFM assembly
-and PDB, and verifies the packaged readme and icon. CI artifacts are for inspection
-and are never uploaded to a package feed. Codecov delivery remains on AppVeyor
-until stage two; Actions retains coverage without requiring a Codecov credential.
+## Publication gate and first activation
 
-There is no dependency lock file today, so restore uses the existing NuGet
-resolution behavior. This migration does not claim locked restores. A dependency
-cache is deliberately omitted until its key and lock-file policy are established.
+Publishing is off until configured. PRs, pushes (including main), and ordinary
+manual validation dispatches do not publish. An explicit publish dispatch on a
+feature branch also cannot publish.
 
-## Versioning policy
+Before the first release, the maintainer must complete these concrete settings:
 
-`GitVersion.yml` is copied verbatim from Packata, as requested. It uses
-`GitHubFlow/v1`, `v` tags, conventional-commit bump patterns, enabled commit-message
-incrementing, main's ContinuousDeployment/Patch settings, and Packata's feature
-and `rc` entries. Streamistry's custom Mainline strategy, maintenance-branch rules,
-and bump-pattern adaptations are removed.
+1. Disable the Streamistry project/deployment in AppVeyor and cancel queued old
+   publishing builds. Removing appveyor.yml is not evidence that external UI
+   deployment settings and already-queued builds are disabled. Set repository
+   variable APPVEYOR_PUBLISHING_DISABLED=true only after checking this.
+2. Configure a NuGet trusted-publishing policy for profile Seddryck, repository
+   owner Seddryck, repository Streamistry, workflow file ci.yml, environment
+   release. Scope it to all three package identities. The workflow requests its
+   short-lived key only after every validation and release reservation succeeds.
+   See the official [NuGet trusted publishing guide](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing).
+3. Configure the GitHub release environment for main only, with any desired
+   reviewer policy. Set NUGET_PUBLISHING_ENABLED=true after NuGet trust and the
+   external AppVeyor shutdown are verified.
+4. Establish the release baseline. The exact Packata config can calculate 0.39.1
+   from old untagged Streamistry history, below existing published patches.
+   Identify/tag the verified commit for the last actual published version, or
+   establish a maintainer-reviewed new release tag/version above the feed.
+   Do not invent a last-release tag on an unrelated commit. CI does not rewrite
+   history, add next-version overrides, or silently compensate for this.
+5. Require CI result and preserve GitGuardian Security Checks in branch
+   protection. The legacy AppVeyor required check was already absent when this
+   implementation started.
+6. After merging the reviewed PR and a green main run, dispatch CI on main with
+   publish=true. Do not run this step just to test configuration.
 
-This adopts Packata's tag-based version progression. Consecutive untagged patch
-commits share the same next version; a release tag advances the next patch.
-With Streamistry's existing history, the copied config can calculate a version
-below the previously published patch baseline. The publishing cutover in #309
-must establish and verify the intended release tag/version before publication;
-this change does not add tags or rewrite published versions to compensate.
+The workflow refuses publication unless both activation variables are exactly
+true, appveyor.yml is absent, the checkout is the tested current main commit,
+and GitVersion still calculates the built version after refreshing tags.
+Every package's NuGet index is checked for a stable version regression.
+Existing versions can only be retried when their reserved tag points at the
+same commit. Network/authentication failures stop the release.
 
-`eng/Test-Versioning.ps1` verifies nine scenarios: a tagged release, patch
-calculation, shared untagged patch versions, advancement after a release tag,
-feature and breaking increments, an explicit minor directive, a feature
-prerelease, and the inherited GitHubFlow release branch. With GitVersion 6.6.0,
-the inherited `release` branch configuration matches `release/next` and produces
-a beta label, even though the copied config also contains Packata's `rc` entry.
-That reference behavior is preserved rather than modifying the requested config.
-
-The tests use disposable fixture repositories under ignored `artifacts/`. Each
-commit has a distinct timestamp; fixtures never change real branches or tags.
+Reserve the stable release tag only after package validation, before publishing.
+A conflicting tag is never moved or overwritten. Reruns can reuse the same
+commit's tag. All stable versions receive tags; only patch-zero versions receive
+GitHub release pages with generated notes and the Announcements discussion.
+Conventional PR titles continue to populate release-note labels through gh CLI.
 
 ## Local validation
 
-Install the .NET 10 SDK and the .NET 8/9 runtimes to exercise all target frameworks.
-The workflow installs all three SDKs to ensure those runtimes are available;
-`global.json` selects the .NET 10 compiler.
+Use the installed .NET 10 SDK and .NET 8/9 runtimes. A local broker is required
+only for Integration. The scripts do not provision or start Docker.
 
-```powershell
-actionlint .github/workflows/ci.yml
-dotnet tool restore
-./eng/Test-Versioning.ps1
-./eng/Invoke-CI.ps1 -Task Unit -Framework net8.0
-./eng/Invoke-CI.ps1 -Task Unit -Framework net9.0
-./eng/Invoke-CI.ps1 -Task Unit -Framework net10.0
-./eng/Invoke-CI.ps1 -Task Package
-```
+Commands in order:
 
-With a local RabbitMQ 3 broker listening on localhost:5672, run `Integration`
-for each framework. Run `LinuxSmoke` on Linux. The scripts fail immediately when
-a dotnet command fails; results and packages are written beneath ignored
-`artifacts/`. Use an empty package output directory when starting a new version;
-the validator rejects stale or unexpected packages.
+- dotnet tool restore
+- ./eng/Test-Versioning.ps1
+- ./eng/Test-ReleaseGuards.ps1
+- ./eng/Invoke-CI.ps1 -Task Build
+- ./eng/Invoke-CI.ps1 -Task LinuxSmoke -Framework net10.0
+- ./eng/Invoke-CI.ps1 -Task Unit -Framework net8.0 (repeat for net9.0/net10.0)
+- ./eng/Build-Artifact.ps1 -Mode Save -Version 0.0.0-ci.local -Commit (git rev-parse HEAD)
+- ./eng/Build-Artifact.ps1 -Mode Restore -Version 0.0.0-ci.local -Commit (git rev-parse HEAD)
+- ./eng/Invoke-CI.ps1 -Task Package
+- ./eng/Test-ArtifactGuards.ps1
+- actionlint .github/workflows/ci.yml .github/workflows/combine-prs.yml
 
-## Publishing and required-check cutover
+Do not rerun Build between tests and Package. Package accepts only a matching
+build manifest and does not compile missing assets. Use an empty package output
+directory when changing versions. Artifact guard tests corrupt temporary copies
+or restore original bytes in finally blocks and do not publish or reserve tags.
 
-The existing required checks are `continuous-integration/appveyor/pr` and
-`GitGuardian Security Checks`. This PR does not change repository protection or
-disable the AppVeyor service. Its temporary SDK bootstrap keeps the existing
-publisher able to compile the added .NET 10 target without machine-wide SDK
-installation changes.
+## Rollback and remaining operational checks
 
-Complete [#309](https://github.com/Seddryck/Streamistry/issues/309) after hosted CI
-is green:
+To stop publication, set NUGET_PUBLISHING_ENABLED=false. Keep CI enabled.
+If a release is partially published, keep its reserved tag, inspect the package
+set, and retry only the same commit/version. Never delete/repoint a published
+tag or overwrite a NuGet version. A later rollback to AppVeyor requires disabling
+the Actions publisher first; never run two publishers simultaneously.
 
-1. Verify every target framework, RabbitMQ integration, package, and symbol
-   artifact in pull-request and main runs. Confirm `CI result` appears as a stable
-   status check. Require it while preserving GitGuardian and the existing check
-   until cutover is ready.
-2. Reuse the complete-history GitVersion calculation introduced in stage one.
-   Refresh tags and verify the version/commit again before reserving a release
-   identity; use the same version for the entire artifact set.
-3. Configure NuGet trusted publishing or an approved scoped credential. Add
-   explicit release gating, artifact download/validation, tag reservation, and
-   publication of already-tested artifacts without rebuilding. Define a release
-   event that preserves the desired cadence; PR and ordinary branch CI must not
-   publish. Preserve the patch-zero rule for GitHub release pages unless changed
-   explicitly. Migrate changelog labels and Codecov delivery as part of parity.
-4. Disable AppVeyor publication before enabling the Actions publisher. Never
-   permit both publishers to produce the same package version.
-5. After verifying the new publisher and check, remove AppVeyor's required check,
-   configuration, logger dependencies, and obsolete hooks. Preserve useful local
-   broker scripts. Update this guide and any remaining AppVeyor badges.
+NuGet trust, external AppVeyor project settings, the release baseline, and the
+first real release require maintainer/account access. They are documented
+activation steps, not actions performed by a pull-request CI run. A first release
+must verify all three packages/symbols in NuGet and the patch-zero release rule.
+No actual NuGet publication is performed as part of implementation testing.
 
-Repository protection, external AppVeyor settings, and NuGet publishing setup are
-maintainer cutover actions. No credentials are copied from AppVeyor into this
-repository or workflow. If cutover fails, disable the new publisher before
-restoring the old one; never overwrite or reuse an already published version.
+The copied Packata configuration intentionally retains inherited GitHubFlow
+behavior: untagged patches can share a version; the inherited release branch
+currently produces a beta label despite Packata's additional rc entry.
+eng/Test-Versioning.ps1 characterizes this behavior without changing the config.
