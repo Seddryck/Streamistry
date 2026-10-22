@@ -85,7 +85,7 @@ jobs:
         run: ./eng/Invoke-CI.ps1 -Task Unit -Framework '${{ matrix.framework }}' -Version $env:CI_PACKAGE_VERSION
       - name: Retain test results and coverage
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: unit-${{ matrix.framework }}-windows
           path: artifacts/test-results/
@@ -131,7 +131,7 @@ jobs:
         run: ./eng/Invoke-CI.ps1 -Task LinuxSmoke -Framework net10.0 -Version $env:CI_PACKAGE_VERSION
       - name: Retain test results
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: integration-${{ matrix.framework }}-linux
           path: artifacts/test-results/
@@ -154,7 +154,7 @@ jobs:
       - name: Build, pack, and validate
         shell: pwsh
         run: ./eng/Invoke-CI.ps1 -Task Package -Version $env:CI_PACKAGE_VERSION
-      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: nuget-packages
           path: artifacts/packages/*.*nupkg
