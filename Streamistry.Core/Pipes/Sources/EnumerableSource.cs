@@ -8,21 +8,29 @@ using Streamistry.Observability;
 namespace Streamistry.Pipes.Sources;
 public class EnumerableSource<TOutput> : Source<TOutput>
 {
-    private IEnumerator<TOutput> Enumerator { get; set; }
+    private readonly IEnumerable<TOutput> values;
+    private IEnumerator<TOutput>? enumerator;
+    public override void Setup() => enumerator = values.GetEnumerator();
+    public override void Cleanup()
+    {
+        var current = enumerator;
+        enumerator = null;
+        current?.Dispose();
+    }
 
     public EnumerableSource(IEnumerable<TOutput> values, ObservabilityProvider? provider = null)
         : base(provider)
-        => Enumerator = values.GetEnumerator();
+        => this.values = values;
 
     public EnumerableSource(Pipeline upstream, IEnumerable<TOutput> values)
         : base(upstream)
-        => Enumerator = values.GetEnumerator();
+        => this.values = values;
 
     protected override bool TryReadNext(out TOutput? item)
     {
-        if (Enumerator.MoveNext())
+        if (enumerator!.MoveNext())
         {
-            item = Enumerator.Current;
+            item = enumerator.Current;
             return true;
         }
         item = default;
