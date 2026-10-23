@@ -2,7 +2,9 @@
 
 The shared eng/Projects.psd1 inventory is authoritative for packages, test projects
 and frameworks. Every optional package joins immutable build/package provenance.
-No additional publication trigger or permission is introduced.
+No additional publication trigger or permission is introduced. The still-connected
+AppVeyor project now has an explicit SDK-based build/test-only compatibility check;
+deployment is disabled and GitHub Actions remains the sole publisher.
 
 | Dimension | Repository evidence | Decision | Confidence |
 |---|---|---|---|
@@ -19,3 +21,12 @@ restoring or recompiling the shared build. Native-provider testing does not impl
 all transitive database providers or macOS are tested. No musl or installer claim
 is added. Publication still uses the previously tested packages and existing
 release guards; this change performs local validation only, with no NuGet release.
+
+The Windows job runs all three unit-test frameworks in one invocation, verifying
+the complete artifact manifest before and after the group. Coverage restoration
+is still verified for every sealed output, while four redundant full-tree hash
+scans are avoided. Its 45-minute ceiling accommodates first-run restore, native
+provider dependencies and archive creation; the former 20-minute job timed out
+after its second framework. AppVeyor installs the .NET 10 SDK, builds all target
+frameworks and runs the same six unit/adapter projects on net10.0. The full runtime
+matrix and RabbitMQ/Linux validation remain in GitHub Actions.

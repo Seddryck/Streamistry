@@ -2,6 +2,7 @@
 param(
     [Parameter(Mandatory)] [ValidateSet('Build', 'Unit', 'Integration', 'LinuxSmoke', 'Package')] [string] $Task,
     [ValidateSet('net8.0', 'net9.0', 'net10.0')] [string] $Framework = 'net10.0',
+    [switch] $AllFrameworks,
     [ValidatePattern('^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$')] [string] $Version = '0.0.0-ci.local',
     [string] $Commit = (git rev-parse HEAD)
 )
@@ -24,9 +25,12 @@ try {
     & "$PSScriptRoot/Build-Artifact.ps1" -Mode Verify -Version $Version -Commit $Commit
     switch ($Task) {
         'Unit' {
-            foreach ($name in $projects.UnitTests) {
-                $results = Join-Path $resultsRoot $name
-                Invoke-DotNet test "$name.Testing" --configuration Release --framework $Framework --no-build --no-restore --logger 'trx;LogFileName=tests.trx' --results-directory $results '-p:CollectCoverage=true' '-p:CoverletOutputFormat=opencover' "-p:Include=[$name]*" '-p:Threshold=10' '-p:ThresholdType=line' "-p:CoverletOutput=$results/coverage.xml"
+            $testFrameworks = if ($AllFrameworks) { $projects.Frameworks } else { @($Framework) }
+            foreach ($testFramework in $testFrameworks) {
+                foreach ($name in $projects.UnitTests) {
+                    $results = Join-Path (Get-Location) "artifacts/test-results/$Task/$testFramework/$name"
+                    Invoke-DotNet test "$name.Testing" --configuration Release --framework $testFramework --no-build --no-restore --logger 'trx;LogFileName=tests.trx' --results-directory $results '-p:CollectCoverage=true' '-p:CoverletOutputFormat=opencover' "-p:Include=[$name]*" '-p:Threshold=10' '-p:ThresholdType=line' "-p:CoverletOutput=$results/coverage.xml"
+                }
             }
         }
         'Integration' {

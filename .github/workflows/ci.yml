@@ -67,7 +67,7 @@ jobs:
     name: Build once and test Windows
     needs: version
     runs-on: windows-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     env:
       CI_PACKAGE_VERSION: ${{ needs.version.outputs.semver }}
     steps:
@@ -91,10 +91,7 @@ jobs:
         run: ./eng/Invoke-CI.ps1 -Task Build -Version $env:CI_PACKAGE_VERSION -Commit $env:GITHUB_SHA
       - name: Test compiled Windows outputs on all frameworks
         shell: pwsh
-        run: |
-          foreach ($framework in @('net8.0', 'net9.0', 'net10.0')) {
-            ./eng/Invoke-CI.ps1 -Task Unit -Framework $framework -Version $env:CI_PACKAGE_VERSION -Commit $env:GITHUB_SHA
-          }
+        run: ./eng/Invoke-CI.ps1 -Task Unit -AllFrameworks -Version $env:CI_PACKAGE_VERSION -Commit $env:GITHUB_SHA
       - name: Seal tested outputs
         shell: pwsh
         run: ./eng/Build-Artifact.ps1 -Mode Save -Version $env:CI_PACKAGE_VERSION -Commit $env:GITHUB_SHA
