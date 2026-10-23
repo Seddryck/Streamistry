@@ -9,7 +9,8 @@ namespace Streamistry;
 
 public class Pipeline : ObservablePipe
 {
-    private Action? Starting { get; set; }
+    internal static readonly AsyncLocal<Guid?> CurrentRun = new();
+    private readonly List<ISource> sources = [];
 
     public Pipeline(ObservabilityProvider? observability = null)
         : this([], observability)
@@ -28,11 +29,21 @@ public class Pipeline : ObservablePipe
 
     internal void AddSource(ISource source)
     {
-        Starting += source.Start;
+        sources.Add(source);
         source.RegisterObservability(GetObservabilityProvider());
     }
 
     public void Start()
-        => Starting?.Invoke();
+    {
+        var previous = CurrentRun.Value;
+        var runId = Guid.NewGuid();
+        CurrentRun.Value = runId;
+        try
+        {
+            foreach (var source in sources) source.PrepareRun(runId);
+            foreach (var source in sources) source.Start();
+        }
+        finally { CurrentRun.Value = previous; }
+    }
 }
 

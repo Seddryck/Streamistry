@@ -4,11 +4,35 @@
     private Queue<{{ type }}?> Queue{{ for.index + 1 }} { get; } = new();
     {{~ end ~}}
 
+    public int? Capacity { get; }
+    public QueueOverflowPolicy OverflowPolicy { get; }
+    protected override void ClearPending()
+    {
+        {{~ for index in indexes ~}}
+        Queue{{index}}.Clear();
+        {{~ end ~}}
+    }
+    private void Enqueue<T>(Queue<T> queue, T value)
+    {
+        if (Capacity.HasValue && queue.Count >= Capacity.Value)
+        {
+            switch (OverflowPolicy)
+            {
+                case QueueOverflowPolicy.Throw: throw new InvalidOperationException("Zip queue capacity exceeded.");
+                case QueueOverflowPolicy.DropNewest: return;
+                case QueueOverflowPolicy.DropOldest: queue.Dequeue(); break;
+                default: throw new ArgumentOutOfRangeException();
+            }
+        }
+        queue.Enqueue(value);
+    }
+
     public Zipper(
             {{~ for type in generics ~}}
             IChainablePort<{{ type }}?> upstream{{ for.index + 1 }},
             {{~ end ~}}
-            Func<{{ generics | array.join "?, " }}?, TResult?> function
+            Func<{{ generics | array.join "?, " }}?, TResult?> function,
+            int? capacity = 1024, QueueOverflowPolicy overflowPolicy = QueueOverflowPolicy.Throw
         )
         : base(
             {{~ for type in generics ~}}
@@ -16,7 +40,12 @@
             {{~ end ~}}
             function
         )
-    { }
+    {
+        if (capacity is <= 0) throw new ArgumentOutOfRangeException(nameof(capacity));
+        if (!Enum.IsDefined(overflowPolicy)) throw new ArgumentOutOfRangeException(nameof(overflowPolicy));
+        Capacity = capacity;
+        OverflowPolicy = overflowPolicy;
+    }
 
     protected override bool TryGetElements(
             {{-
@@ -45,9 +74,9 @@
     protected override void Queue<T>(IChainablePort<T?> upstream, T? value) where T : default
     {
         {{~ for index in indexes ~}}
-        if (upstream == Upstream{{ index }} && value is T{{ index }} t{{ index }})
+        if (ReferenceEquals(upstream, Upstream{{ index }}))
         {
-            Queue{{ index }}.Enqueue(t{{ index }});
+            Enqueue(Queue{{ index }}, (T{{ index }}?)(object?)value);
             return;
         }
         {{~ end ~}}
