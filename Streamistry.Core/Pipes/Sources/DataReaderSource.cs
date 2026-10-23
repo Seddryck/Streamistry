@@ -15,7 +15,8 @@ namespace Streamistry.Pipes.Sources;
 
 public abstract class DataReaderSource<TOutput> : Source<TOutput>
 {
-    private readonly Func<ReaderLease> readerFactory;
+    private readonly Func<ReaderLease>? readerFactory;
+    private readonly Func<CancellationToken, ValueTask<ReaderLease>>? asyncFactory;
     private ReaderLease? lease;
     protected IDataReader DataReader => lease?.Reader
         ?? throw new InvalidOperationException("The reader is available only during execution.");
@@ -31,8 +32,27 @@ public abstract class DataReaderSource<TOutput> : Source<TOutput>
         : base(provider)
         => this.readerFactory = readerFactory ?? throw new ArgumentNullException(nameof(readerFactory));
 
+    public DataReaderSource(Func<CancellationToken, ValueTask<ReaderLease>> factory, ObservabilityProvider? provider = null)
+        : base(provider) => asyncFactory = factory ?? throw new ArgumentNullException(nameof(factory));
+
+    public override async ValueTask SetupAsync(CancellationToken cancellationToken)
+    {
+        if (asyncFactory is null) { Setup(); return; }
+        lease = await asyncFactory(cancellationToken).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("The reader factory returned null.");
+    }
+
+    protected override async ValueTask<(bool HasValue, TOutput? Item)> ReadNextAsync(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var hasValue = DataReader is DbDataReader db
+            ? await db.ReadAsync(cancellationToken).ConfigureAwait(false)
+            : DataReader.Read();
+        return (hasValue, hasValue ? OnRead() : default);
+    }
+
     public override void Setup()
-        => lease = readerFactory() ?? throw new InvalidOperationException("The reader factory returned null.");
+        => lease = (readerFactory ?? throw new InvalidOperationException("Use StartAsync for an asynchronous reader factory."))() ?? throw new InvalidOperationException("The reader factory returned null.");
 
     public override void Cleanup()
     {
@@ -57,6 +77,9 @@ public abstract class DataReaderSource<TOutput> : Source<TOutput>
 
 public class DataReaderAsDictionarySource : DataReaderSource<IReadOnlyDictionary<string, object>>
 {
+    public DataReaderAsDictionarySource(Func<CancellationToken, ValueTask<ReaderLease>> factory, ObservabilityProvider? provider = null)
+        : base(factory, provider) { }
+
     public DataReaderAsDictionarySource(Func<ReaderLease> factory, ObservabilityProvider? provider = null)
         : base(factory, provider) { }
 
@@ -79,6 +102,9 @@ public class DataReaderAsDictionarySource : DataReaderSource<IReadOnlyDictionary
 
 public class DataReaderAsArraySource : DataReaderSource<ImmutableArray<object>>
 {
+    public DataReaderAsArraySource(Func<CancellationToken, ValueTask<ReaderLease>> factory, ObservabilityProvider? provider = null)
+        : base(factory, provider) { }
+
     public DataReaderAsArraySource(Func<ReaderLease> factory, ObservabilityProvider? provider = null)
         : base(factory, provider) { }
 
@@ -101,6 +127,9 @@ public class DataReaderAsArraySource : DataReaderSource<ImmutableArray<object>>
 
 public class DataReaderAsValueSource<TOutput> : DataReaderSource<TOutput>
 {
+    public DataReaderAsValueSource(Func<CancellationToken, ValueTask<ReaderLease>> factory, ObservabilityProvider? provider = null)
+        : base(factory, provider) { }
+
     public DataReaderAsValueSource(Func<ReaderLease> factory, ObservabilityProvider? provider = null)
         : base(factory, provider) { }
 
