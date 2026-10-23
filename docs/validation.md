@@ -13,13 +13,13 @@ matrix passed all six affected suites on every supported framework:
 |---|---:|---:|---:|
 | Streamistry.Testing | 168 | 168 | 168 |
 | Streamistry.Json.Testing | 22 | 22 | 22 |
-| Streamistry.Expressif.Testing | 18 | 18 | 18 |
+| Streamistry.Expressif.Testing | 20 | 20 | 20 |
 | Streamistry.PocketCsvReader.Testing | 7 | 7 | 7 |
 | Streamistry.Packata.Testing | 9 | 9 | 9 |
 | Streamistry.DubUrl.Testing | 9 | 9 | 9 |
-| Total | 233 | 233 | 233 |
+| Total | 235 | 235 | 235 |
 
-All 699 final matrix tests passed, with no skipped tests. This includes the existing
+All 705 final matrix tests passed, with no skipped tests. This includes the existing
 core/JSON regression suites and the new ownership, cancellation, completion,
 overflow, expression, scalar, structured, aggregate, file/HTTP, CSV, canonical
 contract and direct database tests. Individual implementation PRs record their
@@ -28,7 +28,7 @@ earlier focused filters and counts.
 Additional validation passed:
 
 - Solution Release build with ContinuousIntegrationBuild and version 0.0.0-ci.local.
-- Updated eng/Invoke-CI.ps1 Unit task on net10.0: all 233 tests, coverage thresholds,
+- Updated eng/Invoke-CI.ps1 Unit -AllFrameworks task: all 705 tests, coverage thresholds,
   and restoration of instrumented bytes verified against the build manifest.
 - Updated Package task: eight NuGet packages plus eight symbol packages, every
   net8.0/net9.0/net10.0 DLL/PDB, identities, version, readmes and icons verified.
@@ -49,8 +49,8 @@ in-process handler and checked response disposal.
 Not run locally: RabbitMQ service tests, the LinuxSmoke task on a native Linux
 runner, macOS tests, external database providers, live remote HTTP tests, NuGet
 publication, and a separate rerun of version-calculation tests (version calculation
-was unchanged). CI coverage instrumentation was exercised on net10.0 only; all
-three framework test matrices ran without coverage first. Existing JSON nullability
+was unchanged). CI coverage instrumentation was exercised on all three frameworks; all
+three framework test matrices also ran without coverage first. Existing JSON nullability
 warnings and intentional compatibility Obsolete notices are non-error warnings.
 
 Average/median migration and arbitrary JSONPath replacement remain explicitly
