@@ -46,6 +46,15 @@ public static class ExpressionAdapters
 /// <summary>Opt-in fluent expression/predicate adapters; definitions bind once at construction.</summary>
 public sealed class ExpressifBuilder<TInput>(IPipeBuilder<TInput> upstream, EvaluationContext context)
 {
+    public MapperBuilder<TInput, TOutput> Constant<TOutput>(TOutput value)
+        => new(upstream, ExpressionAdapters.Map<TInput, TOutput>(Expression.Create("@constant"),
+            new EvaluationContext(new Dictionary<string, object?> { ["constant"] = value })));
+    public FilterBuilder<TInput> IsNull() => Filter("is-null");
+    public FilterBuilder<TInput> IsNotNull() => Filter("is-not-null");
+    public MapperBuilder<TInput, TOutput> Cast<TOutput>()
+        => new(upstream, ScalarAdapters.Convert<TInput, TOutput>());
+    public MapperBuilder<TInput, DateOnly?> Date() => Cast<DateOnly?>();
+    public MapperBuilder<TInput, DateTime?> DateTime() => Cast<DateTime?>();
     public MapperBuilder<TInput, TOutput> Map<TOutput>(string definition)
         => Map<TOutput>(Expression.Create(definition));
     public MapperBuilder<TInput, TOutput> Map<TOutput>(IExpression expression)
