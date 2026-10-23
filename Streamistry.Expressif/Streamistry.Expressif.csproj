@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Streamistry.Core/Streamistry.csproj" />
+    <PackageReference Include="Expressif" Version="2.93.1" />
+  </ItemGroup>
+</Project>
