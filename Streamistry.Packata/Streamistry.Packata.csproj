@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk"><ItemGroup>
+<ProjectReference Include="../Streamistry.Core/Streamistry.csproj" />
+<PackageReference Include="Packata.ResourceReaders" Version="0.63.4" />
+<PackageReference Include="Scriban" Version="7.5.1" />
+</ItemGroup></Project>
