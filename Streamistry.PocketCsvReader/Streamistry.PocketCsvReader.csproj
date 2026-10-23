@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk"><ItemGroup>
+<ProjectReference Include="../Streamistry.Core/Streamistry.csproj" />
+<PackageReference Include="PocketCsvReader" Version="2.53.0" />
+</ItemGroup></Project>
