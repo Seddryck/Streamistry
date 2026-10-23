@@ -9,7 +9,18 @@
 public abstract partial class Combinator<{{ generics | array.join ", " }}, TResult > : ChainablePipe<TResult>
 {
     public Func<{{ generics | array.join "?, " }}?, TResult?> Function { get; init; }
-    protected int BranchesCompleted { get; set; }
+    private readonly HashSet<int> completed = new();
+    protected virtual void ClearPending() { }
+    protected override void OnRunStarting()
+    {
+        completed.Clear();
+        ClearPending();
+    }
+    private void CompleteBranch(int branch)
+    {
+        completed.Add(branch);
+        if (completed.Count == {{ generics.size }}) Complete();
+    }
     {{~ for type in generics ~}}
     protected IChainablePort<{{ type }}?> Upstream{{ for.index + 1 }} { get; }
     {{~ end ~}}
@@ -23,7 +34,8 @@ public abstract partial class Combinator<{{ generics | array.join ", " }}, TResu
     {
         {{~ for type in generics ~}}
         upstream{{ for.index + 1 }}.RegisterDownstream(Emit{{ for.index + 1 }});
-        upstream{{ for.index + 1 }}.Pipe.RegisterOnCompleted(Complete);
+        upstream{{ for.index + 1 }}.Pipe.RegisterOnCompleted(() => CompleteBranch({{ for.index + 1 }}));
+        upstream{{ for.index + 1 }}.Pipe.RegisterOnStarting(BeginRun);
         Upstream{{ for.index + 1 }} = upstream{{ for.index + 1 }};
         {{~ end ~}}
         Function = function;
@@ -32,6 +44,7 @@ public abstract partial class Combinator<{{ generics | array.join ", " }}, TResu
     {{~ for type in generics ~}}
     public void Emit{{ for.index + 1 }}({{ type }}? value)
     {
+        if (IsCompleted) return;
         Queue(Upstream{{for.index + 1}}, value);
         if (TryGetElements(
             {{-
@@ -48,12 +61,9 @@ public abstract partial class Combinator<{{ generics | array.join ", " }}, TResu
 
     public override void Complete()
     {
-        BranchesCompleted += 1;
-        if (BranchesCompleted >= {{ generics.size }})
-        {
-            BranchesCompleted = 0;
-            PushComplete();
-        }
+        if (IsCompleted) return;
+        ClearPending();
+        PushComplete();
     }
 
     [Trace]
