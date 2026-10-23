@@ -29,4 +29,5 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup><ProjectReference Include="../Streamistry.Json.Expressif/Streamistry.Json.Expressif.csproj" /></ItemGroup>
 </Project>
