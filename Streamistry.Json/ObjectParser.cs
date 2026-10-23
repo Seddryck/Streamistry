@@ -22,7 +22,7 @@ public class ObjectParser : StringParser<JsonObject>
         try
         {
             value = (JsonObject)JsonNode.Parse(text)!;
-            return true;
+            return value is not null;
         }
         catch
         { return false; }
