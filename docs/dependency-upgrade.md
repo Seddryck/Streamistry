@@ -2,8 +2,7 @@
 
 All direct NuGet dependencies and the local GitVersion tool use the latest stable
 versions available on October 22, 2026. Dependencies already current, including
-DotNet.ReproducibleBuilds and Appveyor.TestLogger, retain their versions. The
-AppVeyor logger remains until the separate publishing migration removes it.
+DotNet.ReproducibleBuilds, retain their versions. The AppVeyor logger has been removed.
 GitHub Actions references use verified release commit hashes. CI and the local
 Docker helper both pin the stable RabbitMQ 4.4.0 management image.
 The shared integration-test queue is durable because RabbitMQ 4.4 disables

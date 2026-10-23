@@ -6,14 +6,17 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish tested main packages (requires release configuration)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
-
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -25,83 +28,102 @@ jobs:
     timeout-minutes: 10
     outputs:
       semver: ${{ steps.version.outputs.semver }}
+      patch: ${{ steps.version.outputs.patch }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: |
             8.0.x
             10.0.x
-      - name: Restore pinned GitVersion tool
+      - name: Restore pinned GitVersion
         shell: pwsh
         run: |
           dotnet tool restore
-          if ($LASTEXITCODE -ne 0) { throw 'GitVersion tool restore failed.' }
-      - name: Calculate version from complete history
+          if ($LASTEXITCODE -ne 0) { throw 'GitVersion restore failed.' }
+      - name: Calculate one version for the tested commit
         id: version
         shell: pwsh
         run: |
           $raw = & dotnet tool run dotnet-gitversion -- /output json /nofetch
           if ($LASTEXITCODE -ne 0) { throw 'GitVersion calculation failed.' }
-          $calculated = ($raw -join "`n") | ConvertFrom-Json
-          if ($calculated.SemVer -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') {
-            throw 'GitVersion returned an invalid package version.'
-          }
-          if ($calculated.Sha -ne $env:GITHUB_SHA) {
-            throw 'GitVersion calculated a version for a different commit.'
+          $calculated = ($raw -join [Environment]::NewLine) | ConvertFrom-Json
+          if ($calculated.SemVer -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$' -or $calculated.Sha -ne $env:GITHUB_SHA) {
+            throw 'GitVersion returned an invalid version or a different commit.'
           }
           "semver=$($calculated.SemVer)" >> $env:GITHUB_OUTPUT
+          "patch=$($calculated.Patch)" >> $env:GITHUB_OUTPUT
           Write-Output "Calculated version: $($calculated.SemVer)"
-      - name: Verify versioning rules
+      - name: Verify version and release rules
         shell: pwsh
-        run: ./eng/Test-Versioning.ps1
+        run: |
+          ./eng/Test-Versioning.ps1
+          ./eng/Test-ReleaseGuards.ps1
 
-  unit:
-    name: Unit tests (${{ matrix.framework }}, Windows)
+  build:
+    name: Build once and test Windows
+    needs: version
     runs-on: windows-latest
     timeout-minutes: 20
-    needs: version
     env:
       CI_PACKAGE_VERSION: ${{ needs.version.outputs.semver }}
-    strategy:
-      fail-fast: false
-      matrix:
-        framework: [net8.0, net9.0, net10.0]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: |
             8.0.x
             9.0.x
             10.0.x
-      - name: Build and test core and JSON
+      - name: Cache NuGet dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.*', 'global.json', '.config/dotnet-tools.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - name: Build the complete solution once
         shell: pwsh
-        run: ./eng/Invoke-CI.ps1 -Task Unit -Framework '${{ matrix.framework }}' -Version $env:CI_PACKAGE_VERSION
-      - name: Retain test results and coverage
+        run: ./eng/Invoke-CI.ps1 -Task Build -Version $env:CI_PACKAGE_VERSION -Commit $env:GITHUB_SHA
+      - name: Test compiled Windows outputs on all frameworks
+        shell: pwsh
+        run: |
+          foreach ($framework in @('net8.0', 'net9.0', 'net10.0')) {
+            ./eng/Invoke-CI.ps1 -Task Unit -Framework $framework -Version $env:CI_PACKAGE_VERSION -Commit $env:GITHUB_SHA
+          }
+      - name: Seal tested outputs
+        shell: pwsh
+        run: ./eng/Build-Artifact.ps1 -Mode Save -Version $env:CI_PACKAGE_VERSION -Commit $env:GITHUB_SHA
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: build-${{ github.sha }}
+          path: artifacts/build/build.tar.gz
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 7
+      - name: Retain results and coverage
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: unit-${{ matrix.framework }}-windows
-          path: artifacts/test-results/
+          name: unit-results-${{ github.sha }}
+          path: artifacts/test-results/Unit/
           if-no-files-found: warn
 
   rabbitmq:
-    name: RabbitMQ tests (${{ matrix.framework }}, Linux)
+    name: Test reused outputs (${{ matrix.framework }}, Linux)
+    needs: [version, build]
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs: version
-    env:
-      CI_PACKAGE_VERSION: ${{ needs.version.outputs.semver }}
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         framework: [net8.0, net9.0, net10.0]
+    env:
+      CI_PACKAGE_VERSION: ${{ needs.version.outputs.semver }}
     services:
       rabbitmq:
         image: rabbitmq:4.4.0-management
@@ -116,65 +138,186 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: |
             8.0.x
             9.0.x
             10.0.x
-      - name: Build and test against RabbitMQ
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: build-${{ github.sha }}
+          path: artifacts/build
+      - name: Restore and verify tested outputs
         shell: pwsh
-        run: ./eng/Invoke-CI.ps1 -Task Integration -Framework '${{ matrix.framework }}' -Version $env:CI_PACKAGE_VERSION
-      - name: Check filesystem behavior on Linux
+        run: ./eng/Build-Artifact.ps1 -Mode Restore -Version $env:CI_PACKAGE_VERSION -Commit $env:GITHUB_SHA
+      - name: Test RabbitMQ without compilation or restore
+        shell: pwsh
+        run: ./eng/Invoke-CI.ps1 -Task Integration -Framework '${{ matrix.framework }}' -Version $env:CI_PACKAGE_VERSION -Commit $env:GITHUB_SHA
+      - name: Check Linux filesystem behavior
         if: matrix.framework == 'net10.0'
         shell: pwsh
-        run: ./eng/Invoke-CI.ps1 -Task LinuxSmoke -Framework net10.0 -Version $env:CI_PACKAGE_VERSION
-      - name: Retain test results
+        run: ./eng/Invoke-CI.ps1 -Task LinuxSmoke -Framework net10.0 -Version $env:CI_PACKAGE_VERSION -Commit $env:GITHUB_SHA
+      - name: Retain integration results
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: integration-${{ matrix.framework }}-linux
+          name: integration-${{ matrix.framework }}-${{ github.sha }}
           path: artifacts/test-results/
           if-no-files-found: warn
 
+  coverage:
+    name: Upload retained coverage
+    needs: build
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: unit-results-${{ github.sha }}
+          path: artifacts/coverage
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          directory: artifacts/coverage
+          use_oidc: true
+          fail_ci_if_error: true
+
   package:
-    name: Validate multi-target packages
-    needs: [version, unit, rabbitmq]
+    name: Package tested outputs
+    needs: [version, build, rabbitmq]
+    runs-on: windows-latest
+    timeout-minutes: 15
     env:
       CI_PACKAGE_VERSION: ${{ needs.version.outputs.semver }}
-    runs-on: windows-latest
-    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: 10.0.x
-      - name: Build, pack, and validate
+      - name: Cache NuGet dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.*', 'global.json', '.config/dotnet-tools.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: build-${{ github.sha }}
+          path: artifacts/build
+      - name: Restore and verify tested outputs
         shell: pwsh
-        run: ./eng/Invoke-CI.ps1 -Task Package -Version $env:CI_PACKAGE_VERSION
+        run: ./eng/Build-Artifact.ps1 -Mode Restore -Version $env:CI_PACKAGE_VERSION -Commit $env:GITHUB_SHA
+      - name: Pack without rebuilding and verify provenance
+        shell: pwsh
+        run: ./eng/Invoke-CI.ps1 -Task Package -Version $env:CI_PACKAGE_VERSION -Commit $env:GITHUB_SHA
+      - name: Verify artifact mismatch and corruption guards
+        shell: pwsh
+        run: ./eng/Test-ArtifactGuards.ps1 -Version $env:CI_PACKAGE_VERSION -Commit $env:GITHUB_SHA
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: nuget-packages
-          path: artifacts/packages/*.*nupkg
+          name: nuget-packages-${{ github.sha }}
+          path: artifacts/packages/
           if-no-files-found: error
+
+  labels:
+    name: Update release-note labels
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Map conventional PR titles to changelog labels
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./eng/Update-ReleaseLabels.ps1
 
   result:
     name: CI result
     if: always()
-    needs: [version, unit, rabbitmq, package]
+    needs: [version, build, rabbitmq, coverage, package, labels]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Require every job to succeed
+      - name: Require every validation job to succeed
         shell: pwsh
         env:
-          UNIT_RESULT: ${{ needs.unit.result }}
-          VERSION_RESULT: ${{ needs.version.result }}
-          RABBITMQ_RESULT: ${{ needs.rabbitmq.result }}
-          PACKAGE_RESULT: ${{ needs.package.result }}
+          REQUIRED_RESULTS: ${{ toJSON(needs) }}
+          FORK_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
         run: |
-          foreach ($result in @($env:VERSION_RESULT, $env:UNIT_RESULT, $env:RABBITMQ_RESULT, $env:PACKAGE_RESULT)) {
-            if ($result -ne 'success') { throw "A required CI job finished with result: $result" }
+          $jobs = $env:REQUIRED_RESULTS | ConvertFrom-Json -AsHashtable
+          foreach ($name in $jobs.Keys) {
+            $result = $jobs[$name].result
+            if ($name -eq 'labels' -and $result -eq 'skipped') { continue }
+            if ($name -eq 'coverage' -and $result -eq 'skipped' -and $env:FORK_PR -eq 'true') { continue }
+            if ($result -ne 'success') { throw "Required job $name finished with result: $result" }
+          }
+
+  publish:
+    name: Publish tested packages
+    if: github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/main'
+    needs: [version, package, result]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: release
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      RELEASE_VERSION: ${{ needs.version.outputs.semver }}
+      NUGET_PUBLISHING_ENABLED: ${{ vars.NUGET_PUBLISHING_ENABLED }}
+      APPVEYOR_PUBLISHING_DISABLED: ${{ vars.APPVEYOR_PUBLISHING_DISABLED }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: nuget-packages-${{ github.sha }}
+          path: artifacts/packages
+      - name: Revalidate artifacts, baseline, commit, and reserve tag
+        shell: pwsh
+        run: ./eng/Prepare-Release.ps1 -Version $env:RELEASE_VERSION -Commit $env:GITHUB_SHA -PackageDirectory artifacts/packages -Requested
+      - name: Exchange GitHub identity for a short-lived NuGet key
+        id: nuget
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: Seddryck
+      - name: Publish downloaded packages and companion symbols
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ steps.nuget.outputs.NUGET_API_KEY }}
+        run: |
+          foreach ($package in Get-ChildItem artifacts/packages -Filter '*.nupkg' -File) {
+            dotnet nuget push $package.FullName --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
+            if ($LASTEXITCODE -ne 0) { throw "Publishing $($package.Name) failed." }
+          }
+      - name: Create GitHub release for patch-zero versions
+        if: needs.version.outputs.patch == '0'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "v$env:RELEASE_VERSION"
+          gh release view $tag --repo $env:GITHUB_REPOSITORY 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag --repo $env:GITHUB_REPOSITORY --verify-tag --title "Streamistry $env:RELEASE_VERSION" --generate-notes --discussion-category Announcements
+            if ($LASTEXITCODE -ne 0) { throw 'GitHub release creation failed.' }
           }
