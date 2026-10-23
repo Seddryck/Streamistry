@@ -25,36 +25,89 @@ public abstract class Source<TOutput> : ChainablePipe<TOutput>, ISource, IDispos
         Pipeline = pipeline;
     }
 
-    private bool IsStarted { get; set; }
+    private int active;
+    private volatile bool stopRequested;
+    private bool IsStarted => Volatile.Read(ref active) == 1 && !stopRequested;
     private Guid? preparedRun;
     public void PrepareRun(Guid runId)
     {
+        if (Volatile.Read(ref active) != 0) throw new InvalidOperationException("The source is already running.");
         preparedRun = runId;
         BeginRun(runId);
     }
 
-    public void Start()
+    private void EnterRun()
     {
-        if (IsStarted)
-            return;
-        IsStarted = true;
+        ObjectDisposedException.ThrowIf(disposed, this);
+        if (Interlocked.CompareExchange(ref active, 1, 0) != 0)
+            throw new InvalidOperationException("The source is already running.");
+        stopRequested = false;
+    }
+    private void StartRun()
+    {
         BeginRun(preparedRun ?? Pipeline.CurrentRun.Value ?? Guid.NewGuid());
         preparedRun = null;
+    }
+
+    public void Start()
+    {
+        EnterRun();
         try
         {
+            StartRun();
             Setup();
             Read();
         }
         finally
-        { Stop(); }
+        {
+            try { Cleanup(); }
+            finally { Volatile.Write(ref active, 0); }
+        }
     }
 
-    public void Stop()
+    public async Task StartAsync(CancellationToken cancellationToken = default)
     {
-        if (!IsStarted)
-            return;
-        IsStarted = false;
+        EnterRun();
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            StartRun();
+            await SetupAsync(cancellationToken).ConfigureAwait(false);
+            while (IsStarted)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var next = await ReadNextAsync(cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!next.HasValue) break;
+                if (IsStarted) PushDownstream(next.Item);
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            PushComplete();
+        }
+        finally
+        {
+            try { await CleanupAsync().ConfigureAwait(false); }
+            finally { Volatile.Write(ref active, 0); }
+        }
+    }
+
+    public void Stop() => stopRequested = true;
+    public virtual ValueTask SetupAsync(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        Setup();
+        return ValueTask.CompletedTask;
+    }
+    public virtual ValueTask CleanupAsync()
+    {
         Cleanup();
+        return ValueTask.CompletedTask;
+    }
+    protected virtual ValueTask<(bool HasValue, TOutput? Item)> ReadNextAsync(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var hasValue = TryReadNext(out var item);
+        return ValueTask.FromResult((hasValue, item));
     }
 
     public virtual void Setup()
