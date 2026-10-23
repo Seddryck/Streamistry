@@ -22,27 +22,37 @@ public class PipeBuffer<T> : BaseSingleRouterPipe<T, T>
     public PipeBuffer(IChainablePort<T> upstream, int? maxCapacity = null)
     : base(upstream)
     {
+        if (maxCapacity is <= 0) throw new ArgumentOutOfRangeException(nameof(maxCapacity));
         MaxCapacity = maxCapacity;
     }
 
     [Meter]
     public override void Emit(T? obj)
     {
+        if (IsCompleted) return;
         Invoke(obj);
         if (MaxCapacity.HasValue && Store.Count >= MaxCapacity.Value)
-            Complete();
+            Flush();
     }
             
     [Trace]
     protected void Invoke(T? obj)
         => Store.Add(obj);
 
+    protected override void OnRunStarting() => Store.Clear();
+
+    public void Flush()
+    {
+        var batch = Store.ToArray();
+        Store.Clear();
+        foreach (var item in batch) PushDownstream(item);
+    }
+
     [Trace]
     public override void Complete()
     {
-        foreach (var item in Store)
-            PushDownstream(item);
-        Store.Clear();
+        if (IsCompleted) return;
+        Flush();
         PushComplete();
     }
 }
