@@ -46,13 +46,17 @@ public class GlobbingSource<TOutput> : Source<TOutput>
         if (Files.TryDequeue(out var file))
         {
             var fullPath = Path.Combine([Directory.FullName, file]);
-            using var reader = new StreamReader(fullPath);
-            item = (TOutput?)Convert.ChangeType(reader.ReadToEnd(), typeof(TOutput));
+            item = ReadFile(fullPath);
             return true;
         }
         item = default;
         return false;
     }
+
+    public override void Cleanup() => Files = null;
+
+    protected virtual TOutput? ReadFile(string fullPath)
+        => (TOutput?)Convert.ChangeType(File.ReadAllText(fullPath), typeof(TOutput));
 
     private Queue<string> QueueFiles(Matcher matcher)
     {
@@ -62,4 +66,12 @@ public class GlobbingSource<TOutput> : Source<TOutput>
             files.Enqueue(result.Path);
         return files;
     }
+}
+
+/// <summary>Emits file paths without opening files or calculating output values.</summary>
+public sealed class FilePathSource : GlobbingSource<string>
+{
+    public FilePathSource(string directory, string[] includes, string[]? excludes = null)
+        : base(directory, includes, excludes ?? []) { }
+    protected override string ReadFile(string fullPath) => fullPath;
 }
