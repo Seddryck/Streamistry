@@ -1,4 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk"><ItemGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><Description>Parameterized database sources and transactional command sinks for Streamistry using DubUrl.</Description><RepositoryUrl>https://github.com/Seddryck/Streamistry</RepositoryUrl></PropertyGroup><ItemGroup>
 <ProjectReference Include="../Streamistry.Core/Streamistry.csproj" />
 <PackageReference Include="DubUrl" Version="0.29.34" />
 <PackageReference Include="Scriban" Version="7.5.1" />

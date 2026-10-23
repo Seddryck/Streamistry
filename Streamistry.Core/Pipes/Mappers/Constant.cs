@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Streamistry.Pipes.Mappers;
+[Obsolete("Use a delegate Map or Streamistry.Expressif UsingExpressif().Constant.")]
 public class Constant<TInput, TOutput> : Mapper<TInput, TOutput>
 {
     protected Constant(TOutput value, IChainablePort<TInput>? upstream)

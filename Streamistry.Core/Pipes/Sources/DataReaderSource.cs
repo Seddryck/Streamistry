@@ -15,18 +15,37 @@ namespace Streamistry.Pipes.Sources;
 
 public abstract class DataReaderSource<TOutput> : Source<TOutput>
 {
-    private readonly Func<ReaderLease>? readerFactory;
-    private readonly Func<CancellationToken, ValueTask<ReaderLease>>? asyncFactory;
+    private Func<ReaderLease>? readerFactory;
+    private Func<CancellationToken, ValueTask<ReaderLease>>? asyncFactory;
     private ReaderLease? lease;
-    protected IDataReader DataReader => lease?.Reader
-        ?? throw new InvalidOperationException("The reader is available only during execution.");
+    private IDataReader? suppliedReader;
+    protected IDataReader DataReader
+    {
+        get => lease?.Reader ?? suppliedReader
+            ?? throw new InvalidOperationException("The factory reader is available only during execution.");
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            if (ReferenceEquals(lease?.Reader, value)) return;
+            var previous = lease;
+            lease = null;
+            previous?.Dispose();
+            suppliedReader = value;
+            readerFactory = () => ReaderLease.Borrow(value);
+            asyncFactory = null;
+            lease = ReaderLease.Borrow(value);
+        }
+    }
 
     public DataReaderSource(IDataReader dataReader, ObservabilityProvider? provider = null)
-        : this(() => ReaderLease.Borrow(dataReader), provider) { }
+        : this(() => ReaderLease.Borrow(dataReader), provider) => suppliedReader = dataReader;
 
     public DataReaderSource(Pipeline upstream, IDataReader dataReader)
         : this(() => ReaderLease.Borrow(dataReader), upstream.GetObservabilityProvider())
-        => Pipeline = upstream;
+    {
+        Pipeline = upstream;
+        suppliedReader = dataReader;
+    }
 
     public DataReaderSource(Func<ReaderLease> readerFactory, ObservabilityProvider? provider = null)
         : base(provider)
@@ -127,6 +146,7 @@ public class DataReaderAsArraySource : DataReaderSource<ImmutableArray<object>>
 
 public class DataReaderAsValueSource<TOutput> : DataReaderSource<TOutput>
 {
+    private static readonly Type OutputType = Nullable.GetUnderlyingType(typeof(TOutput)) ?? typeof(TOutput);
     public DataReaderAsValueSource(Func<CancellationToken, ValueTask<ReaderLease>> factory, ObservabilityProvider? provider = null)
         : base(factory, provider) { }
 
@@ -146,31 +166,31 @@ public class DataReaderAsValueSource<TOutput> : DataReaderSource<TOutput>
         if (DataReader.IsDBNull(0))
             return default;
 
-        if (typeof(TOutput) == typeof(object))
+        if (OutputType == typeof(object))
             return (TOutput)DataReader.GetValue(0);
-        else if (typeof(TOutput) == typeof(bool))
+        else if (OutputType == typeof(bool))
             return (TOutput)(object)DataReader.GetBoolean(0);
-        else if (typeof(TOutput) == typeof(byte))
+        else if (OutputType == typeof(byte))
             return (TOutput)(object)DataReader.GetByte(0);
-        else if (typeof(TOutput) == typeof(short))
+        else if (OutputType == typeof(short))
             return (TOutput)(object)DataReader.GetInt16(0);
-        else if (typeof(TOutput) == typeof(int))
+        else if (OutputType == typeof(int))
             return (TOutput)(object)DataReader.GetInt32(0);
-        else if (typeof(TOutput) == typeof(long))
+        else if (OutputType == typeof(long))
             return (TOutput)(object)DataReader.GetInt64(0);
-        else if (typeof(TOutput) == typeof(float))
+        else if (OutputType == typeof(float))
             return (TOutput)(object)DataReader.GetFloat(0);
-        else if (typeof(TOutput) == typeof(double))
+        else if (OutputType == typeof(double))
             return (TOutput)(object)DataReader.GetDouble(0);
-        else if (typeof(TOutput) == typeof(decimal))
+        else if (OutputType == typeof(decimal))
             return (TOutput)(object)DataReader.GetDecimal(0);
-        else if (typeof(TOutput) == typeof(Guid))
+        else if (OutputType == typeof(Guid))
             return (TOutput)(object)DataReader.GetGuid(0);
-        else if (typeof(TOutput) == typeof(char))
+        else if (OutputType == typeof(char))
             return (TOutput)(object)DataReader.GetChar(0);
-        else if (typeof(TOutput) == typeof(string))
+        else if (OutputType == typeof(string))
             return (TOutput)(object)DataReader.GetString(0);
-        else if (typeof(TOutput) == typeof(DateTime))
+        else if (OutputType == typeof(DateTime))
             return (TOutput)(object)DataReader.GetDateTime(0);
         else
             throw new NotSupportedException($"Type {typeof(TOutput)} is not supported.");

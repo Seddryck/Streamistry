@@ -8,11 +8,11 @@ namespace Streamistry.DubUrl.Testing;
 public class DatabaseConnectorTests
 {
     private string path = null!;
-    private string Url => "sqlite:///" + path.Replace('\\', '/');
+    private string Url => "sqlite://" + Path.GetFileName(path);
     [SetUp]
     public void Setup()
     {
-        path = Path.Combine(TestContext.CurrentContext.WorkDirectory, $"direct-{Guid.NewGuid():N}.db");
+        path = Path.Combine(Environment.CurrentDirectory, $"direct-{Guid.NewGuid():N}.db");
         DbProviderFactories.RegisterFactory("Microsoft.Data.Sqlite", SqliteFactory.Instance);
         using var connection = Open(); using var command = connection.CreateCommand();
         command.CommandText = "CREATE TABLE people (name TEXT UNIQUE, note TEXT)"; command.ExecuteNonQuery();
@@ -79,6 +79,37 @@ public class DatabaseConnectorTests
             value => new Dictionary<string, object?> { ["@name"] = value }, TransactionPolicy.CommitOnCompletion);
         input.RegisterDownstream(_ => cancellation.Cancel());
         await Assert.ThrowsAsync<OperationCanceledException>(() => sink.ExecuteAsync(new Pipeline(input), cancellation.Token));
+        Assert.That(Count(), Is.Zero);
+    }
+
+    [Test]
+    public async Task AutocommitPolicyPreservesEarlierWritesOnFailure()
+    {
+        var input = new EnumerableSource<string>(["same", "same"]);
+        using var sink = new DatabaseCommandSink<string>(input, Url, "INSERT INTO people(name) VALUES (@name)",
+            value => new Dictionary<string, object?> { ["@name"] = value }, TransactionPolicy.None);
+        await Assert.ThrowsAsync<DatabaseOperationException>(() => sink.ExecuteAsync(new Pipeline(input)));
+        Assert.That(Count(), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void DisposalRollsBackUncommittedManualTransaction()
+    {
+        var input = new EnumerableSource<string>(["Alice"]);
+        using (var sink = new DatabaseCommandSink<string>(input, Url, "INSERT INTO people(name) VALUES (@name)",
+            value => new Dictionary<string, object?> { ["@name"] = value }, TransactionPolicy.Manual))
+            sink.Execute(new Pipeline(input));
+        Assert.That(Count(), Is.Zero);
+    }
+
+    [Test]
+    public async Task ExecutionWrapperRollsBackFailureElsewhereUpstream()
+    {
+        var input = new EnumerableSource<string>(["Alice", "Bob"]);
+        var mapper = new Mapper<string, string>(input, value => value == "Bob" ? throw new InvalidOperationException() : value);
+        using var sink = new DatabaseCommandSink<string>(mapper, Url, "INSERT INTO people(name) VALUES (@name)",
+            value => new Dictionary<string, object?> { ["@name"] = value }, TransactionPolicy.CommitOnCompletion);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sink.ExecuteAsync(new Pipeline(input)));
         Assert.That(Count(), Is.Zero);
     }
 

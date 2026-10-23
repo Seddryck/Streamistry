@@ -7,6 +7,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+$projects = Import-PowerShellDataFile "$PSScriptRoot/Projects.psd1"
 function Invoke-DotNet {
     & dotnet @args
     if ($LASTEXITCODE -ne 0) { throw "dotnet $($args[0]) failed with exit code $LASTEXITCODE." }
@@ -23,7 +24,7 @@ try {
     & "$PSScriptRoot/Build-Artifact.ps1" -Mode Verify -Version $Version -Commit $Commit
     switch ($Task) {
         'Unit' {
-            foreach ($name in @('Streamistry', 'Streamistry.Json')) {
+            foreach ($name in $projects.UnitTests) {
                 $results = Join-Path $resultsRoot $name
                 Invoke-DotNet test "$name.Testing" --configuration Release --framework $Framework --no-build --no-restore --logger 'trx;LogFileName=tests.trx' --results-directory $results '-p:CollectCoverage=true' '-p:CoverletOutputFormat=opencover' "-p:Include=[$name]*" '-p:Threshold=10' '-p:ThresholdType=line' "-p:CoverletOutput=$results/coverage.xml"
             }
@@ -35,13 +36,17 @@ try {
         'LinuxSmoke' {
             $assembly = "Streamistry.Testing/bin/Release/$Framework/Streamistry.Testing.dll"
             Invoke-DotNet vstest $assembly '/TestCaseFilter:FullyQualifiedName~GlobbingSourceTests' '/Logger:trx;LogFileName=tests.trx' "/ResultsDirectory:$resultsRoot"
+            foreach ($name in @('Streamistry.DubUrl', 'Streamistry.Packata')) {
+                Invoke-DotNet vstest "$name.Testing/bin/Release/$Framework/$name.Testing.dll" '/Logger:trx;LogFileName=tests.trx' "/ResultsDirectory:$resultsRoot/$name"
+            }
         }
         'Package' {
             # Refresh machine-specific NuGet assets after restoring bin/obj; do not compile.
             Invoke-DotNet restore Streamistry.sln --force-evaluate
             $packages = Join-Path (Get-Location) 'artifacts/packages'
             New-Item -ItemType Directory -Path $packages -Force | Out-Null
-            foreach ($project in @('Streamistry.Core', 'Streamistry.Json', 'Streamistry.RabbitMQ')) {
+            foreach ($id in $projects.Packages) {
+                $project = if ($id -eq 'Streamistry') { 'Streamistry.Core' } else { $id }
                 Invoke-DotNet pack $project --configuration Release --no-build --no-restore --include-symbols --output $packages "-p:Version=$Version" '-p:ContinuousIntegrationBuild=true'
             }
             & "$PSScriptRoot/Test-Packages.ps1" -PackageDirectory $packages -Version $Version

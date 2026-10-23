@@ -38,7 +38,13 @@ Install-Package Streamistry
 ```
 
 ## QuickStart
-More to come
+Build a delegate pipeline with `PipelineBuilder`, or install an optional adapter
+for expression or connector workflows. Core remains independent of Expressif,
+PocketCsvReader, Packata and DubUrl.
+
+See the [package boundaries and migration guide](docs/migration.md),
+[direct CSV-to-expression example](docs/csv-source.md), and
+[contract-driven Packata example](docs/packata-source.md).
 
 
 

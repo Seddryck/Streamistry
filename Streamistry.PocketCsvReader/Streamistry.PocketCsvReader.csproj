@@ -1,4 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk"><ItemGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><Description>Incremental CSV and TSV sources for Streamistry using PocketCsvReader.</Description><RepositoryUrl>https://github.com/Seddryck/Streamistry</RepositoryUrl></PropertyGroup><ItemGroup>
 <ProjectReference Include="../Streamistry.Core/Streamistry.csproj" />
 <PackageReference Include="PocketCsvReader" Version="2.53.0" />
 </ItemGroup></Project>

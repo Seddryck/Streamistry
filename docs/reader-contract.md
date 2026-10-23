@@ -20,3 +20,8 @@ existing typed IDataRecord getter behavior. Use nullable output types for nulls.
 
 Core exposes only BCL reader, dictionary, array and scalar types. Optional packages
 adapt these values to their own record representations.
+
+The protected DataReader getter/setter remains for existing subclasses. Supplied
+readers are accessible before execution. Assigning a replacement borrows it, releases
+any current owned lease, and uses the replacement on subsequent runs. Factory-backed
+readers exist only during execution.

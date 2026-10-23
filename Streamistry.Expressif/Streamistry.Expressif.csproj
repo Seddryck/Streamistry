@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><Description>Expressif expression, predicate and running accumulator adapters for Streamistry.</Description><RepositoryUrl>https://github.com/Seddryck/Streamistry</RepositoryUrl></PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Streamistry.Core/Streamistry.csproj" />
     <PackageReference Include="Expressif" Version="2.93.1" />

@@ -10,6 +10,8 @@ public abstract partial class Combinator<{{ generics | array.join ", " }}, TResu
 {
     public Func<{{ generics | array.join "?, " }}?, TResult?> Function { get; init; }
     private readonly HashSet<int> completed = new();
+    protected bool IsBranchCompleted(int branch) => completed.Contains(branch);
+    protected virtual bool CanPairMore => true;
     protected virtual void ClearPending() { }
     protected override void OnRunStarting()
     {
@@ -19,6 +21,7 @@ public abstract partial class Combinator<{{ generics | array.join ", " }}, TResu
     private void CompleteBranch(int branch)
     {
         completed.Add(branch);
+        if (!CanPairMore) ClearPending();
         if (completed.Count == {{ generics.size }}) Complete();
     }
     {{~ for type in generics ~}}
@@ -44,7 +47,7 @@ public abstract partial class Combinator<{{ generics | array.join ", " }}, TResu
     {{~ for type in generics ~}}
     public void Emit{{ for.index + 1 }}({{ type }}? value)
     {
-        if (IsCompleted) return;
+        if (IsCompleted || !CanPairMore) return;
         Queue(Upstream{{for.index + 1}}, value);
         if (TryGetElements(
             {{-
@@ -56,6 +59,7 @@ public abstract partial class Combinator<{{ generics | array.join ", " }}, TResu
             func concat; ret string.append "item" $0; end
             indexes | array.each @concat | array.join ", "
             }}));
+        if (!CanPairMore) ClearPending();
     }
     {{~ end ~}}
 

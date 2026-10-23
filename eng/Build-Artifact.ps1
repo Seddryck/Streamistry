@@ -7,7 +7,9 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-$projects = @('Streamistry.Core', 'Streamistry.Json', 'Streamistry.RabbitMQ', 'Streamistry.SourceGenerator', 'Streamistry.Testing', 'Streamistry.Json.Testing', 'Streamistry.RabbitMQ.Testing')
+$inventory = Import-PowerShellDataFile "$PSScriptRoot/Projects.psd1"
+$projects = @($inventory.Packages | ForEach-Object { if ($_ -eq 'Streamistry') { 'Streamistry.Core' } else { $_ } }) +
+    @($inventory.UnitTests | ForEach-Object { "$_.Testing" }) + @('Streamistry.SourceGenerator', 'Streamistry.RabbitMQ.Testing')
 $manifestPath = Join-Path $Root 'artifacts/build/manifest.json'
 $archivePath = Join-Path $Root 'artifacts/build/build.tar.gz'
 Push-Location $Root
