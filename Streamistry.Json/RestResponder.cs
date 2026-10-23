@@ -35,7 +35,7 @@ public class RestResponder<TInput, TOutput> : TryRouterPipe<TInput, TOutput>, IP
     {
         value = null;
         var url = UrlBuiler.Invoke(obj);
-        var response = RemoteInvoke(url);
+        using var response = RemoteInvoke(url);
         if (response != null && response.StatusCode == System.Net.HttpStatusCode.OK)
         {
             var content = ConvertHttpContentToString(response.Content);
@@ -50,7 +50,8 @@ public class RestResponder<TInput, TOutput> : TryRouterPipe<TInput, TOutput>, IP
     [Trace]
     protected virtual HttpResponseMessage RemoteInvoke(string url)
     {
-        var response = Client.Send(new HttpRequestMessage(HttpMethod.Get, url));
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        var response = Client.Send(request);
         return response;
     }
 
