@@ -8,4 +8,5 @@ namespace Streamistry;
 public interface ISource : IObservablePipe
 {
     void Start();
+    void PrepareRun(Guid runId) { }
 }

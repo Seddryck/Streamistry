@@ -8,6 +8,20 @@ using Streamistry.Observability;
 namespace Streamistry;
 public abstract class ChainablePipe<T> : ObservablePipe, IChainablePipe<T>
 {
+    private Guid? runId;
+    private bool completed;
+    private Action<Guid>? starting;
+    public void RegisterOnStarting(Action<Guid> action) => starting += action;
+    protected internal void BeginRun(Guid id)
+    {
+        if (runId == id) return;
+        runId = id;
+        completed = false;
+        OnRunStarting();
+        starting?.Invoke(id);
+    }
+    protected virtual void OnRunStarting() { }
+    protected bool IsCompleted => completed;
     public MainOutputPort<T> Main { get; }
     protected Action? Completion { get; set; }
     public IChainablePipe Pipe { get => this; }
@@ -23,6 +37,7 @@ public abstract class ChainablePipe<T> : ObservablePipe, IChainablePipe<T>
         : base(upstream?.GetObservabilityProvider())
     {
         Main = new(this);
+        upstream?.RegisterOnStarting(BeginRun);
         if (upstream is not null)
             if (upstream is Pipeline pipeline)
                 Pipeline = pipeline;
@@ -52,5 +67,9 @@ public abstract class ChainablePipe<T> : ObservablePipe, IChainablePipe<T>
         => PushComplete();
 
     protected void PushComplete()
-        => Completion?.Invoke();
+    {
+        if (completed) return;
+        completed = true;
+        Completion?.Invoke();
+    }
 }
