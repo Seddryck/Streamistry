@@ -21,7 +21,8 @@ public class AggregatorTests
         var pipeline = new Pipeline(firstSource);
         var union = new Union<int>([firstSource, secondSource]);
         var aggregator = new Sum<int>(union, x => x.Reset());
-        secondSource.WaitOnCompleted(aggregator);
+        firstSource.RegisterOnCompleted(aggregator.Reset);
+        secondSource.WaitOnCompleted(firstSource);
 
         Assert.Multiple(() =>
         {
@@ -40,7 +41,8 @@ public class AggregatorTests
         var pipeline = new Pipeline(firstSource);
         var union = new Union<int>([firstSource, secondSource]);
         var aggregator = new Sum<int>(union, x => x.Emit(-x.State));
-        secondSource.WaitOnCompleted(aggregator);
+        firstSource.RegisterOnCompleted(() => aggregator.Emit(-aggregator.State));
+        secondSource.WaitOnCompleted(firstSource);
 
         Assert.Multiple(() =>
         {

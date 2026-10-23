@@ -26,12 +26,20 @@ public abstract class Source<TOutput> : ChainablePipe<TOutput>, ISource, IDispos
     }
 
     private bool IsStarted { get; set; }
+    private Guid? preparedRun;
+    public void PrepareRun(Guid runId)
+    {
+        preparedRun = runId;
+        BeginRun(runId);
+    }
 
     public void Start()
     {
         if (IsStarted)
             return;
         IsStarted = true;
+        BeginRun(preparedRun ?? Pipeline.CurrentRun.Value ?? Guid.NewGuid());
+        preparedRun = null;
         try
         {
             Setup();
