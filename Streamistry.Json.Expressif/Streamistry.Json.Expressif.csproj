@@ -1,4 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk"><ItemGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><Description>JSON representation adapters for Expressif calculations in Streamistry.</Description><RepositoryUrl>https://github.com/Seddryck/Streamistry</RepositoryUrl></PropertyGroup><ItemGroup>
 <ProjectReference Include="../Streamistry.Json/Streamistry.Json.csproj" />
 <ProjectReference Include="../Streamistry.Expressif/Streamistry.Expressif.csproj" />
 </ItemGroup></Project>

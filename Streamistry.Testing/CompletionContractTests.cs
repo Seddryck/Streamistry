@@ -8,6 +8,23 @@ namespace Streamistry.Testing;
 public class CompletionContractTests
 {
     [Test]
+    public void ExhaustedInputDiscardsLargeUnmatchableTailWithoutOverflow()
+    {
+        var a = new EnumerableSource<int>([]);
+        var b = new EnumerableSource<int>(Enumerable.Range(0, 2000));
+        var zip = new Zipper<int, int, int>(a, b, (x, y) => x + y, 1);
+        Assert.That(zip.GetOutputs(new Pipeline([a, b]).Start), Is.Empty);
+    }
+
+    [Test]
+    public void CompletedShortInputPairsItsQueueThenDiscardsTail()
+    {
+        var a = new EnumerableSource<int>([10]);
+        var b = new EnumerableSource<int>(Enumerable.Range(0, 2000));
+        var zip = new Zipper<int, int, int>(a, b, (x, y) => x + y, 1);
+        Assert.That(zip.GetOutputs(new Pipeline([a, b]).Start), Is.EqualTo(new[] { 10 }));
+    }
+    [Test]
     public void CapacityFlushDoesNotCompleteAndFinalFlushCompletesOnce()
     {
         var source = new EnumerableSource<int>([1, 2, 3, 4, 5]);

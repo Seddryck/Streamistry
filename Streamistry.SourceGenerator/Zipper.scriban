@@ -4,6 +4,10 @@
     private Queue<{{ type }}?> Queue{{ for.index + 1 }} { get; } = new();
     {{~ end ~}}
 
+    protected override bool CanPairMore =>
+        {{~ for index in indexes ~}}
+        (!IsBranchCompleted({{index}}) || Queue{{index}}.Count > 0){{ if !for.last }} &&{{ else }};{{ end }}
+        {{~ end ~}}
     public int? Capacity { get; }
     public QueueOverflowPolicy OverflowPolicy { get; }
     protected override void ClearPending()

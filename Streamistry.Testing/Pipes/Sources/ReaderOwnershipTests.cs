@@ -8,6 +8,37 @@ namespace Streamistry.Testing.Pipes.Sources;
 
 public class ReaderOwnershipTests
 {
+    private sealed class ReplacementSource(IDataReader reader) : DataReaderSource<object>(reader)
+    {
+        public int Columns => DataReader.FieldCount;
+        public void Replace(IDataReader replacement) => DataReader = replacement;
+        protected override object? OnRead() => DataReader.GetValue(0);
+    }
+
+    [Test]
+    public void ProtectedReaderPropertyRetainsBorrowedReplacementCompatibility()
+    {
+        using var table = new DataTable(); table.Columns.Add("Value", typeof(int)); table.Rows.Add(42);
+        var original = new Mock<IDataReader>();
+        var source = new ReplacementSource(original.Object);
+        Assert.That(source.Columns, Is.Zero);
+        using var replacement = table.CreateDataReader();
+        source.Replace(replacement);
+        Assert.That(source.GetOutputs(source.Start), Is.EqualTo(new object[] { 42 }));
+        Assert.That(replacement.IsClosed, Is.False);
+        original.Verify(x => x.Dispose(), Times.Never());
+    }
+
+    [Test]
+    public void DisposalFailureStillReleasesEveryDependency()
+    {
+        var reader = new Mock<IDataReader>(); reader.Setup(x => x.Dispose()).Throws<InvalidOperationException>();
+        var connection = new Mock<IDisposable>();
+        var lease = ReaderLease.Own(reader.Object, connection.Object);
+        Assert.Throws<AggregateException>(lease.Dispose);
+        lease.Dispose();
+        connection.Verify(x => x.Dispose(), Times.Once());
+    }
     [TestCase(false)]
     [TestCase(true)]
     public void NormalCompletionHonorsOwnership(bool owned)
@@ -82,5 +113,14 @@ public class ReaderOwnershipTests
         var values = new DataReaderAsValueSource<string>(() => ReaderLease.Own(table.CreateDataReader()));
         Assert.That(arrays.GetOutputs(arrays.Start)[0][0], Is.Null);
         Assert.That(values.GetOutputs(values.Start), Is.EqualTo(new string?[] { null }));
+    }
+
+    [Test]
+    public void NullableScalarValuesPreserveNullAndTypedValues()
+    {
+        using var table = new DataTable(); table.Columns.Add("Value", typeof(int));
+        table.Rows.Add(DBNull.Value); table.Rows.Add(42);
+        var source = new DataReaderAsValueSource<int?>(() => ReaderLease.Own(table.CreateDataReader()));
+        Assert.That(source.GetOutputs(source.Start), Is.EqualTo(new int?[] { null, 42 }));
     }
 }

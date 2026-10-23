@@ -26,7 +26,10 @@ var contract = mapped.RequireValue();
 var asset = contract.Assets.Single(a => a.Name == "people");
 var endpoint = contract.Endpoints.Single(e => e.Id == asset.EndpointBindings.Single().EndpointId);
 var source = new EndpointSource(new ResourceReaderFactory(), endpoint, asset);
-// Map source rows using StructuredValues.FromClr and a construction-time expression.
+var expression = Expressif.Expression.Create(".name | trim | upper");
+var map = new Mapper<IReadOnlyDictionary<string, object>, string>(source,
+    row => ExpressionAdapters.Adapt<string>(expression.Evaluate(StructuredValues.FromClr(row))));
+var sink = new Streamistry.Pipes.Sinks.MemorySink<string>(map);
 await new Pipeline(source).StartAsync(cancellationToken);
 ```
 
@@ -41,3 +44,5 @@ when needed. Core has no dependency on Packata or document-loading packages.
 
 Packata's older DubUrl dependency brings a vulnerable Scriban minimum. This adapter
 pins Scriban 7.5.1 to resolve that dependency while retaining Packata's verified API.
+PocketCsvReader is pinned to 2.53.0 as in the direct adapter, so standalone Packata
+installation uses the same delimited-reader version exercised by comparison tests.

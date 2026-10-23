@@ -84,16 +84,50 @@ public class EndpointSourceTests
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes("""{"name":"example","resources":[{"name":"people","path":"people.csv","format":"csv"}]}"""));
         var contract = new DataPackageFactory().LoadFromStream(stream).ToCanonicalContract().RequireValue();
         var source = new EndpointSource(new ResourceReaderFactory(new TextResolver("name\nAlice\n")), contract.Endpoints.Single());
-        var rows = 0; source.RegisterDownstream(_ => rows++);
+        var expression = global::Expressif.Expression.Create(".name | upper");
+        var map = new Mapper<IReadOnlyDictionary<string, object>, string>(source,
+            row => Streamistry.Expressif.ExpressionAdapters.Adapt<string>(expression.Evaluate(Streamistry.Expressif.StructuredValues.FromClr(row))));
+        var sink = new Streamistry.Pipes.Sinks.MemorySink<string>(map);
         await source.StartAsync();
         Assert.That(contract.Assets, Has.Count.EqualTo(1));
-        Assert.That(rows, Is.EqualTo(1));
+        Assert.That(sink.State, Is.EqualTo(new[] { "ALICE" }));
+    }
+
+    [Test]
+    public async Task CancellationAfterOpenDisposesReturnedReader()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var reader = new Mock<IDataReader>();
+        var factory = new Mock<IDataEndpointReaderFactory>();
+        factory.Setup(x => x.OpenAsync(It.IsAny<DataEndpoint>(), null, cancellation.Token))
+            .Returns(() => { cancellation.Cancel(); return ValueTask.FromResult(reader.Object); });
+        var source = new EndpointSource(factory.Object, Endpoint("data.csv"));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => source.StartAsync(cancellation.Token));
+        reader.Verify(x => x.Dispose(), Times.Once());
+    }
+
+    private sealed class PartialFailureResolver : IEndpointStreamResolver
+    {
+        public MemoryStream Opened { get; } = new();
+        private int calls;
+        public ValueTask<Stream> OpenAsync(string path, CancellationToken cancellationToken = default)
+            => ++calls == 1 ? ValueTask.FromResult<Stream>(Opened) : throw new IOException("Second input failed.");
+    }
+
+    [Test]
+    public async Task PublishedFactoryDisposesPartiallyOpenedStreams()
+    {
+        var resolver = new PartialFailureResolver();
+        var endpoint = Endpoint("one.csv") with { Location = new PathLocation(["one.csv", "two.csv"]) };
+        var source = new EndpointSource(new ResourceReaderFactory(resolver), endpoint);
+        await Assert.ThrowsAsync<IOException>(() => source.StartAsync());
+        Assert.That(resolver.Opened.CanRead, Is.False);
     }
 
     [Test]
     public async Task DatabaseEndpointUsesPackataDubUrlResolution()
     {
-        var path = Path.Combine(TestContext.CurrentContext.WorkDirectory, $"endpoint-{Guid.NewGuid():N}.db");
+        var path = Path.Combine(Environment.CurrentDirectory, $"endpoint-{Guid.NewGuid():N}.db");
         try
         {
             using (var connection = new SqliteConnection($"Data Source={path}"))
@@ -104,7 +138,7 @@ public class EndpointSourceTests
             }
             System.Data.Common.DbProviderFactories.RegisterFactory("Microsoft.Data.Sqlite", SqliteFactory.Instance);
             var endpoint = new DataEndpoint("db", null, EndpointKind.Database, null,
-                new ConnectionLocation("sqlite", ConnectionUrl: "sqlite:///" + path.Replace('\\', '/')),
+                new ConnectionLocation("sqlite", ConnectionUrl: "sqlite://" + Path.GetFileName(path)),
                 new DataFormat("database", Options: new Dictionary<string, object?> { ["table"] = "people" }));
             var source = new EndpointSource(new ResourceReaderFactory(), endpoint);
             var rows = new List<IReadOnlyDictionary<string, object>>(); source.RegisterDownstream(rows.Add);

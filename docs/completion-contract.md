@@ -13,7 +13,9 @@ capacity preserves the historical explicitly unbounded buffering mode.
 
 Union and positional zip complete after all inputs complete. Zip pairs in arrival
 order, includes null elements, and discards unmatched tails after all completions.
-It emits no result for an empty input. Each zip input queue defaults to 1024 items;
+It emits no result for an empty input. Once a completed input queue is exhausted,
+remaining unmatched values are discarded immediately without filling other queues;
+terminal completion still waits for every input. Each zip input queue defaults to 1024 items;
 capacity=null explicitly requests an unbounded queue. Overflow policies are Throw
 (default, fail the run), DropNewest (ignore incoming item), and DropOldest (evict
 oldest pending item). Lossy policies deliberately change pairing. Blocking is not

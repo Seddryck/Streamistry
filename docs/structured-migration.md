@@ -1,6 +1,6 @@
 # Structured calculations
 
-StructuredValues.FromClr converts string-keyed dictionaries (including reader
+StructuredValues.FromClr converts object-valued string-keyed dictionaries and IDictionary (including reader
 rows), ordered arrays/collections, and public readable CLR properties to Expressif
 RecordValue/arrays. DBNull becomes null; names retain case and order. Scalars and
 existing Expressif values pass through. Cycles reject; indexers are excluded. This
