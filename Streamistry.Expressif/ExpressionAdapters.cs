@@ -46,6 +46,12 @@ public static class ExpressionAdapters
 /// <summary>Opt-in fluent expression/predicate adapters; definitions bind once at construction.</summary>
 public sealed class ExpressifBuilder<TInput>(IPipeBuilder<TInput> upstream, EvaluationContext context)
 {
+    public AccumulatorBuilder<TInput, TOutput> Aggregate<TOutput>(Func<global::Expressif.Accumulators.IAccumulator> factory)
+        => new(upstream, factory);
+    public AccumulatorBuilder<TInput, int> Count() => Aggregate<int>(() => new global::Expressif.Accumulators.CountAccumulator());
+    public AccumulatorBuilder<TInput, decimal> Sum() => Aggregate<decimal>(() => new global::Expressif.Accumulators.SumAccumulator());
+    public AccumulatorBuilder<TInput, decimal?> Min() => Aggregate<decimal?>(() => new global::Expressif.Accumulators.MinAccumulator());
+    public AccumulatorBuilder<TInput, decimal?> Max() => Aggregate<decimal?>(() => new global::Expressif.Accumulators.MaxAccumulator());
     public MapperBuilder<TInput, TOutput> Pluck<TOutput>(string expression)
     {
         var bound = Expression.Create(expression).WithContext(context);
