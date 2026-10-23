@@ -46,6 +46,16 @@ public static class ExpressionAdapters
 /// <summary>Opt-in fluent expression/predicate adapters; definitions bind once at construction.</summary>
 public sealed class ExpressifBuilder<TInput>(IPipeBuilder<TInput> upstream, EvaluationContext context)
 {
+    public MapperBuilder<TInput, TOutput> Pluck<TOutput>(string expression)
+    {
+        var bound = Expression.Create(expression).WithContext(context);
+        return new(upstream, value => ExpressionAdapters.Adapt<TOutput>(bound.Evaluate(StructuredValues.FromClr(value))));
+    }
+    public SplitterBuilder<TInput, TOutput> Split<TOutput>(string expression)
+    {
+        var bound = Expression.Create(expression).WithContext(context);
+        return new(upstream, value => StructureAdapters.SplitResult<TOutput>(bound.Evaluate(StructuredValues.FromClr(value))));
+    }
     public MapperBuilder<TInput, TOutput> Constant<TOutput>(TOutput value)
         => new(upstream, ExpressionAdapters.Map<TInput, TOutput>(Expression.Create("@constant"),
             new EvaluationContext(new Dictionary<string, object?> { ["constant"] = value })));
