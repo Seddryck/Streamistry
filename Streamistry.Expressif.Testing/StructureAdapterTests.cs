@@ -9,6 +9,27 @@ namespace Streamistry.Expressif.Testing;
 public class StructureAdapterTests
 {
     [Test]
+    public void SharedChildrenAreAllowedButCyclesAreRejected()
+    {
+        var child = new Dictionary<string, object?> { ["name"] = "Alice" };
+        var input = new Dictionary<string, object?> { ["first"] = child, ["second"] = child };
+        var row = StructuredValues.FromClr(input);
+        Assert.That(Expression.Create(".second.name").Evaluate(row), Is.EqualTo("Alice"));
+        child["cycle"] = input;
+        Assert.Throws<ArgumentException>(() => StructuredValues.FromClr(input));
+    }
+
+    [Test]
+    public void NonGenericDictionariesKeepOrderAndRejectNonTextKeys()
+    {
+        var input = new System.Collections.Specialized.OrderedDictionary { ["a"] = DBNull.Value, ["b"] = new[] { 1, 2 } };
+        var record = (global::Expressif.Values.RecordValue)StructuredValues.FromClr(input)!;
+        Assert.That(record.Keys, Is.EqualTo(new[] { "a", "b" }));
+        Assert.That(record["a"], Is.Null);
+        Assert.That(record["b"], Is.EqualTo(new object[] { 1, 2 }));
+        Assert.Throws<ArgumentException>(() => StructuredValues.FromClr(new System.Collections.Hashtable { [1] = "invalid" }));
+    }
+    [Test]
     public void NestedClrPropertiesAndMissingFieldsUseExpressif()
     {
         var row = StructuredValues.FromClr(new { customer = new { name = "Alice" } });

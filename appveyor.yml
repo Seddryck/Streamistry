@@ -1,0 +1,33 @@
+# Compatibility validation for the still-connected AppVeyor project.
+# GitHub Actions remains the sole packaging and release pipeline.
+version: '{build}'
+image: Visual Studio 2022
+skip_tags: true
+environment:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: 'true'
+install:
+  - ps: |
+      $ErrorActionPreference = 'Stop'
+      $installScript = Join-Path $env:TEMP 'dotnet-install.ps1'
+      Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile $installScript
+      $sdkDirectory = Join-Path $env:LOCALAPPDATA 'Microsoft/dotnet'
+      & $installScript -Channel 10.0 -InstallDir $sdkDirectory -NoPath
+      if (-not $?) { throw 'Installing .NET 10 failed.' }
+      $env:PATH = "$sdkDirectory;$env:PATH"
+      $env:DOTNET_ROOT = $sdkDirectory
+      dotnet --info
+build_script:
+  - ps: |
+      dotnet restore Streamistry.sln
+      if ($LASTEXITCODE -ne 0) { throw 'Restore failed.' }
+      dotnet build Streamistry.sln --configuration Release --no-restore
+      if ($LASTEXITCODE -ne 0) { throw 'Build failed.' }
+test_script:
+  - ps: |
+      $inventory = Import-PowerShellDataFile ./eng/Projects.psd1
+      foreach ($project in $inventory.UnitTests) {
+        dotnet test "$project.Testing" --configuration Release --framework net10.0 --no-build --no-restore
+        if ($LASTEXITCODE -ne 0) { throw "Tests failed: $project" }
+      }
+deploy: off
