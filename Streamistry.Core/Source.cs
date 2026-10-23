@@ -32,17 +32,21 @@ public abstract class Source<TOutput> : ChainablePipe<TOutput>, ISource, IDispos
         if (IsStarted)
             return;
         IsStarted = true;
-        Setup();
         try
-        { Read(); }
+        {
+            Setup();
+            Read();
+        }
         finally
         { Stop(); }
     }
 
     public void Stop()
     {
-        Cleanup();
+        if (!IsStarted)
+            return;
         IsStarted = false;
+        Cleanup();
     }
 
     public virtual void Setup()
