@@ -15,15 +15,31 @@ namespace Streamistry.Pipes.Sources;
 
 public abstract class DataReaderSource<TOutput> : Source<TOutput>
 {
-    protected IDataReader DataReader { get; set; }
+    private readonly Func<ReaderLease> readerFactory;
+    private ReaderLease? lease;
+    protected IDataReader DataReader => lease?.Reader
+        ?? throw new InvalidOperationException("The reader is available only during execution.");
 
     public DataReaderSource(IDataReader dataReader, ObservabilityProvider? provider = null)
-        : base(provider)
-        => DataReader = dataReader;
+        : this(() => ReaderLease.Borrow(dataReader), provider) { }
 
     public DataReaderSource(Pipeline upstream, IDataReader dataReader)
-        : base(upstream)
-        => DataReader = dataReader;
+        : this(() => ReaderLease.Borrow(dataReader), upstream.GetObservabilityProvider())
+        => Pipeline = upstream;
+
+    public DataReaderSource(Func<ReaderLease> readerFactory, ObservabilityProvider? provider = null)
+        : base(provider)
+        => this.readerFactory = readerFactory ?? throw new ArgumentNullException(nameof(readerFactory));
+
+    public override void Setup()
+        => lease = readerFactory() ?? throw new InvalidOperationException("The reader factory returned null.");
+
+    public override void Cleanup()
+    {
+        var current = lease;
+        lease = null;
+        current?.Dispose();
+    }
 
     protected override bool TryReadNext(out TOutput? item)
     {
@@ -41,6 +57,9 @@ public abstract class DataReaderSource<TOutput> : Source<TOutput>
 
 public class DataReaderAsDictionarySource : DataReaderSource<IReadOnlyDictionary<string, object>>
 {
+    public DataReaderAsDictionarySource(Func<ReaderLease> factory, ObservabilityProvider? provider = null)
+        : base(factory, provider) { }
+
     public DataReaderAsDictionarySource(IDataReader dataReader, ObservabilityProvider? provider = null)
         : base(dataReader, provider)
     { }
@@ -53,13 +72,16 @@ public class DataReaderAsDictionarySource : DataReaderSource<IReadOnlyDictionary
     {
         var dictionary = new Dictionary<string, object>();
         foreach (var i in Enumerable.Range(0, DataReader.FieldCount))
-            dictionary.Add(string.Intern(DataReader.GetName(i)), DataReader.GetValue(i));
+            dictionary.Add(DataReader.GetName(i), DataReader.IsDBNull(i) ? null! : DataReader.GetValue(i));
         return dictionary.AsReadOnly();
     }
 }
 
 public class DataReaderAsArraySource : DataReaderSource<ImmutableArray<object>>
 {
+    public DataReaderAsArraySource(Func<ReaderLease> factory, ObservabilityProvider? provider = null)
+        : base(factory, provider) { }
+
     public DataReaderAsArraySource(IDataReader dataReader, ObservabilityProvider? provider = null)
         : base(dataReader, provider)
     { }
@@ -72,13 +94,16 @@ public class DataReaderAsArraySource : DataReaderSource<ImmutableArray<object>>
     {
         var list = new List<object>();
         foreach (var i in Enumerable.Range(0, DataReader.FieldCount))
-            list.Add(DataReader.GetValue(i));
+            list.Add(DataReader.IsDBNull(i) ? null! : DataReader.GetValue(i));
         return list.ToImmutableArray();
     }
 }
 
 public class DataReaderAsValueSource<TOutput> : DataReaderSource<TOutput>
 {
+    public DataReaderAsValueSource(Func<ReaderLease> factory, ObservabilityProvider? provider = null)
+        : base(factory, provider) { }
+
     public DataReaderAsValueSource(IDataReader dataReader, ObservabilityProvider? provider = null)
         : base(dataReader, provider)
     { }
