@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -25,7 +25,7 @@ public class ExchangeSink : Sink<string>
     {
         var body = Encoding.UTF8.GetBytes(item);
         connector.GetChannel()
-            .BasicPublish(exchange: exchangeName, routingKey:string.Empty, body: body);
+            .BasicPublishAsync(exchange: exchangeName, routingKey:string.Empty, body: body, mandatory: false).GetAwaiter().GetResult();
     }
 }
 
@@ -42,6 +42,6 @@ public class ExchangeSink<TInput> : Sink<TInput>
     {
         var body = Encoding.UTF8.GetBytes(item);
         connector.GetChannel()
-            .BasicPublish(exchange: exchangeName, routingKey: routingKey, body: body);
+            .BasicPublishAsync(exchange: exchangeName, routingKey: routingKey, body: body, mandatory: false).GetAwaiter().GetResult();
     }
 }

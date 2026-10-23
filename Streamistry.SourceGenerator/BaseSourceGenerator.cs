@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Text;
 using Scriban;
 
 namespace Streamistry.SourceGenerator;
-public abstract class BaseSourceGenerator : ISourceGenerator
+public abstract class BaseSourceGenerator : IIncrementalGenerator
 {
     public const int MIN_CARDINALITY = 2;
     public const int MAX_CARDINALITY = 7;
@@ -21,14 +21,11 @@ public abstract class BaseSourceGenerator : ISourceGenerator
         }
     }
 
-    public void Execute(GeneratorExecutionContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var source = GenerateClasses();
-        context.AddSource($"{Classname}.gen.cs", SourceText.From(source, Encoding.UTF8));
+        context.RegisterPostInitializationOutput(output =>
+            output.AddSource($"{Classname}.gen.cs", SourceText.From(GenerateClasses(), Encoding.UTF8)));
     }
-
-    public void Initialize(GeneratorInitializationContext context)
-    { }
 
     public abstract string GenerateClasses();
 

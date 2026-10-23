@@ -8,14 +8,14 @@ on an explicit main-branch release dispatch.
 
 | Dimension | Evidence and decision |
 |---|---|
-| Frameworks/compiler | Build net8.0/net9.0/net10.0 with the .NET 10 SDK; retain the netstandard2.0 generator |
+| Frameworks/compiler | Build net8.0/net9.0/net10.0 with SDK 10.0.400+; retain the netstandard2.0 generator |
 | Unit tests | Existing console assertions use CRLF: run all core/JSON tests on Windows for each framework |
-| Linux tests | Run RabbitMQ tests on all frameworks and a .NET 10 filesystem smoke test using the Windows-built portable test assemblies |
+| Linux tests | Run RabbitMQ 4.4.0 tests on all frameworks and a .NET 10 filesystem smoke test using the Windows-built portable test assemblies |
 | Distribution | Three portable managed libraries: Streamistry, Streamistry.Json, Streamistry.RabbitMQ; no RID, architecture, AOT, or libc package matrix |
 | Build reuse | Packata keeps build/tests/pack together; DubUrl archives bin/obj for later pack jobs; PocketCsvReader separates test/package artifacts |
 | Selected design | One complete solution build, same-run bin/obj archive, Linux execution of portable test DLLs, later Windows pack with no compilation |
 | Cache | Cache only NuGet dependencies by OS and project/tool fingerprints; no cross-run compiler-output cache |
-| Version | Preserve Packata's exact GitVersion.yml and local GitVersion 6.6.0 manifest; calculate once with full history |
+| Version | Preserve Packata's exact GitVersion.yml and local GitVersion 6.8.2 manifest; calculate once with full history |
 | Packages | One nupkg and snupkg per identity, all three TFMs, common version; validate assemblies, symbols, icon, readme, and tested-byte provenance |
 | Release | Explicit workflow_dispatch publish=true on main; protected release environment and two activation acknowledgements |
 | Tags/release pages | Reserve every published stable version so patch progression advances; GitHub release pages remain limited to patch zero |
