@@ -27,8 +27,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.9.0" PrivateAssets="all" />
-    <PackageReference Include="Scriban" Version="7.5.1" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Text.Json" Version="10.0.14" />
+    <PackageReference Include="Scriban" Version="7.5.3" GeneratePathProperty="true" PrivateAssets="all" />
   </ItemGroup>
 <PropertyGroup>
     <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
