@@ -30,7 +30,7 @@
     </PackageReference>
   </ItemGroup>
 <ItemGroup><ProjectReference Include="../Streamistry.PocketCsvReader/Streamistry.PocketCsvReader.csproj" /></ItemGroup><ItemGroup><ProjectReference Include="../Streamistry.Packata/Streamistry.Packata.csproj" /></ItemGroup><ItemGroup>
-<PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
+<PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
 <PackageReference Include="Packata.DataPackage" Version="0.63.4" />
 <None Include="Fixtures/*" CopyToOutputDirectory="PreserveNewest" />
 </ItemGroup></Project>
